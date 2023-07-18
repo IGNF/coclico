@@ -7,3 +7,7 @@ dependencies:
   - conda-forge:python-pdal==3.2.*
   - requests
   - pytest
+  # linting (cf https://dev.to/m1yag1/how-to-setup-your-project-with-pre-commit-black-and-flake8-183k)
+  - black
+  - flake8
+  - pre-commit
