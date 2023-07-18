@@ -1,7 +1,7 @@
 import os
 import requests
-
 from coclico import main
+from pathlib import Path
 
 remote_url = "https://github.com/IGNF/coclico-data/blob/main/"
 local_path = "./data/"
@@ -35,8 +35,14 @@ def setup_module():
 
 
 def test_compare_test0():
-    c1 = "./data/test0/C1/"
-    c2 = "./data/test0/C2/"
-    ref = "./data/test0/Ref/"
+    c1 = "./data/test0/niv1/"
+    c2 = "./data/test0/niv4/"
+    ref = "./data/test0/ref/"
+    out = "./tmp/test0/"
 
-    main.compare(c1, c2, ref)
+    main.compare(c1, c2, ref, out)
+
+    ref_files_stem = [Path(f).stem for f in os.listdir(ref) if f.lower().endswith(("las", "laz"))]
+    for ref_file in ref_files_stem:
+        C1_Ref_MPAPO_json = os.path.join(out + "/C1_Ref/MPAP0", ref_file + ".json")
+        assert os.path.isfile(C1_Ref_MPAPO_json)
