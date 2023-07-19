@@ -34,15 +34,30 @@ def setup_module():
             download(os.path.join(remote_url, file), local_file)
 
 
+def test_compare_to_ref_test0():
+    c1 = Path("./data/test0/niv1/")
+    ref = Path("./data/test0/ref/")
+    out = Path("./tmp/test0/compare_to_ref")
+
+    main.compare_to_ref(c1, ref, out)
+
+    ref_files_stem = [f.stem for f in ref.iterdir() if f.suffix.lower() in (".las", ".laz")]
+    for ref_file in ref_files_stem:
+        c1_ref_mpapO_json = out / "mpap0" / f"{ref_file}.json"
+        assert c1_ref_mpapO_json.is_file()
+
+
 def test_compare_test0():
-    c1 = "./data/test0/niv1/"
-    c2 = "./data/test0/niv4/"
-    ref = "./data/test0/ref/"
-    out = "./tmp/test0/"
+    c1 = Path("./data/test0/niv1/")
+    c2 = Path("./data/test0/niv4/")
+    ref = Path("./data/test0/ref/")
+    out = Path("./tmp/test0/compare")
 
     main.compare(c1, c2, ref, out)
 
-    ref_files_stem = [Path(f).stem for f in os.listdir(ref) if f.lower().endswith(("las", "laz"))]
+    ref_files_stem = [f.stem for f in ref.iterdir() if f.suffix.lower() in (".las", ".laz")]
     for ref_file in ref_files_stem:
-        C1_Ref_MPAPO_json = os.path.join(out + "/C1_Ref/MPAP0", ref_file + ".json")
-        assert os.path.isfile(C1_Ref_MPAPO_json)
+        c1_ref_mpapO_json = out / "c1_ref" / "mpap0" / f"{ref_file}.json"
+        assert c1_ref_mpapO_json.is_file()
+        c2_ref_mpapO_json = out / "c2_ref" / "mpap0" / f"{ref_file}.json"
+        assert c2_ref_mpapO_json.is_file()
