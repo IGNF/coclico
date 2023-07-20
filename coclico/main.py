@@ -1,8 +1,7 @@
 from pathlib import Path
-import os
 import logging
 import pandas as pd
-from typing import List
+from typing import List, Dict
 
 
 def compare_to_ref(ci: Path, ref: Path, out: Path):
@@ -73,6 +72,62 @@ def merge_stats(stats_dfs: List[pd.DataFrame], out: Path):
     df.to_csv(out, index=False)
 
 
+def compute_weighted_result(stats_df: pd.DataFrame, weights: Dict) -> pd.DataFrame:
+    """Compute weighted sum of notes for all metrics using the weights stored in a dictionary like:
+        weights = {
+            "class_0": {
+                "metric1": 1,
+                "metric2": 2
+            },
+            "class_1": {
+                "metric1": 0,
+                "metric2": 3
+            }
+        }
+
+    Args:
+        stats_df (pd.DataFrame): dataframe containing statistics for a classification
+        weights (Dict): weights to apply to the different metrics to generate the aggregated result
+
+    Returns:
+        pd.Dataframe: pandas Dataframe containing the weighted value for each statistic
+    """
+
+    def compute_weighted_sum(group):
+        res = 0
+        logging.debug(group)
+
+        for cl in weights.keys():
+            for metric in weights[cl].keys():
+                val = group[(group["metric"] == metric) & (group["class"] == cl)]["result"]
+                if len(val.index) != 1:
+                    raise ValueError(
+                        f"No or several values found for statistic={group['statistic'].iloc[0]}, "
+                        + "class={cl}, metric={metric}. ({val.values})"
+                    )
+
+                res += weights[cl][metric] * val.values[0]
+
+        return res
+
+    weighted_results = stats_df.groupby("statistic").apply(compute_weighted_sum)
+    weighted_results.name = "result"
+    weighted_results = weighted_results.to_frame()
+    weighted_results.reset_index(inplace=True)
+
+    return weighted_results
+
+
+def merge_weighted_results(weighted_results: List[pd.Series], out: Path):
+    df = weighted_results[0]
+    df.rename(columns={"result": "result_0"}, inplace=True)
+    for ii, df_to_join in enumerate(weighted_results[1:]):
+        df = df.merge(df_to_join, on=["statistic"], validate="1:1", how="left")
+        # rename result column with index to know which is which
+        df.rename(columns={"result": f"result_{ii+1}"}, inplace=True)
+    df.to_csv(out, index=False)
+
+
 def compare(c1: Path, c2: Path, ref: Path, out: Path):
     """Main function to compare 2 classification (c1, c2) with respect to a reference
     classification (ref) and save it as json files in out.
@@ -89,13 +144,16 @@ def compare(c1: Path, c2: Path, ref: Path, out: Path):
     result_by_tile_c2_file = out / "result_by_tile_c2.csv"
     result_by_metric_file = out / "result_by_metric.csv"
     result_file = out / "result.csv"
+    metrics_weights = {0: {"metric1": 1, "metric2": 2}, 1: {"metric1": 0, "metric2": 3}}
     out.mkdir(parents=True, exist_ok=True)
 
     compare_to_ref(c1, ref, result_by_tile_c1_file)
-    compare_to_ref(c2, ref, result_by_tile_c2_file)
     stats_c1 = compute_stats(result_by_tile_c1_file)
+    result_c1 = compute_weighted_result(stats_c1, metrics_weights)
+
+    compare_to_ref(c2, ref, result_by_tile_c2_file)
     stats_c2 = compute_stats(result_by_tile_c2_file)
+    result_c2 = compute_weighted_result(stats_c2, metrics_weights)
 
     merge_stats([stats_c1, stats_c2], result_by_metric_file)
-
-    os.system(f"touch {result_file}")
+    merge_weighted_results([result_c1, result_c2], result_file)

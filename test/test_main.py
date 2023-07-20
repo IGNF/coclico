@@ -109,6 +109,28 @@ def compute_toy_stats_result(
     return df
 
 
+def compute_toy_weighted_result(
+    stats: List[str] = ["mean", "median"],
+    results_fn: Callable = (lambda ii: ii),
+) -> pd.DataFrame:
+    """Generate a pandas series containing fake weigthed results for provided stats using results_fn
+    to generate the result for each stat
+    This method aims to mimick coclico.main.compute_weighted_result results
+
+    Args:
+        stats (List[str], optional): stats names for which to generate results. Defaults to ["mean", "median"].
+        results_fn (_type_, optional): function to use to generate values from the creation index.
+        Defaults to (lambda ii: ii).
+
+    Returns:
+        pd.DataFrame: output dataframe
+    """
+    result_list = [{"statistic": s, "result": results_fn(ii)} for ii, s in enumerate(stats)]
+    df = pd.DataFrame(result_list)
+
+    return df
+
+
 def test_compare_to_ref_test0():
     c1 = Path("./data/test0/niv1/")
     ref = Path("./data/test0/ref/")
@@ -143,6 +165,36 @@ def test_merge_stats_toy():
     assert set(df["metric"]) == set(metrics)
     assert set(df["statistic"]) == set(stats)
     assert set(df["class"]) == set(classes)
+
+
+def test_compute_weighted_result_toy():
+    weights = {0: {"m1": 1, "m2": 2, "m3": 3}, 1: {"m1": 0, "m3": 3}}
+    metrics = ["m1", "m2", "m3"]
+    stats = ["mean", "std", "median", "min", "max"]
+    classes = [0, 1]
+    stats_df = compute_toy_stats_result(stats, metrics, classes, (lambda ii: 2 * ii))
+    result_df = main.compute_weighted_result(stats_df, weights)
+    assert set(result_df.columns) == set(["statistic", "result"])
+    assert set(result_df["statistic"]) == set(stats)
+    assert not result_df.isnull().values.any()
+
+
+def test_merge_weighted_results_toy():
+    out = Path("./tmp/toy_results/merge_weighted_results.csv")
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    stats = ["median", "mean", "std"]
+    res_0 = compute_toy_weighted_result(stats, lambda ii: 2 * ii)
+    res_1 = compute_toy_weighted_result(stats, lambda ii: 3 * ii)
+
+    main.merge_weighted_results([res_0, res_1], out)
+    assert out.is_file()
+    df = pd.read_csv(out)
+    assert set(df.columns) == set(["statistic", "result_0", "result_1"])
+    assert set(df["statistic"]) == set(stats)
+    assert not df.isnull().values.any()
+    assert not np.all(df["result_0"] == 0)
+    assert not np.all(df["result_1"] == 0)
 
 
 def test_compute_stats_toy():
