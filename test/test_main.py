@@ -1,4 +1,4 @@
-import os
+# import os
 import requests
 from coclico import main
 from pathlib import Path
@@ -8,15 +8,15 @@ import numpy as np
 import shutil
 
 
-remote_url = "https://github.com/IGNF/coclico-data/blob/main/"
+remote_url = "https://raw.githubusercontent.com/IGNF/coclico-data/main/"
 local_path = "./data/"
 
 files = [
-    "test0/ref/Semis_2021_0919_6424_LA93_IGN69.laz",
-    "test0/niv1/Semis_2021_0919_6424_LA93_IGN69.laz",
-    "test0/niv2/Semis_2021_0919_6424_LA93_IGN69.laz",
-    "test0/niv3/Semis_2021_0919_6424_LA93_IGN69.laz",
-    "test0/niv4/Semis_2021_0919_6424_LA93_IGN69.laz",
+    "test1/ref/Semis_2021_0919_6424_LA93_IGN69.laz",
+    "test1/niv1/Semis_2021_0919_6424_LA93_IGN69.laz",
+    "test1/niv2/Semis_2021_0919_6424_LA93_IGN69.laz",
+    "test1/niv3/Semis_2021_0919_6424_LA93_IGN69.laz",
+    "test1/niv4/Semis_2021_0919_6424_LA93_IGN69.laz",
 ]
 
 
@@ -30,16 +30,40 @@ def setup_module():
     tmp_path = Path("./tmp")
     if tmp_path.is_dir():
         shutil.rmtree(tmp_path)
-    os.makedirs("./data/test0/ref/", exist_ok=True)
-    os.makedirs("./data/test0/niv1/", exist_ok=True)
-    os.makedirs("./data/test0/niv2/", exist_ok=True)
-    os.makedirs("./data/test0/niv3/", exist_ok=True)
-    os.makedirs("./data/test0/niv4/", exist_ok=True)
+        if not (
+            Path("./data/test1/niv1/").is_dir()
+            and Path("./data/test1/niv2/").is_dir()
+            and Path("./data/test1/niv3/").is_dir()
+            and Path("./data/test1/niv3/").is_dir()
+            and Path("./data/test1/ref/").is_dir()
+        ):
+            raise NotImplementedError("Data is missing in ./data/test1/, automatic download does not work yet.")
+    # os.makedirs("./data/test1/ref/", exist_ok=True)
+    # os.makedirs("./data/test1/niv1/", exist_ok=True)
+    # os.makedirs("./data/test1/niv2/", exist_ok=True)
+    # os.makedirs("./data/test1/niv3/", exist_ok=True)
+    # os.makedirs("./data/test1/niv4/", exist_ok=True)
 
-    for file in files:
-        local_file = os.path.join(local_path, file)
-        if not os.path.exists(local_file):
-            download(os.path.join(remote_url, file), local_file)
+    # for file in files:
+    #     local_file = os.path.join(local_path, file)
+    #     if not os.path.exists(local_file):
+    #         download(os.path.join(remote_url, file), local_file)
+
+
+def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:
+    """Check if a file exists, open it as a pandas dataframe to check that it has no empty data
+    Returns the dataframe for potential further investigation
+
+    Args:
+        f (Path): path to input csv file
+
+    Returns:
+        pd.DataFrame: read dataframe
+    """
+    assert (f).is_file()
+    df = pd.read_csv(f)
+    assert not df.isnull().values.any()
+    return df
 
 
 def compute_toy_by_tile_result(
@@ -131,19 +155,20 @@ def compute_toy_weighted_result(
     return df
 
 
-def test_compare_to_ref_test0():
-    c1 = Path("./data/test0/niv1/")
-    ref = Path("./data/test0/ref/")
-    out = Path("./tmp/test0/compare_to_ref.csv")
+def test_compare_to_ref_test1():
+    c1 = Path("./data/test1/niv1/")
+    ref = Path("./data/test1/ref/")
+    out = Path("./tmp/test1/niv1/compare_to_ref.csv")
     out.parent.mkdir(parents=True, exist_ok=True)
+    nb_classes = 2
+    metrics = ["metric1", "metric2"]
+    tiles = [f.stem for f in ref.iterdir() if f.name.lower().endswith(("las", "laz"))]
 
     main.compare_to_ref(c1, ref, out)
-
-    assert out.is_file()
-    df = pd.read_csv(out)
-    assert set(df.columns) == set(["tile", "class", "metric1", "metric2"])
-    assert len(df.index) > 0
-    assert not df.isnull().values.any()
+    df = check_df_exists_with_no_empty_data(out)
+    assert set(df.columns) == set(["tile", "class"] + metrics)
+    assert set(df["tile"]) == set(tiles)
+    assert len(df.index) == nb_classes * len(tiles)
 
 
 def test_merge_stats_toy():
@@ -155,11 +180,9 @@ def test_merge_stats_toy():
     out = Path("./tmp/toy_results/merge_stats.csv")
     out.parent.mkdir(parents=True, exist_ok=True)
     main.merge_stats([stats_c1_df, stats_c2_df], out)
-    assert out.is_file()
-    df = pd.read_csv(out)
+    df = check_df_exists_with_no_empty_data(out)
     assert set(df.columns) == set(["statistic", "metric", "class", "result_0", "result_1"])
     assert len(df.index) == len(metrics) * len(stats) * len(classes)
-    assert not df.isnull().values.any()
     assert not np.all(df["result_0"] == 0)
     assert not np.all(df["result_1"] == 0)
     assert set(df["metric"]) == set(metrics)
@@ -188,11 +211,9 @@ def test_merge_weighted_results_toy():
     res_1 = compute_toy_weighted_result(stats, lambda ii: 3 * ii)
 
     main.merge_weighted_results([res_0, res_1], out)
-    assert out.is_file()
-    df = pd.read_csv(out)
+    df = check_df_exists_with_no_empty_data(out)
     assert set(df.columns) == set(["statistic", "result_0", "result_1"])
     assert set(df["statistic"]) == set(stats)
-    assert not df.isnull().values.any()
     assert not np.all(df["result_0"] == 0)
     assert not np.all(df["result_1"] == 0)
 
@@ -217,19 +238,19 @@ def test_compute_stats_toy():
         assert not (np.all(df.result[df.statistic == s] == 0))
 
 
-def test_compare_test0():
-    c1 = Path("./data/test0/niv1/")
-    c2 = Path("./data/test0/niv4/")
-    ref = Path("./data/test0/ref/")
-    out = Path("./tmp/test0/compare")
+def test_compare_test1():
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    ref = Path("./data/test1/ref/")
+    out = Path("./tmp/test1/compare")
 
     main.compare(c1, c2, ref, out)
 
-    result_by_tile_c1_file = out / "result_by_tile_c1.csv"
-    assert (result_by_tile_c1_file).is_file()
-    result_by_tile_c2_file = out / "result_by_tile_c2.csv"
-    assert (result_by_tile_c2_file).is_file()
+    result_by_tile_c1_file = out / "c1" / "result_by_tile.csv"
+    check_df_exists_with_no_empty_data(result_by_tile_c1_file)
+    result_by_tile_c2_file = out / "c2" / "result_by_tile.csv"
+    check_df_exists_with_no_empty_data(result_by_tile_c2_file)
     result_by_metric_file = out / "result_by_metric.csv"
-    assert (result_by_metric_file).is_file()
+    check_df_exists_with_no_empty_data(result_by_metric_file)
     result_file = out / "result.csv"
-    assert (result_file).is_file()
+    check_df_exists_with_no_empty_data(result_file)

@@ -4,17 +4,34 @@ import pandas as pd
 from typing import List, Dict
 
 
+def compare_one_tile_mpap0(ci: Path, ref: Path, out: Path, tile_fn: str, metric_name: str = "mpap0"):
+    logging.debug(f"Compare Ci: {ci} to Ref: {ref} in out {out} for metric MPAP0")
+    tile_stem = Path(tile_fn).stem
+    out_file = out / (tile_stem + ".csv")
+    data = [{"tile": tile_stem, "class": 0, metric_name: 0}, {"tile": tile_stem, "class": 1, metric_name: 1}]
+    df = pd.DataFrame(data)
+    df.to_csv(out_file, index=False)
+
+
 def compare_to_ref(ci: Path, ref: Path, out: Path):
     logging.debug(f"Compare Ci: {ci} to Ref: {ref} in out {out}")
-    df = pd.DataFrame(
-        [
-            {"tile": "tile0", "class": 0, "metric1": 0, "metric2": 1},
-            {"tile": "tile0", "class": 1, "metric1": 2, "metric2": 3},
-            {"tile": "tile1", "class": 0, "metric1": 4, "metric2": 5},
-            {"tile": "tile1", "class": 1, "metric1": 6, "metric2": 7},
-        ]
-    )
-    df.to_csv(out, index=False)
+    out_dir = out.parent
+    metrics = {"metric1": compare_one_tile_mpap0, "metric2": compare_one_tile_mpap0}
+    tiles_filenames = [f.name for f in ref.iterdir() if f.name.lower().endswith(("las", "laz"))]
+    merged_df = pd.DataFrame(columns=["tile", "class"])
+    for metric_name, metric_fn in metrics.items():
+        metric_out = out_dir / metric_name
+        # exist_ok = false in order to force working from clean directory
+        # to make sure that the concatenation is done only on the expected csv files
+        metric_out.mkdir(parents=True, exist_ok=False)
+
+        for tile_fn in tiles_filenames:
+            metric_fn(ci, ref, metric_out, tile_fn, metric_name=metric_name)
+
+        metric_df = pd.concat([pd.read_csv(f) for f in metric_out.iterdir() if f.name.endswith("csv")])
+        merged_df = merged_df.merge(metric_df, on=["tile", "class"], how="right")
+
+    merged_df.to_csv(out, index=False)
 
 
 def compute_stats(results_file: Path) -> pd.DataFrame:
@@ -61,8 +78,6 @@ def merge_stats(stats_dfs: List[pd.DataFrame], out: Path):
         compared to a reference
         out (Path): output csv file
     """
-    # logging.debug("stats_dfs")
-    # logging.debug(stats_dfs)
     df = stats_dfs[0]
     df.rename(columns={"result": "result_0"}, inplace=True)
     for ii, df_to_join in enumerate(stats_dfs[1:]):
@@ -95,8 +110,6 @@ def compute_weighted_result(stats_df: pd.DataFrame, weights: Dict) -> pd.DataFra
 
     def compute_weighted_sum(group):
         res = 0
-        logging.debug(group)
-
         for cl in weights.keys():
             for metric in weights[cl].keys():
                 val = group[(group["metric"] == metric) & (group["class"] == cl)]["result"]
@@ -140,8 +153,8 @@ def compare(c1: Path, c2: Path, ref: Path, out: Path):
         out (Path): output path for the json outputs
     """
     logging.debug(f"Compare C1: {c1} to Ref: {ref} AND C2:{c2} to {ref} in out {out}")
-    result_by_tile_c1_file = out / "result_by_tile_c1.csv"
-    result_by_tile_c2_file = out / "result_by_tile_c2.csv"
+    result_by_tile_c1_file = out / "c1" / "result_by_tile.csv"
+    result_by_tile_c2_file = out / "c2" / "result_by_tile.csv"
     result_by_metric_file = out / "result_by_metric.csv"
     result_file = out / "result.csv"
     metrics_weights = {0: {"metric1": 1, "metric2": 2}, 1: {"metric1": 0, "metric2": 3}}
