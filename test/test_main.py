@@ -6,6 +6,8 @@ import pandas as pd
 from typing import List, Callable
 import numpy as np
 import shutil
+from collections import Counter
+import pytest
 
 
 remote_url = "https://raw.githubusercontent.com/IGNF/coclico-data/main/"
@@ -153,6 +155,37 @@ def compute_toy_weighted_result(
     df = pd.DataFrame(result_list)
 
     return df
+
+
+def test_compute_metric_intrisic_mpap0_test1():
+    las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
+    counter = main.compute_metric_intrisic_mpap0(las_file, class_weights={0: 1, 1: 1, 2: 0, 6: 2})
+    print(counter)
+    assert counter == Counter({1: 543, 6: 4743})
+
+
+@pytest.mark.skip(reason="Not implemented yet")
+def test_compute_metric_relative_mpap0_toy():
+    count_c1 = Counter({1: 12, 2: 20})
+    count_ref = Counter({1: 10, 2: 20})
+    score = main.compute_metric_relative_mpap0(count_c1, count_ref)
+    assert score == Counter({1: 0.2, 2: 0})
+    # Inconnue : et si on a pas de points ref: division par 0 !
+
+
+def test_compare_one_tile_mpap0_test1():
+    ci = Path("./data/test1/niv1/")
+    ref = Path("./data/test1/ref/")
+    out = Path("./tmp/test1/compare_one_tile/niv1/mpap0")
+    out.mkdir(parents=True)
+    tile_stem = "tile_splitted_2818_32247"
+    tile_fn = f"{tile_stem}.laz"
+    out_fn = f"{tile_stem}.csv"
+    class_weights = {0: 1, 1: 2}
+    main.compare_one_tile_mpap0(ci, ref, out, tile_fn, metric_name="mpap0_test", class_weights=class_weights)
+    df = check_df_exists_with_no_empty_data(out / out_fn)
+    assert set(df.columns) == set(["tile", "class", "mpap0_test"])
+    assert set(df["tile"]) == set([tile_stem])
 
 
 def test_compare_to_ref_test1():

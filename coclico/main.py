@@ -2,13 +2,60 @@ from pathlib import Path
 import logging
 import pandas as pd
 from typing import List, Dict
+from collections import Counter
+import pdal
 
 
-def compare_one_tile_mpap0(ci: Path, ref: Path, out: Path, tile_fn: str, metric_name: str = "mpap0"):
+def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Counter:
+    """Count points on las file ()
+
+    Args:
+        las_file (Path): _description_
+
+    Returns:
+        Counter: _description_
+    """
+    # TODO: replace with function imported from pdaltools
+    # (pdaltools.count_occurences.count_occurences_for_attribute import compute_count_one_file)
+    # not done yet as this module is not accessible from outside the library
+    pipeline = pdal.Reader.las(str(las_file))
+    pipeline |= pdal.Filter.stats(dimensions="Classification", count="Classification")
+    pipeline.execute()
+    raw_counts = pipeline.metadata["metadata"]["filters.stats"]["statistic"][0]["counts"]
+    split_counts = [c.split("/") for c in raw_counts]
+
+    points_counts = Counter({str(int(float(value))): int(count) for value, count in split_counts})
+    # get results only for classes that are in weights dictionary
+    out_counts = Counter({int(k): v for k, v in points_counts.items() if class_weights.get(int(k), 0) > 0})
+
+    return out_counts
+
+
+def compute_metric_relative_mpap0(pts_counts_ci, pts_counts_ref):
+    logging.warning("Not implemented yet")
+    diff_points_counts = Counter({0: 0.2, 1: 0.1})
+
+    return diff_points_counts
+
+
+def compute_note_mpap0(score):
+    logging.warning("Not implemented yet")
+    note = Counter({0: 0, 1: 1})
+    return note
+
+
+def compare_one_tile_mpap0(
+    ci: Path, ref: Path, out: Path, tile_fn: str, class_weights: Dict, metric_name: str = "mpap0"
+):
     logging.debug(f"Compare Ci: {ci} to Ref: {ref} in out {out} for metric MPAP0")
     tile_stem = Path(tile_fn).stem
     out_file = out / (tile_stem + ".csv")
-    data = [{"tile": tile_stem, "class": 0, metric_name: 0}, {"tile": tile_stem, "class": 1, metric_name: 1}]
+    points_counts_ci = compute_metric_intrisic_mpap0(ci / tile_fn, class_weights)
+    points_counts_ref = compute_metric_intrisic_mpap0(ref / tile_fn, class_weights)
+
+    score = compute_metric_relative_mpap0(points_counts_ci, points_counts_ref)
+    note = compute_note_mpap0(score)
+    data = [{"tile": tile_stem, "class": cl, metric_name: note[cl]} for cl in class_weights.keys()]
     df = pd.DataFrame(data)
     df.to_csv(out_file, index=False)
 
@@ -21,14 +68,15 @@ def compare_to_ref(ci: Path, ref: Path, out: Path, metric_weights: Dict):
     merged_df = pd.DataFrame(columns=["tile", "class"])
     for metric_name, metric_fn in metrics.items():
         if metric_name in metric_weights.keys():
-            logging.debug(metric_name)
             metric_out = out_dir / metric_name
             # exist_ok = false in order to force working from clean directory
             # to make sure that the concatenation is done only on the expected csv files
             metric_out.mkdir(parents=True, exist_ok=False)
 
             for tile_fn in tiles_filenames:
-                metric_fn(ci, ref, metric_out, tile_fn, metric_name=metric_name)
+                metric_fn(
+                    ci, ref, metric_out, tile_fn, class_weights=metric_weights[metric_name], metric_name=metric_name
+                )
 
             metric_df = pd.concat([pd.read_csv(f) for f in metric_out.iterdir() if f.name.endswith("csv")])
             merged_df = merged_df.merge(metric_df, on=["tile", "class"], how="right")
