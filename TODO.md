@@ -4,26 +4,21 @@
   - fichier .bat update.bat (install & update basé sur mamba update)
 
 - Mise en GPAO
-  - Test de la GPAO 
+  - Test de la GPAO
     - Serveur GPAO en local avec docker compose
     - Client GPAO qui lance le test (verifier temps d'attente du client)
 
 
 ## première métrique MPAP0 (métrique point à point): np point par class dans C1 / ref
-  
-  - ok - 1 json vide par dalle
-  - 1 JSON par dalle
-    <!-- calculer metricRelative par classe (sol, bati) -->
-    <!-- calculer score -->
-    - note par classe (sol, bati)
-    - note pondéréé
+  - ok un csv rempli avec des fausses notes par dalle
+  - ok génération du compte de point (metrique intrinèque)
+  - todo : comparaison entre les comptes de points (score / metric relative)
+  - todo : note à partir de la métrique relative
 
-  - Merger les dalles :
-    - geojson qui regroupe
-      - les note
-      - les notes poindérés
-    - note globale (pour tous les las)
-    - note globlale pondérées
+## Merge des dalles et des métriques
+    - done : merge les différentes métriques / classes /dalles dans un grand csv
+    - done : stats sur l'ensemble des dalles pour chaque métrique en csv
+    - done : notes pondérées à partir des stats pour chaque métrique / classe en csv
 
 
 ## Nommage
