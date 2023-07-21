@@ -159,14 +159,14 @@ def test_compare_to_ref_test1():
     c1 = Path("./data/test1/niv1/")
     ref = Path("./data/test1/ref/")
     out = Path("./tmp/test1/niv1/compare_to_ref.csv")
+    metrics_weights = {"metric1": {0: 1, 1: 2}, "metric2": {0: 1, 1: 2}}
     out.parent.mkdir(parents=True, exist_ok=True)
     nb_classes = 2
-    metrics = ["metric1", "metric2"]
     tiles = [f.stem for f in ref.iterdir() if f.name.lower().endswith(("las", "laz"))]
 
-    main.compare_to_ref(c1, ref, out)
+    main.compare_to_ref(c1, ref, out, metrics_weights)
     df = check_df_exists_with_no_empty_data(out)
-    assert set(df.columns) == set(["tile", "class"] + metrics)
+    assert set(df.columns) == set(["tile", "class"] + [k for k in metrics_weights.keys()])
     assert set(df["tile"]) == set(tiles)
     assert len(df.index) == nb_classes * len(tiles)
 
@@ -191,7 +191,7 @@ def test_merge_stats_toy():
 
 
 def test_compute_weighted_result_toy():
-    weights = {0: {"m1": 1, "m2": 2, "m3": 3}, 1: {"m1": 0, "m3": 3}}
+    weights = {"m1": {0: 1, 1: 0}, "m2": {0: 2}, "m3": {0: 3, 1: 3}}
     metrics = ["m1", "m2", "m3"]
     stats = ["mean", "std", "median", "min", "max"]
     classes = [0, 1]

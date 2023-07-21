@@ -13,23 +13,25 @@ def compare_one_tile_mpap0(ci: Path, ref: Path, out: Path, tile_fn: str, metric_
     df.to_csv(out_file, index=False)
 
 
-def compare_to_ref(ci: Path, ref: Path, out: Path):
+def compare_to_ref(ci: Path, ref: Path, out: Path, metric_weights: Dict):
     logging.debug(f"Compare Ci: {ci} to Ref: {ref} in out {out}")
     out_dir = out.parent
     metrics = {"metric1": compare_one_tile_mpap0, "metric2": compare_one_tile_mpap0}
     tiles_filenames = [f.name for f in ref.iterdir() if f.name.lower().endswith(("las", "laz"))]
     merged_df = pd.DataFrame(columns=["tile", "class"])
     for metric_name, metric_fn in metrics.items():
-        metric_out = out_dir / metric_name
-        # exist_ok = false in order to force working from clean directory
-        # to make sure that the concatenation is done only on the expected csv files
-        metric_out.mkdir(parents=True, exist_ok=False)
+        if metric_name in metric_weights.keys():
+            logging.debug(metric_name)
+            metric_out = out_dir / metric_name
+            # exist_ok = false in order to force working from clean directory
+            # to make sure that the concatenation is done only on the expected csv files
+            metric_out.mkdir(parents=True, exist_ok=False)
 
-        for tile_fn in tiles_filenames:
-            metric_fn(ci, ref, metric_out, tile_fn, metric_name=metric_name)
+            for tile_fn in tiles_filenames:
+                metric_fn(ci, ref, metric_out, tile_fn, metric_name=metric_name)
 
-        metric_df = pd.concat([pd.read_csv(f) for f in metric_out.iterdir() if f.name.endswith("csv")])
-        merged_df = merged_df.merge(metric_df, on=["tile", "class"], how="right")
+            metric_df = pd.concat([pd.read_csv(f) for f in metric_out.iterdir() if f.name.endswith("csv")])
+            merged_df = merged_df.merge(metric_df, on=["tile", "class"], how="right")
 
     merged_df.to_csv(out, index=False)
 
@@ -90,13 +92,13 @@ def merge_stats(stats_dfs: List[pd.DataFrame], out: Path):
 def compute_weighted_result(stats_df: pd.DataFrame, weights: Dict) -> pd.DataFrame:
     """Compute weighted sum of notes for all metrics using the weights stored in a dictionary like:
         weights = {
-            "class_0": {
-                "metric1": 1,
-                "metric2": 2
+            "metric1": {
+                "class0": 1,
+                "class1": 2
             },
-            "class_1": {
-                "metric1": 0,
-                "metric2": 3
+            "metric2": {
+                "class0": 0,
+                "class1": 3
             }
         }
 
@@ -110,16 +112,15 @@ def compute_weighted_result(stats_df: pd.DataFrame, weights: Dict) -> pd.DataFra
 
     def compute_weighted_sum(group):
         res = 0
-        for cl in weights.keys():
-            for metric in weights[cl].keys():
+        for metric in weights.keys():
+            for cl in weights[metric].keys():
                 val = group[(group["metric"] == metric) & (group["class"] == cl)]["result"]
                 if len(val.index) != 1:
                     raise ValueError(
                         f"No or several values found for statistic={group['statistic'].iloc[0]}, "
                         + "class={cl}, metric={metric}. ({val.values})"
                     )
-
-                res += weights[cl][metric] * val.values[0]
+                res += weights[metric][cl] * val.values[0]
 
         return res
 
@@ -157,14 +158,14 @@ def compare(c1: Path, c2: Path, ref: Path, out: Path):
     result_by_tile_c2_file = out / "c2" / "result_by_tile.csv"
     result_by_metric_file = out / "result_by_metric.csv"
     result_file = out / "result.csv"
-    metrics_weights = {0: {"metric1": 1, "metric2": 2}, 1: {"metric1": 0, "metric2": 3}}
+    metrics_weights = {"metric1": {0: 1, 1: 2}, "metric2": {0: 1, 1: 0}}
     out.mkdir(parents=True, exist_ok=True)
 
-    compare_to_ref(c1, ref, result_by_tile_c1_file)
+    compare_to_ref(c1, ref, result_by_tile_c1_file, metrics_weights)
     stats_c1 = compute_stats(result_by_tile_c1_file)
     result_c1 = compute_weighted_result(stats_c1, metrics_weights)
 
-    compare_to_ref(c2, ref, result_by_tile_c2_file)
+    compare_to_ref(c2, ref, result_by_tile_c2_file, metrics_weights)
     stats_c2 = compute_stats(result_by_tile_c2_file)
     result_c2 = compute_weighted_result(stats_c2, metrics_weights)
 
