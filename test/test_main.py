@@ -1,4 +1,4 @@
-# import os
+import os
 import requests
 from coclico import main
 from pathlib import Path
@@ -14,42 +14,55 @@ remote_url = "https://raw.githubusercontent.com/IGNF/coclico-data/main/"
 local_path = "./data/"
 
 files = [
-    "test1/ref/Semis_2021_0919_6424_LA93_IGN69.laz",
-    "test1/niv1/Semis_2021_0919_6424_LA93_IGN69.laz",
-    "test1/niv2/Semis_2021_0919_6424_LA93_IGN69.laz",
-    "test1/niv3/Semis_2021_0919_6424_LA93_IGN69.laz",
-    "test1/niv4/Semis_2021_0919_6424_LA93_IGN69.laz",
+    "test1/niv1/tile_splitted_2818_32247.laz",
+    "test1/niv1/tile_splitted_2818_32248.laz",
+    "test1/niv1/tile_splitted_2819_32247.laz",
+    "test1/niv1/tile_splitted_2819_32248.laz",
+    "test1/niv2/tile_splitted_2818_32247.laz",
+    "test1/niv2/tile_splitted_2818_32248.laz",
+    "test1/niv2/tile_splitted_2819_32247.laz",
+    "test1/niv2/tile_splitted_2819_32248.laz",
+    "test1/niv3/tile_splitted_2818_32247.laz",
+    "test1/niv3/tile_splitted_2818_32248.laz",
+    "test1/niv3/tile_splitted_2819_32247.laz",
+    "test1/niv3/tile_splitted_2819_32248.laz",
+    "test1/niv4/tile_splitted_2818_32247.laz",
+    "test1/niv4/tile_splitted_2818_32248.laz",
+    "test1/niv4/tile_splitted_2819_32247.laz",
+    "test1/niv4/tile_splitted_2819_32248.laz",
+    "test1/ref/tile_splitted_2818_32247.laz",
+    "test1/ref/tile_splitted_2818_32248.laz",
+    "test1/ref/tile_splitted_2819_32247.laz",
+    "test1/ref/tile_splitted_2819_32248.laz",
 ]
 
 
-def download(remote_file, local_file):
+def download_file(remote_file, local_file):
     response = requests.get(remote_file, verify=True, allow_redirects=True)
     with open(local_file, "wb") as fout:
         fout.write(response.content)
+
+
+def download_data():
+    os.makedirs("./data/test1/ref/", exist_ok=True)
+    os.makedirs("./data/test1/niv1/", exist_ok=True)
+    os.makedirs("./data/test1/niv2/", exist_ok=True)
+    os.makedirs("./data/test1/niv3/", exist_ok=True)
+    os.makedirs("./data/test1/niv4/", exist_ok=True)
+
+    for file in files:
+        local_file = os.path.join(local_path, file)
+        if not os.path.exists(local_file):
+            download_file(os.path.join(remote_url, file), local_file)
 
 
 def setup_module():
     tmp_path = Path("./tmp")
     if tmp_path.is_dir():
         shutil.rmtree(tmp_path)
-        if not (
-            Path("./data/test1/niv1/").is_dir()
-            and Path("./data/test1/niv2/").is_dir()
-            and Path("./data/test1/niv3/").is_dir()
-            and Path("./data/test1/niv3/").is_dir()
-            and Path("./data/test1/ref/").is_dir()
-        ):
-            raise NotImplementedError("Data is missing in ./data/test1/, automatic download does not work yet.")
-    # os.makedirs("./data/test1/ref/", exist_ok=True)
-    # os.makedirs("./data/test1/niv1/", exist_ok=True)
-    # os.makedirs("./data/test1/niv2/", exist_ok=True)
-    # os.makedirs("./data/test1/niv3/", exist_ok=True)
-    # os.makedirs("./data/test1/niv4/", exist_ok=True)
-
-    # for file in files:
-    #     local_file = os.path.join(local_path, file)
-    #     if not os.path.exists(local_file):
-    #         download(os.path.join(remote_url, file), local_file)
+    
+    if not (Path("./data").is_dir()):
+        download_data()
 
 
 def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:
