@@ -3,3 +3,6 @@ testing:
 
 install:
 	mamba env update -n coclico -f environment.yml
+
+install-precommit:
+	pre-commit install
