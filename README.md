@@ -2,7 +2,36 @@
 
 COmparaison de CLassIfication par rapport à une référence COmmune
 
+# Installation
+
+Ce code utilise conda pour l'installation de l'environnement python (et suppose
+qu'une version de conda existe sur l'ordinateur sur lequel on veut installer le
+programme)
+
+Sous windows :
+    * lancer `Anaconda Prompt`
+    * y exectuer`install.bat`
+
+Sous linux :
+    * lancer un terminal
+    * y executer `make install`
+
+Note : Sous linux, on utilise mamba pour gérer l'environnement conda.
+Pour installer micromamba, voir https://mamba.readthedocs.io/en/latest/micromamba-installation.html#umamba-install
+
 # Usage
+Sous Windows : lancer `Anaconda Prompt`
+Sous Linux : lancer un terminal
+
+Dans les 2 cas :
+
+Activer l'environnement conda :
+```bash
+conda activate coclico
+```
+
+Lancer l'utilitaire avec la commande suivante :
+
 ```bash
 python coclico.main \
     --c1 <C1> \

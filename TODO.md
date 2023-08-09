@@ -1,7 +1,8 @@
 ## Todo
 
 - deploiement: fonctionnel sous windows
-  - fichier .bat update.bat (install & update basé sur mamba update)
+  - done : install.bat basé sur conda update
+  - todo : fichier .bat update.bat (install & update basé sur mamba update)
 
 - Mise en GPAO
   - Test de la GPAO
