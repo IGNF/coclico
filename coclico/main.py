@@ -1,20 +1,22 @@
 from pathlib import Path
 import logging
 import pandas as pd
-from typing import List, Dict
-from collections import Counter
+from typing import List, Dict, Tuple
 import pdal
+import numpy as np
 
 
-def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Counter:
-    """Count points on las file ()
+def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
+    """Count points on las file for all classes that are in class_weights keys
 
     Args:
-        las_file (Path): _description_
+        las_file (Path): path to the las file on which to generate mpap0 intrinsic metric
+        class_weights (Dict): class weights dict (to know for which classes to generate the count)
 
     Returns:
-        Counter: _description_
+        Dict: count for each class in class_weights keys
     """
+
     # TODO: replace with function imported from pdaltools
     # (pdaltools.count_occurences.count_occurences_for_attribute import compute_count_one_file)
     # not done yet as this module is not accessible from outside the library
@@ -24,24 +26,70 @@ def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Counte
     raw_counts = pipeline.metadata["metadata"]["filters.stats"]["statistic"][0]["counts"]
     split_counts = [c.split("/") for c in raw_counts]
 
-    points_counts = Counter({str(int(float(value))): int(count) for value, count in split_counts})
+    points_counts = dict({str(int(float(value))): int(count) for value, count in split_counts})
     # get results only for classes that are in weights dictionary
-    out_counts = Counter({int(k): v for k, v in points_counts.items() if class_weights.get(int(k), 0) > 0})
+    out_counts = dict({k: points_counts.get(str(k), 0) for k in class_weights.keys()})
 
     return out_counts
 
 
-def compute_metric_relative_mpap0(pts_counts_ci, pts_counts_ref):
-    logging.warning("Not implemented yet")
-    diff_points_counts = Counter({0: 0.2, 1: 0.1})
+def compute_metric_relative_mpap0(pts_counts_ci: Dict, pts_counts_ref: Dict) -> Dict:
+    all_keys = set(list(pts_counts_ci.keys()) + list(pts_counts_ref.keys()))
+    counts_absolute_diff = {k: np.abs(pts_counts_ci.get(k, 0) - pts_counts_ref.get(k, 0)) for k in all_keys}
 
-    return diff_points_counts
+    return counts_absolute_diff
 
 
-def compute_note_mpap0(score):
-    logging.warning("Not implemented yet")
-    note = Counter({0: 0, 1: 1})
-    return note
+def bounded_affine_function(coordinates_min: Tuple, coordinates_max: Tuple, x_query: float) -> float:
+    """Compute clamped affine function
+               max ________ or ______min
+              /                         \\
+             /                           \\
+    _____min/                             \\max________
+
+    Args:
+        coordinates_min (Tuple): (x, y) tuple for the first point with the lowest x value
+        coordinates_max (Tuple): (x, y) tuple for the first point with the highest x value
+        x_query (float): query value
+
+    Returns:
+        float: _description_
+    """
+
+    x_min, y_min = coordinates_min
+    x_max, y_max = coordinates_max
+
+    if x_query < x_min:
+        y_query = y_min
+
+    elif x_query > x_max:
+        y_query = y_max
+
+    else:
+        # affine function y = a*x + b
+        a = (y_max - y_min) / (x_max - x_min)
+        b = y_min - a * x_min
+
+        y_query = a * x_query + b
+
+    return y_query
+
+
+def compute_note_mpap0(counts_absolute_diff: Dict, pts_counts_ref: Dict) -> Dict:
+    def compute_one_note(abs_diff, count):
+        if count >= 1000:
+            relative_diff = abs_diff / count
+            note = bounded_affine_function((0, 1), (0.1, 0), relative_diff)
+        else:
+            note = bounded_affine_function((20, 1), (100, 0), abs_diff)
+
+        return note
+
+    notes = {
+        k: compute_one_note(counts_absolute_diff[k], pts_counts_ref.get(k, 0)) for k in counts_absolute_diff.keys()
+    }
+
+    return notes
 
 
 def compare_one_tile_mpap0(
@@ -54,7 +102,7 @@ def compare_one_tile_mpap0(
     points_counts_ref = compute_metric_intrisic_mpap0(ref / tile_fn, class_weights)
 
     score = compute_metric_relative_mpap0(points_counts_ci, points_counts_ref)
-    note = compute_note_mpap0(score)
+    note = compute_note_mpap0(score, points_counts_ref)
     data = [{"tile": tile_stem, "class": cl, metric_name: note[cl]} for cl in class_weights.keys()]
     df = pd.DataFrame(data)
     df.to_csv(out_file, index=False)
@@ -166,7 +214,7 @@ def compute_weighted_result(stats_df: pd.DataFrame, weights: Dict) -> pd.DataFra
                 if len(val.index) != 1:
                     raise ValueError(
                         f"No or several values found for statistic={group['statistic'].iloc[0]}, "
-                        + "class={cl}, metric={metric}. ({val.values})"
+                        + f"class={cl}, metric={metric}. ({val.values})"
                     )
                 res += weights[metric][cl] * val.values[0]
 

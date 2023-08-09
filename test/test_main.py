@@ -5,7 +5,6 @@ import pandas as pd
 from typing import List, Callable
 import numpy as np
 import shutil
-from collections import Counter
 import pytest
 
 
@@ -43,8 +42,8 @@ def download_file(remote_file: Path, local_file: Path):
 
 
 def download_data():
-    test1 = Path("./data/test1")  
-    [(test1 / sub_dir).mkdir(parents=True, exist_ok=True) for sub_dir in ["ref", "niv1", "niv2", "niv3", "niv4"] ]
+    test1 = Path("./data/test1")
+    [(test1 / sub_dir).mkdir(parents=True, exist_ok=True) for sub_dir in ["ref", "niv1", "niv2", "niv3", "niv4"]]
 
     for file in files:
         local_file = local_path / file
@@ -56,7 +55,7 @@ def setup_module():
     tmp_path = Path("./tmp")
     if tmp_path.is_dir():
         shutil.rmtree(tmp_path)
-    
+
     if not (Path("./data").is_dir()):
         download_data()
 
@@ -170,16 +169,42 @@ def test_compute_metric_intrisic_mpap0_test1():
     las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
     counter = main.compute_metric_intrisic_mpap0(las_file, class_weights={0: 1, 1: 1, 2: 0, 6: 2})
     print(counter)
-    assert counter == Counter({1: 543, 6: 4743})
+    assert counter == dict({0: 0, 1: 543, 2: 103791, 6: 4743})
 
 
-@pytest.mark.skip(reason="Not implemented yet")
 def test_compute_metric_relative_mpap0_toy():
-    count_c1 = Counter({1: 12, 2: 20})
-    count_ref = Counter({1: 10, 2: 20})
+    count_c1 = dict({1: 12, 2: 20, 3: 2})
+    count_ref = dict({1: 10, 2: 20, 4: 2})
     score = main.compute_metric_relative_mpap0(count_c1, count_ref)
-    assert score == Counter({1: 0.2, 2: 0})
-    # Inconnue : et si on a pas de points ref: division par 0 !
+    assert score == dict({1: 2, 2: 0, 3: 2, 4: 2})
+
+
+affine_func_data = [
+    ((1, 3), (2, 1), [(0, 3), (1, 3), (1.5, 2), (1.75, 1.5), (2, 1), (3, 1)]),
+    ((1, 0), (5, 2), [(-1, 0), (1, 0), (2, 0.5), (4, 1.5), (5, 2), (12, 2)]),
+]
+
+
+@pytest.mark.parametrize("coord_min,coord_max,queries", affine_func_data)
+def test_bounded_affine_function(coord_min, coord_max, queries):
+    for x_query, y_query in queries:
+        assert main.bounded_affine_function(coord_min, coord_max, x_query) == y_query
+
+
+note_mpap0_data = [
+    ({}, {}, {}),  # limit case
+    ({0: 0, 1: 50, 2: 300}, {0: 1000, 1: 1000, 2: 2000}, {0: 1, 1: 0.5, 2: 0}),  # cases over 1000 ref points
+    (
+        {0: 10, 1: 60, 2: 100, 3: 500},
+        {1: 100, 2: 200, 3: 100},
+        {0: 1, 1: 0.5, 2: 0, 3: 0},
+    ),  # cases under 1000 ref points
+]
+
+
+@pytest.mark.parametrize("diff,counts_ref,expected", note_mpap0_data)
+def test_compute_note_mpap0_toy(diff, counts_ref, expected):
+    assert main.compute_note_mpap0(diff, counts_ref) == expected
 
 
 def test_compare_one_tile_mpap0_test1():

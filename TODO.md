@@ -12,8 +12,8 @@
 ## première métrique MPAP0 (métrique point à point): np point par class dans C1 / ref
   - ok un csv rempli avec des fausses notes par dalle
   - ok génération du compte de point (metrique intrinèque)
-  - todo : comparaison entre les comptes de points (score / metric relative)
-  - todo : note à partir de la métrique relative
+  - ok : comparaison entre les comptes de points (score / metric relative)
+  - ok : note à partir de la métrique relative
 
 ## Merge des dalles et des métriques
     - done : merge les différentes métriques / classes /dalles dans un grand csv
