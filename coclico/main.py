@@ -3,12 +3,30 @@ import logging
 import pandas as pd
 from typing import Dict
 import yaml
+import argparse
 
 from coclico.metrics.mpap0 import compare_one_tile_mpap0
 import coclico.tools.results_merging as merge
 
 
 METRICS = {"mpap0": compare_one_tile_mpap0, "mpap0_test": compare_one_tile_mpap0}
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="COmparaison de CLassIfication par rapport à une référence COmmune")
+    parser.add_argument("--c1", type=Path, help="Dossier C1 contenant une des classifications à comparer")
+    parser.add_argument("--c2", type=Path, help="Dossier C2 contenant l'autre classifications à comparer")
+    parser.add_argument("--ref", type=Path, help="Dossier contenant la classification de référence")
+    parser.add_argument("--out", type=Path, help="Dossier de sortie de la comparaison")
+    parser.add_argument(
+        "--weights_file",
+        type=Path,
+        default=Path("./configs/metrics_weights.yaml"),
+        help="(Optionel) Fichier yaml contenant les poids pour chaque classe/métrique "
+        + "si on veut utiliser d'autres valeurs que le défaut",
+    )
+
+    return parser.parse_args()
 
 
 def compare_to_ref(ci: Path, ref: Path, out: Path, metric_weights: Dict):
@@ -76,3 +94,8 @@ def compare(c1: Path, c2: Path, ref: Path, out: Path, weights_file: Path = Path(
 
     merge.merge_stats([stats_c1, stats_c2], result_by_metric_file)
     merge.merge_weighted_results([result_c1, result_c2], result_file)
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    compare(args.c1, args.c2, args.ref, args.out, args.weights_file)

@@ -2,6 +2,7 @@ from coclico import main
 from pathlib import Path
 import shutil
 import pytest
+import subprocess as sp
 
 from test.utils import check_df_exists_with_no_empty_data
 
@@ -76,3 +77,18 @@ def test_compare_test1_fail(ensure_test1_data):
     weights_file = Path("./test/configs/metrics_weights_fail.yaml")
     with pytest.raises(ValueError):
         main.compare(c1, c2, ref, out, weights_file)
+
+
+def test_run_cli_test1(ensure_test1_data):
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / Path("test1/compare_cli")
+    weights_file = Path("./test/configs/metrics_weights_test.yaml")
+    cmd = f"""python -m coclico.main \
+        --c1 {str(c1)} \
+        --c2 {str(c2)} \
+        --ref {str(ref)} \
+        --out {str(out)} \
+        --weights_file {str(weights_file)}"""
+    sp.run(cmd, shell=True, check=True)
