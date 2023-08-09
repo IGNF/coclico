@@ -4,6 +4,7 @@ import pandas as pd
 from typing import List, Callable
 import numpy as np
 import shutil
+import pytest
 
 from test.utils import check_df_exists_with_no_empty_data
 
@@ -109,7 +110,7 @@ def test_compare_to_ref_test1(ensure_test1_data):
     c1 = Path("./data/test1/niv1/")
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / Path("test1/niv1/compare_to_ref.csv")
-    metrics_weights = {"metric1": {0: 1, 1: 2}, "metric2": {0: 1, 1: 2}}
+    metrics_weights = {"mpap0": {0: 1, 1: 2}, "mpap0_test": {0: 1, 1: 2}}
     out.parent.mkdir(parents=True, exist_ok=True)
     nb_classes = 2
     tiles = [f.stem for f in ref.iterdir() if f.name.lower().endswith(("las", "laz"))]
@@ -188,7 +189,7 @@ def test_compute_stats_toy():
         assert not (np.all(df.result[df.statistic == s] == 0))
 
 
-def test_compare_test1(ensure_test1_data):
+def test_compare_test1_default(ensure_test1_data):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
@@ -204,3 +205,33 @@ def test_compare_test1(ensure_test1_data):
     check_df_exists_with_no_empty_data(result_by_metric_file)
     result_file = out / "result.csv"
     check_df_exists_with_no_empty_data(result_file)
+
+
+def test_compare_test1_w_weights(ensure_test1_data):
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / Path("test1/compare_w_weights")
+    weights_file = Path("./test/configs/metrics_weights_test.yaml")
+
+    main.compare(c1, c2, ref, out, weights_file)
+
+    result_by_tile_c1_file = out / "c1" / "result_by_tile.csv"
+    check_df_exists_with_no_empty_data(result_by_tile_c1_file)
+    result_by_tile_c2_file = out / "c2" / "result_by_tile.csv"
+    check_df_exists_with_no_empty_data(result_by_tile_c2_file)
+    result_by_metric_file = out / "result_by_metric.csv"
+    result_by_metric = check_df_exists_with_no_empty_data(result_by_metric_file)
+    assert set(result_by_metric["metric"]) == set(["mpap0", "mpap0_test"])
+    result_file = out / "result.csv"
+    check_df_exists_with_no_empty_data(result_file)
+
+
+def test_compare_test1_fail(ensure_test1_data):
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / Path("test1/compare_fail")
+    weights_file = Path("./test/configs/metrics_weights_fail.yaml")
+    with pytest.raises(ValueError):
+        main.compare(c1, c2, ref, out, weights_file)

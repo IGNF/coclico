@@ -2,17 +2,20 @@ from pathlib import Path
 import logging
 import pandas as pd
 from typing import List, Dict
+import yaml
 
 from coclico.metrics.mpap0 import compare_one_tile_mpap0
+
+
+METRICS = {"mpap0": compare_one_tile_mpap0, "mpap0_test": compare_one_tile_mpap0}
 
 
 def compare_to_ref(ci: Path, ref: Path, out: Path, metric_weights: Dict):
     logging.debug(f"Compare Ci: {ci} to Ref: {ref} in out {out}")
     out_dir = out.parent
-    metrics = {"metric1": compare_one_tile_mpap0, "metric2": compare_one_tile_mpap0}
     tiles_filenames = [f.name for f in ref.iterdir() if f.name.lower().endswith(("las", "laz"))]
     merged_df = pd.DataFrame(columns=["tile", "class"])
-    for metric_name, metric_fn in metrics.items():
+    for metric_name, metric_fn in METRICS.items():
         if metric_name in metric_weights.keys():
             metric_out = out_dir / metric_name
             # exist_ok = false in order to force working from clean directory
@@ -136,7 +139,22 @@ def merge_weighted_results(weighted_results: List[pd.Series], out: Path):
     df.to_csv(out, index=False)
 
 
-def compare(c1: Path, c2: Path, ref: Path, out: Path):
+def read_metrics_weights(weights_file: str) -> Dict:
+    with open(weights_file, "r") as f:
+        weights = yaml.safe_load(f)
+
+    # basic check for potential malformations of the weights file
+    if not set(weights.keys()).issubset(set(METRICS.keys())):
+        raise ValueError(
+            f"Metrics in {weights_file}: {list(weights.keys())} do not match expected metrics: {list(METRICS.keys())}"
+        )
+
+    # assert set(weights.keys()) == set(metrics)
+
+    return weights
+
+
+def compare(c1: Path, c2: Path, ref: Path, out: Path, weights_file: Path = Path("./configs/metrics_weights.yaml")):
     """Main function to compare 2 classification (c1, c2) with respect to a reference
     classification (ref) and save it as json files in out.
     This funcion works on folders containing las files.
@@ -152,7 +170,7 @@ def compare(c1: Path, c2: Path, ref: Path, out: Path):
     result_by_tile_c2_file = out / "c2" / "result_by_tile.csv"
     result_by_metric_file = out / "result_by_metric.csv"
     result_file = out / "result.csv"
-    metrics_weights = {"metric1": {0: 1, 1: 2}, "metric2": {0: 1, 1: 0}}
+    metrics_weights = read_metrics_weights(weights_file)
     out.mkdir(parents=True, exist_ok=True)
 
     compare_to_ref(c1, ref, result_by_tile_c1_file, metrics_weights)

@@ -19,7 +19,7 @@
     - done : merge les différentes métriques / classes /dalles dans un grand csv
     - done : stats sur l'ensemble des dalles pour chaque métrique en csv
     - done : notes pondérées à partir des stats pour chaque métrique / classe en csv
-    - todo : donner les poids des différentes classes / des différentes métriques (dans un fichier de config?)
+    - done : donner les poids des différentes classes / des différentes métriques (dans un fichier de config?)
 
 
 ## Nommage
