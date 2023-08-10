@@ -19,7 +19,7 @@ def test_compare_to_ref_test1(ensure_test1_data):
     c1 = Path("./data/test1/niv1/")
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / Path("test1/niv1/compare_to_ref.csv")
-    metrics_weights = {"mpap0": {0: 1, 1: 2}, "mpap0_test": {0: 1, 1: 2}}
+    metrics_weights = {"mpap0": {"0": 1, "1,2": 2}, "mpap0_test": {"0": 1, "1,2": 2}}
     out.parent.mkdir(parents=True, exist_ok=True)
     nb_classes = 2
     tiles = [f.stem for f in ref.iterdir() if f.name.lower().endswith(("las", "laz"))]

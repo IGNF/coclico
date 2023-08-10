@@ -15,13 +15,19 @@
   - ok génération du compte de point (metrique intrinèque)
   - ok : comparaison entre les comptes de points (score / metric relative)
   - ok : note à partir de la métrique relative
+  - ok: regroupement de classes 3, 4, 5
 
 ## Merge des dalles et des métriques
     - done : merge les différentes métriques / classes /dalles dans un grand csv
     - done : stats sur l'ensemble des dalles pour chaque métrique en csv
     - done : notes pondérées à partir des stats pour chaque métrique / classe en csv
     - done : donner les poids des différentes classes / des différentes métriques (dans un fichier de config?)
+    - todo: merge avec des résultats précédents
+    - todo : fonctionner avec des classes différentes pour chaque métrique
 
+## paramétrisation
+    - done : donner les poids des différentes classes / des différentes métriques (dans un fichier de config?)
+    - est-ce qu'on sort les paramètres de calcul des notes pour que l'utilisateur puisse les changer ? Est-ce qu'on les laisse en dur dans le code ?
 
 ## Nommage
 

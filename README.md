@@ -20,6 +20,9 @@ Note : Sous linux, on utilise mamba pour gérer l'environnement conda.
 Pour installer micromamba, voir https://mamba.readthedocs.io/en/latest/micromamba-installation.html#umamba-install
 
 # Usage
+
+## Commande
+
 Sous Windows : lancer `Anaconda Prompt`
 
 Sous Linux : lancer un terminal
@@ -34,7 +37,7 @@ conda activate coclico
 Lancer l'utilitaire avec la commande suivante :
 
 ```bash
-python coclico.main \
+python -m coclico.main \
     --c1 <C1> \
     --c2 <C2> \
     --ref <REF> \
@@ -50,6 +53,35 @@ options:
   --out OUT             Dossier de sortie de la comparaison
   --weights_file WEIGHTS_FILE
                         (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on veut utiliser d'autres valeurs que le défaut (les valeurs par défaut sont dans `configs/metrics_weights.yaml`)
+
+## Fichier des poids pour chaque classes (weights_file)
+
+Le fichier des poids pour chaque classe / métrique est un fichier `yaml` du type :
+
+```yaml
+metric1:
+  "1": 1
+  "2": 2
+  "3,4": 2
+
+metric2:
+  "1": 1
+  "2": 0
+  "3,4": 2
+```
+
+Au premier niveau : les métriques, qui doivent correspondre aux clés du dictionnaire `METRICS`
+décrit dans `coclico/main.py`
+
+Au 2e niveau : les classes
+Chaque clé de classe peut contenir (placé entre guillemets):
+* un nom de classe
+* ou un sous-ensemble des classes contenues dans les fichiers LAS séparées par une virgule (`,`).
+Dans ce cas, c'est dans le code de chaque métrique qu'est décidée la façon de regrouper les classes
+(eg. somme du compte des points sur l'ensemble des classes pour MPAP0)
+
+
+
 
 # Contribuer
 

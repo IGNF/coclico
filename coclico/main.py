@@ -55,6 +55,8 @@ def compare_to_ref(ci: Path, ref: Path, out: Path, metric_weights: Dict):
 def read_metrics_weights(weights_file: str) -> Dict:
     with open(weights_file, "r") as f:
         weights = yaml.safe_load(f)
+        logging.info(f"Loaded weights from {weights_file}:")
+        logging.info(weights)
 
     # basic check for potential malformations of the weights file
     if not set(weights.keys()).issubset(set(METRICS.keys())):
