@@ -1,7 +1,8 @@
 ## Todo
 
 - deploiement: fonctionnel sous windows
-  - fichier .bat update.bat (install & update basé sur mamba update)
+  - done : install.bat basé sur conda update
+  - todo : fichier .bat update.bat (install & update basé sur mamba update)
 
 - Mise en GPAO
   - Test de la GPAO
@@ -19,6 +20,7 @@
     - done : merge les différentes métriques / classes /dalles dans un grand csv
     - done : stats sur l'ensemble des dalles pour chaque métrique en csv
     - done : notes pondérées à partir des stats pour chaque métrique / classe en csv
+    - done : donner les poids des différentes classes / des différentes métriques (dans un fichier de config?)
 
 
 ## Nommage
