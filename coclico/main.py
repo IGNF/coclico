@@ -15,7 +15,7 @@ METRICS = {"mpap0": compare_one_tile_mpap0, "mpap0_test": compare_one_tile_mpap0
 def parse_args():
     parser = argparse.ArgumentParser(description="COmparaison de CLassIfication par rapport à une référence COmmune")
     parser.add_argument("--c1", type=Path, help="Dossier C1 contenant une des classifications à comparer")
-    parser.add_argument("--c2", type=Path, help="Dossier C2 contenant l'autre classifications à comparer")
+    parser.add_argument("--c2", type=Path, help="Dossier C2 contenant l'autre classification à comparer")
     parser.add_argument("--ref", type=Path, help="Dossier contenant la classification de référence")
     parser.add_argument("--out", type=Path, help="Dossier de sortie de la comparaison")
     parser.add_argument(
