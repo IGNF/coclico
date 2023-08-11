@@ -1,7 +1,9 @@
+from client import worker
+import logging
 import pandas as pd
-
-
 from pathlib import Path
+import requests
+import socket
 
 
 def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:
@@ -15,6 +17,36 @@ def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:
         pd.DataFrame: read dataframe
     """
     assert (f).is_file()
-    df = pd.read_csv(f)
+    df = pd.read_csv(f, dtype={"class": str})
     assert not df.isnull().values.any()
     return df
+
+
+def hostname():
+    return socket.gethostname()
+
+
+def execute_gpao_client(tags: str = "docker", num_thread: int = 1):
+    """Execute a GPAO client on this host"""
+    parameters = {
+        "url_api": worker.GPAO_API_URL,
+        "hostname": hostname(),
+        "tags": tags,
+        "autostart": "2",
+        "mode_exec_and_quit": True,
+        "suffix": "",
+    }
+    worker.exec_multiprocess(num_thread, parameters)
+
+
+def delete_projects_starting_with(project_name: str):
+    """Delete all projects that have this name"""
+    response = worker.send_request(worker.GPAO_API_URL + "projects", "GET")
+    id_list = []
+    if response and response.json():
+        for proj in response.json():
+            if proj["project_name"].startswith(project_name):
+                proj_id = proj["project_id"]
+                id_list.append(proj_id)
+    json_ids = {"ids": id_list}
+    response = requests.delete(worker.GPAO_API_URL + "projects/delete", json=json_ids)

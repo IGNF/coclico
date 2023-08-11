@@ -1,5 +1,6 @@
 FROM mambaorg/micromamba:latest as mamba_pdal
 COPY environment.yml /environment.yml
+USER root
 RUN micromamba env create -n coclico -f /environment.yml
 
 

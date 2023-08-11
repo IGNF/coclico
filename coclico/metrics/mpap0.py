@@ -4,9 +4,15 @@ import pandas as pd
 import pdal
 
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
+import argparse
+import json
+from gpao_utils.utils_store import Store
+
+from gpao.job import Job
 
 from coclico.metrics.commons import bounded_affine_function
+from coclico._version import __version__
 
 
 def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
@@ -73,11 +79,53 @@ def compute_note_mpap0(counts_absolute_diff: Dict, pts_counts_ref: Dict) -> Dict
     return notes
 
 
+def create_job_one_tile_mpap0(
+    ci: Path,
+    ref: Path,
+    out: Path,
+    tile_fn: str,
+    class_weights: Dict,
+    store: Store,
+    metric_name: str = "mpap0",
+) -> List[Job]:
+    """_summary_
+
+    Args:
+        ci (Path): Path to the classified pointclouds folder (on the local machine)
+        ref (Path): Path to the reference pointclouds folder (on the local machine)
+        out (Path): Path to the output csv files folder (on the local machine)
+        tile_fn (str): filename of the tile
+        class_weights (Dict): class weights dictionary (to know on which classes to run the metric)
+        metric_name (str, optional): metric name (to display in the csv file). Defaults to "mpap0".
+
+    Returns:
+        List[Job]: _description_
+    """
+    command = f"""
+    docker run -t --rm --userns=host --shm-size=2gb
+    -v {store.to_unix(ci)}:/ci
+    -v {store.to_unix(ref)}:/ref
+    -v {store.to_unix(out)}:/out
+    lidar_hd/coclico:{__version__}
+    python -m coclico.metrics.mpap0
+    --ci "/ci"
+    --ref "/ref"
+    --out "/out"
+    --tile_filename {tile_fn}
+    --class_weights '{json.dumps(class_weights)}'
+    --metric_name {metric_name}
+    """
+    job = Job(f"{tile_fn.split('.')[0]}_{metric_name}", command, tags=["docker"])
+
+    return [job]
+
+
 def compare_one_tile_mpap0(
     ci: Path, ref: Path, out: Path, tile_fn: str, class_weights: Dict, metric_name: str = "mpap0"
 ):
     logging.debug(f"Compare Ci: {ci} to Ref: {ref} in out {out} for metric MPAP0")
     tile_stem = Path(tile_fn).stem
+    out.mkdir(parents=True, exist_ok=True)
     out_file = out / (tile_stem + ".csv")
     points_counts_ci = compute_metric_intrisic_mpap0(ci / tile_fn, class_weights)
     points_counts_ref = compute_metric_intrisic_mpap0(ref / tile_fn, class_weights)
@@ -87,3 +135,22 @@ def compare_one_tile_mpap0(
     data = [{"tile": tile_stem, "class": cl, metric_name: note[cl]} for cl in class_weights.keys()]
     df = pd.DataFrame(data)
     df.to_csv(out_file, index=False)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser("Run mpap0 metric on one tile")
+    parser.add_argument("--ci", type=Path, help="Path to the folder containing the classification to compare")
+    parser.add_argument("--ref", type=Path, help="Path to the folder containing the reference point cloud")
+    parser.add_argument("--out", type=Path, help="Path to the folder to save the metric csv")
+    parser.add_argument("--tile_filename", type=str, help="Filename of the tile on which to compute the metric")
+    parser.add_argument(
+        "--class_weights", type=json.loads, help="Dictionary of the classes weights for the metric (as a string)"
+    )
+    parser.add_argument("--metric_name", type=str, help="Name of the metric (as displayed in the csv)")
+
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    compare_one_tile_mpap0(args.ci, args.ref, args.out, args.tile_filename, args.class_weights, args.metric_name)
