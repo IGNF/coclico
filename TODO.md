@@ -26,8 +26,8 @@
     - todo : fonctionner avec des classes différentes pour chaque métrique
 
 ## paramétrisation
-    - done : donner les poids des différentes classes / des différentes métriques (dans un fichier de config?)
-    - est-ce qu'on sort les paramètres de calcul des notes pour que l'utilisateur puisse les changer ? Est-ce qu'on les laisse en dur dans le code ?
+    - done : donner les poids des différentes classes / des différentes métriques (dans un fichier de config)
+    - todo : est-ce qu'on sort les paramètres de calcul des notes pour que l'utilisateur puisse les changer ? Est-ce qu'on les laisse en dur dans le code ? (pour le moment dans le code)
 
 ## Nommage
 
