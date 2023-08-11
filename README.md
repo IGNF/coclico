@@ -80,9 +80,6 @@ Chaque clé de classe peut contenir (placé entre guillemets):
 Dans ce cas, c'est dans le code de chaque métrique qu'est décidée la façon de regrouper les classes
 (eg. somme du compte des points sur l'ensemble des classes pour MPAP0)
 
-
-
-
 # Contribuer
 
 Ce dépôt utiliser des pre-commits pour le formattage du code.
