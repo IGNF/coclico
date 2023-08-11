@@ -55,6 +55,7 @@ def compare_to_ref(ci: Path, ref: Path, out: Path, metric_weights: Dict):
 def read_metrics_weights(weights_file: str) -> Dict:
     with open(weights_file, "r") as f:
         weights = yaml.safe_load(f)
+        logging.info(f"Loaded weights from {weights_file}:")
 
     # basic check for potential malformations of the weights file
     if not set(weights.keys()).issubset(set(METRICS.keys())):
@@ -62,7 +63,14 @@ def read_metrics_weights(weights_file: str) -> Dict:
             f"Metrics in {weights_file}: {list(weights.keys())} do not match expected metrics: {list(METRICS.keys())}"
         )
 
-    return weights
+    # remove spaces from classes keys
+    weights_clean = dict()
+    for metric, value in weights.items():
+        metric_dict = {k.replace(" ", ""): v for k, v in value.items()}
+        weights_clean[metric] = metric_dict
+    logging.info(weights_clean)
+
+    return weights_clean
 
 
 def compare(c1: Path, c2: Path, ref: Path, out: Path, weights_file: Path = Path("./configs/metrics_weights.yaml")):

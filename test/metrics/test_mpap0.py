@@ -16,25 +16,38 @@ def setup_module():
 
 def test_compute_metric_intrisic_mpap0_test1(ensure_test1_data):
     las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
-    counter = coclico.metrics.mpap0.compute_metric_intrisic_mpap0(las_file, class_weights={0: 1, 1: 1, 2: 0, 6: 2})
+    class_weights = dict(
+        {
+            "0": 1,
+            "1": 1,
+            "2": 0,  # simple classes
+            "3,4,5": 1,  # composed class
+            "3 , 4": 2,  # composed class with spaces
+        }
+    )
+    counter = coclico.metrics.mpap0.compute_metric_intrisic_mpap0(las_file, class_weights=class_weights)
     print(counter)
-    assert counter == dict({0: 0, 1: 543, 2: 103791, 6: 4743})
+    assert counter == dict({"0": 0, "1": 543, "2": 103791, "3,4,5": 1625 + 3145 + 31074, "3 , 4": 1625 + 3145})
 
 
 def test_compute_metric_relative_mpap0_toy():
-    count_c1 = dict({1: 12, 2: 20, 3: 2})
-    count_ref = dict({1: 10, 2: 20, 4: 2})
+    count_c1 = dict({"1": 12, "2": 20, "3,4": 2})
+    count_ref = dict({"1": 10, "2": 20, "5": 2})
     score = coclico.metrics.mpap0.compute_metric_relative_mpap0(count_c1, count_ref)
-    assert score == dict({1: 2, 2: 0, 3: 2, 4: 2})
+    assert score == dict({"1": 2, "2": 0, "3,4": 2, "5": 2})
 
 
 note_mpap0_data = [
     ({}, {}, {}),  # limit case
-    ({0: 0, 1: 50, 2: 300}, {0: 1000, 1: 1000, 2: 2000}, {0: 1, 1: 0.5, 2: 0}),  # cases over 1000 ref points
     (
-        {0: 10, 1: 60, 2: 100, 3: 500},
-        {1: 100, 2: 200, 3: 100},
-        {0: 1, 1: 0.5, 2: 0, 3: 0},
+        {"0": 0, "1": 50, "2,3": 300},
+        {"0": 1000, "1": 1000, "2,3": 2000},
+        {"0": 1, "1": 0.5, "2,3": 0},
+    ),  # cases over 1000 ref points
+    (
+        {"0": 10, "1": 60, "2": 100, "3,4,5": 500},
+        {"1": 100, "2": 200, "3,4,5": 100},
+        {"0": 1, "1": 0.5, "2": 0, "3,4,5": 0},
     ),  # cases under 1000 ref points
 ]
 
@@ -52,7 +65,7 @@ def test_compare_one_tile_mpap0_test1(ensure_test1_data):
     tile_stem = "tile_splitted_2818_32247"
     tile_fn = f"{tile_stem}.laz"
     out_fn = f"{tile_stem}.csv"
-    class_weights = {0: 1, 1: 2}
+    class_weights = {"0": 1, "1": 2, "2,3": 2}
     coclico.metrics.mpap0.compare_one_tile_mpap0(
         ci, ref, out, tile_fn, metric_name="mpap0_test", class_weights=class_weights
     )

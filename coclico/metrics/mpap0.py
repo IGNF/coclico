@@ -11,6 +11,8 @@ from coclico.metrics.commons import bounded_affine_function
 
 def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
     """Count points on las file for all classes that are in class_weights keys
+    In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
+    sum of the points counts of each class from the compose class (count(3) + count(4))
 
     Args:
         las_file (Path): path to the las file on which to generate mpap0 intrinsic metric
@@ -28,10 +30,21 @@ def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
     pipeline.execute()
     raw_counts = pipeline.metadata["metadata"]["filters.stats"]["statistic"][0]["counts"]
     split_counts = [c.split("/") for c in raw_counts]
+    # metadata class key is a float represented as a string with 6 trailing zeros(eg 1.000000)
+    points_counts = dict({value.split(".")[0]: int(count) for value, count in split_counts})
 
-    points_counts = dict({str(int(float(value))): int(count) for value, count in split_counts})
-    # get results only for classes that are in weights dictionary
-    out_counts = dict({k: points_counts.get(str(k), 0) for k in class_weights.keys()})
+    def merge_counts(class_key):
+        splitted_class_key = class_key.split(",")
+        count = np.sum([points_counts.get(k.strip(), 0) for k in splitted_class_key])
+
+        return count
+
+    # get results for classes that are in weights dictionary (merged if necessary)
+    out_counts = dict({k: merge_counts(k) for k in class_weights.keys()})
+
+    logging.debug(f"Class weights: {class_weights}")
+    logging.debug(f"Points counts: {points_counts}")
+    logging.debug(f"out counts: {out_counts}")
 
     return out_counts
 
