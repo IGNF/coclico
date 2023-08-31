@@ -14,10 +14,47 @@ jobs:
         contents: read
         packages: write
 
+    services:
+      database:
+        image: gpao/database:0.17.0
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+      api-gpao:
+        image: gpao/api-gpao:1.30.0
+        env:
+          PGHOST: database
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: gpao
+        ports:
+          - 8080:8080
+      monitor-gpao:
+        image: gpao/monitor-gpao:1.46.0
+        ports:
+          - 8000:8000
+
     steps:
+      - name: log GPAO database
+        shell: bash
+        run: docker logs "${{ job.services.database.id }}"
+      - name: log GPAO API
+        shell: bash
+        run: docker logs "${{ job.services.api-gpao.id }}"
+      - name: docker ps
+        shell: bash
+        run: docker ps
+      - name: test database connection
+        shell: bash
+        run: pg_isready -d gpao -h localhost -p 5432 -U postgres
+      - name: test API connection
+        shell: bash
+        run: curl http://localhost:8080/api/projects
+
       - name: Checkout branch
         uses: actions/checkout@v3
-
       # See https://github.com/marketplace/actions/setup-micromamba
       - name: install
         uses: mamba-org/setup-micromamba@v1.4.3
@@ -28,6 +65,9 @@ jobs:
           cache-downloads: true
           generate-run-shell: true
 
+      - name: make docker local
+        shell: bash
+        run: make docker-build
       - name: test
         shell: micromamba-shell {0}
         run: python -m pytest ./test -s --log-cli-level DEBUG
