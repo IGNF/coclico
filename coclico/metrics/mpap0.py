@@ -13,9 +13,39 @@ from gpao.job import Job
 
 from coclico.metrics.commons import bounded_affine_function
 from coclico._version import __version__
+from coclico.metrics.metric import Metric
 
 
-def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
+class MPAP0(Metric):
+    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
+        job_name = f"MPAP0_initrinsic_{name}_{input.stem}"
+        job = Job(job_name, f"echo {job_name}")
+        return job
+
+    def create_metric_relative_to_ref_jobs(
+        self, name: str, out_c1: Path, out_ref: Path, output: Path, c1_jobs: List[Job], ref_jobs: List[Job]
+    ) -> Job:
+        job_name = f"MPAP0_{name}_relative_to_ref"
+        job = Job(job_name, f"echo {job_name}")
+
+        [job.add_dependency(c1_job) for c1_job in c1_jobs]
+        [job.add_dependency(ref_job) for ref_job in ref_jobs]
+
+        return [job]
+
+    def create_score_jobs(
+        self, out_c1_to_ref, out_c2_to_ref, output: Path, c1_to_ref_jobs: List[Job], c2_to_ref_jobs: List[Job]
+    ) -> Job:
+        job_name = "MPAP0_score"
+        score_job = Job(job_name, f"echo {job_name}")
+
+        [score_job.add_dependency(c1_to_ref_job) for c1_to_ref_job in c1_to_ref_jobs]
+        [score_job.add_dependency(c2_to_ref_job) for c2_to_ref_job in c2_to_ref_jobs]
+
+        return [score_job]
+
+
+def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
     """Count points on las file for all classes that are in class_weights keys
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
@@ -46,7 +76,7 @@ def compute_metric_intrisic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
         return count
 
     # get results for classes that are in weights dictionary (merged if necessary)
-    out_counts = dict({k: merge_counts(k) for k in class_weights.keys()})
+    out_counts = dict({k: int(merge_counts(k)) for k in class_weights.keys()})
 
     logging.debug(f"Class weights: {class_weights}")
     logging.debug(f"Points counts: {points_counts}")
@@ -127,8 +157,8 @@ def compare_one_tile_mpap0(
     tile_stem = Path(tile_fn).stem
     out.mkdir(parents=True, exist_ok=True)
     out_file = out / (tile_stem + ".csv")
-    points_counts_ci = compute_metric_intrisic_mpap0(ci / tile_fn, class_weights)
-    points_counts_ref = compute_metric_intrisic_mpap0(ref / tile_fn, class_weights)
+    points_counts_ci = compute_metric_intrinsic_mpap0(ci / tile_fn, class_weights)
+    points_counts_ref = compute_metric_intrinsic_mpap0(ref / tile_fn, class_weights)
 
     score = compute_metric_relative_mpap0(points_counts_ci, points_counts_ref)
     note = compute_note_mpap0(score, points_counts_ref)
