@@ -1,7 +1,10 @@
+from coclico._version import __version__
+import docker
+from gpao.project import Project
+import logging
+from pathlib import Path
 import pytest
 import requests
-from pathlib import Path
-import logging
 
 
 remote_url = "https://raw.githubusercontent.com/IGNF/coclico-data/main/"
@@ -55,3 +58,39 @@ def ensure_test1_data():
         download_test1_data()
 
     yield
+
+
+@pytest.fixture(scope="session")
+def use_gpao_server():
+    client = docker.from_env()  # show running containers
+    containers_tags = [cl.image.attrs["RepoTags"] for cl in client.containers.list()]
+    containers_tags_flat = [item for sublist in containers_tags for item in sublist]
+    logging.debug(containers_tags_flat)
+
+    logging.info("Check that a gpao server is started on localhost for tests that leverage GPAO")
+    images_names = [val.split(":")[0] for val in containers_tags_flat]
+    logging.debug(images_names)
+    if not set(["gpao/monitor-gpao", "gpao/api-gpao", "gpao/database"]).issubset(images_names):
+        raise Exception(
+            "Tests with GPAO require a gpao server to run in docker images on the local machine"
+            + " None has been found. Aborting."
+        )
+
+    # Check that there is a docker image with the same version as the current one
+    logging.info("Check that there is a docker image with the same version as the current one")
+    images_list = [im.attrs["RepoTags"] for im in client.images.list()]
+    images_list_flat = [item for sublist in images_list for item in sublist]
+
+    coclico_image = f"lidar_hd/coclico:{__version__}"
+    if coclico_image not in images_list_flat:
+        logging.info(f"Docker images are: {images_list_flat}")
+        raise Exception(f"Could not find image {coclico_image} on computer. Aborting")
+    yield
+
+
+@pytest.fixture(autouse=True)
+def reset_gpao_project(tmpdir):
+    """Fixture to execute before each test is run"""
+    Project.reset()
+
+    yield  # this is where the testing happens

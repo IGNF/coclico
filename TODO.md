@@ -4,19 +4,22 @@
   - done : install.bat basé sur conda update
   - todo : fichier .bat update.bat (install & update basé sur mamba update)
 
+- ok  enregistrer fichier yaml des poids avec les résultats
+
 - Mise en GPAO
-  - générer image docker
-  
+  -  ~ok image docker (voir pbs de taille d'image)
+
   - séparer les tests qui en ont besoin des autres ?
   - une seule image docker avec ce que fait coclico directement ? +
   utilisation des images docker MNX à part par exemple ?
   ou image docker uniquement avec les différentes métriques ?
   2 codes séparés ?
+  - choisir dockerhub ou nexus
 
   - Test de la GPAO
     - Serveur GPAO en local avec docker compose
     - Client GPAO qui lance le test (verifier temps d'attente du client)
-
+    - github action avec gpao (avec séparation tests windows vs tests linux, vs tests gpao)
 
 ## première métrique MPAP0 (métrique point à point): np point par class dans C1 / ref
   - ok un csv rempli avec des fausses notes par dalle

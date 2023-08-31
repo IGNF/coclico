@@ -2,6 +2,11 @@ import pytest
 import coclico.metrics.mpap0
 import shutil
 from pathlib import Path
+from gpao_utils.utils_store import Store
+import logging
+import operator as op
+import subprocess as sp
+import json
 
 from test.utils import check_df_exists_with_no_empty_data
 
@@ -72,3 +77,45 @@ def test_compare_one_tile_mpap0_test1(ensure_test1_data):
     df = check_df_exists_with_no_empty_data(out / out_fn)
     assert set(df.columns) == set(["tile", "class", "mpap0_test"])
     assert set(df["tile"]) == set([tile_stem])
+
+
+def test_create_job_one_tile_mpap0():
+    ci = Path("local_store/ci")
+    ref = Path("local_store/ref")
+    out = Path("local_store/out")
+    tile_fn = "tile_1.las"
+    class_weights = dict(
+        {
+            "0": 1,
+            "1": 1,
+        }
+    )
+    store = Store("local_store", "win_store", "unix_store")
+    metric_name = "mpap0"
+
+    jobs = coclico.metrics.mpap0.create_job_one_tile_mpap0(ci, ref, out, tile_fn, class_weights, store, metric_name)
+    assert len(jobs) == 1
+    job_json = jobs[0].to_json()  # return a string
+    assert op.contains(job_json, "mpap0")  # check that it is running the right method
+    assert not op.contains(job_json, "local_store")  # check that the path are provided to the unix store
+    assert op.contains(job_json, "unix_store")  # check that the path are provided to the unix store
+
+
+def test_run_mpap0_cli_test1(ensure_test1_data):
+    ci = Path("./data/test1/niv1/")
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / Path("test1/test_run_mpap0_cli_test1")
+
+    tile_filename = "tile_splitted_2818_32247.laz"
+    class_weights = dict({"0": 1, "1": 1})
+    metric_name = "mpap0_test"
+    cmd = f"""python -m coclico.metrics.mpap0 \
+    --ci {ci} \
+    --ref {ref} \
+    --out {out} \
+    --tile_filename {tile_filename} \
+    --class_weights '{json.dumps(class_weights)}' \
+    --metric_name {metric_name}"""
+
+    sp.run(cmd, shell=True, check=True)
+    logging.info(cmd)
