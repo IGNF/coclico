@@ -8,7 +8,7 @@ from pathlib import Path, PurePosixPath
 from typing import Dict, List
 import yaml
 
-from coclico.metrics.mpap0 import MPAP0
+from coclico.mpap0.mpap0 import MPAP0
 from gpao.job import Job
 
 METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0}
