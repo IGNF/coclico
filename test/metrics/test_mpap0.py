@@ -19,7 +19,7 @@ def setup_module():
         shutil.rmtree(TMP_PATH)
 
 
-def test_compute_metric_intrisic_mpap0_test1(ensure_test1_data):
+def test_compute_metric_intrinsic_mpap0_test1(ensure_test1_data):
     las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
     class_weights = dict(
         {
@@ -30,7 +30,8 @@ def test_compute_metric_intrisic_mpap0_test1(ensure_test1_data):
             "3 , 4": 2,  # composed class with spaces
         }
     )
-    counter = coclico.metrics.mpap0.compute_metric_intrisic_mpap0(las_file, class_weights=class_weights)
+    counter = coclico.metrics.mpap0.compute_metric_intrinsic_mpap0(las_file, class_weights)
+
     print(counter)
     assert counter == dict({"0": 0, "1": 543, "2": 103791, "3,4,5": 1625 + 3145 + 31074, "3 , 4": 1625 + 3145})
 
@@ -45,14 +46,14 @@ def test_compute_metric_relative_mpap0_toy():
 note_mpap0_data = [
     ({}, {}, {}),  # limit case
     (
-        {"0": 0, "1": 50, "2,3": 300},
-        {"0": 1000, "1": 1000, "2,3": 2000},
-        {"0": 1, "1": 0.5, "2,3": 0},
+        {"0": 0, "1": 50, "2,3": 300},  # diff c1 to ref
+        {"0": 1000, "1": 1000, "2,3": 2000},  # count_ref (point per class)
+        {"0": 1, "1": 0.5, "2,3": 0},  # expected score
     ),  # cases over 1000 ref points
     (
-        {"0": 10, "1": 60, "2": 100, "3,4,5": 500},
-        {"1": 100, "2": 200, "3,4,5": 100},
-        {"0": 1, "1": 0.5, "2": 0, "3,4,5": 0},
+        {"0": 10, "1": 60, "2": 100, "3,4,5": 500},  # diff c1 to ref
+        {"1": 100, "2": 200, "3,4,5": 100},  # count_ref (point per class)
+        {"0": 1, "1": 0.5, "2": 0, "3,4,5": 0},  # expected score
     ),  # cases under 1000 ref points
 ]
 
