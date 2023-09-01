@@ -30,10 +30,14 @@ def test_compute_metric_intrinsic_mpap0_test1(ensure_test1_data):
             "3 , 4": 2,  # composed class with spaces
         }
     )
-    counter = coclico.metrics.mpap0.compute_metric_intrinsic_mpap0(las_file, class_weights)
+    output_json = Path("./tmp/unit_test_mpap0_intrinsic.json")
+    counter = coclico.metrics.mpap0.compute_metric_intrinsic_mpap0(las_file, class_weights, output_json)
 
-    print(counter)
-    assert counter == dict({"0": 0, "1": 543, "2": 103791, "3,4,5": 1625 + 3145 + 31074, "3 , 4": 1625 + 3145})
+    assert output_json.exists()
+    with open(output_json, "r") as openfile:
+        counter = json.load(openfile)
+        print(counter)
+        assert counter == dict({"0": 0, "1": 543, "2": 103791, "3,4,5": 1625 + 3145 + 31074, "3 , 4": 1625 + 3145})
 
 
 def test_compute_metric_relative_mpap0_toy():

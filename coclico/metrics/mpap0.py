@@ -34,17 +34,15 @@ class MPAP0(Metric):
         return [job]
 
 
-def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
-    """Count points on las file for all classes that are in class_weights keys
+def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict, output_json: Path):
+    """Count points on las file for all classes that are in class_weights keys, and save result in output_json file.
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
 
     Args:
         las_file (Path): path to the las file on which to generate mpap0 intrinsic metric
         class_weights (Dict): class weights dict (to know for which classes to generate the count)
-
-    Returns:
-        Dict: count for each class in class_weights keys
+        output_json (Path): path to output
     """
 
     # TODO: replace with function imported from pdaltools
@@ -65,13 +63,14 @@ def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
         return count
 
     # get results for classes that are in weights dictionary (merged if necessary)
-    out_counts = dict({k: merge_counts(k) for k in class_weights.keys()})
+    out_counts = dict({k: int(merge_counts(k)) for k in class_weights.keys()})
 
     logging.debug(f"Class weights: {class_weights}")
     logging.debug(f"Points counts: {points_counts}")
     logging.debug(f"out counts: {out_counts}")
 
-    return out_counts
+    with open(output_json, "w") as outfile:
+        json.dump(out_counts, outfile, indent=4)
 
 
 def compute_metric_relative_mpap0(pts_counts_ci: Dict, pts_counts_ref: Dict) -> Dict:
