@@ -16,14 +16,3 @@ class Metric:
         self, name: str, out_c1: Path, out_ref: Path, output: Path, c1_jobs: List[Job], ref_jobs: List[Job]
     ) -> List[Job]:
         raise NotImplementedError
-
-    def create_score_jobs(
-        self,
-        name: str,
-        out_c1_to_ref,
-        out_c2_to_ref,
-        output: Path,
-        c1_to_ref_jobs: List[Job],
-        c2_to_ref_jobs: List[Job],
-    ) -> Job:
-        raise NotImplementedError

@@ -21,29 +21,6 @@ def setup_module():
         shutil.rmtree(TMP_PATH)
 
 
-# def test_create_compare_to_ref_project_test1(ensure_test1_data):
-#     c1 = Path("./data/test1/niv1/")
-#     ref = Path("./data/test1/ref/")
-#     out = TMP_PATH / Path("test1/niv1/compare_to_ref.csv")
-#     metrics_weights = {"mpap0": {"0": 1, "1,2": 2}, "mpap0_test": {"0": 1, "1,2": 2}}
-#     out.parent.mkdir(parents=True, exist_ok=True)
-#     tiles = [f.stem for f in ref.iterdir() if f.name.lower().endswith(("las", "laz"))]
-#     project_name = "coclico_test_compare_to_ref_test1"
-
-#     project = main.create_compare_to_ref_project(
-#         c1, ref, out, metrics_weights, tiles, store=STORE, project_name=project_name
-#     )
-#     project_json = json.loads(project.to_json())
-
-#     assert project_json["jobs"]  # Check that project is not empty
-#     assert project_json["jobs"][-1]["name"].startswith("merge")  # Assert last job is a merge job
-#     # Check that merge job is dependant on all the previous ones
-#     assert len(project_json["jobs"][-1]["deps"]) == len(project_json["jobs"]) - 1
-#     assert len(project_json["jobs"][-1]) == len(tiles)
-
-#     logging.info(project_json)
-
-
 def read_metrics_weights_ok():
     weights_file = Path("./test/configs/metrics_weights.yaml")
     weights = main.read_metrics_weights(weights_file)

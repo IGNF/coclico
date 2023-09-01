@@ -10,7 +10,7 @@ import yaml
 
 from coclico.metrics.mpap0 import MPAP0
 
-METRICS = {"mpap0": MPAP0(), "mpap0_test": MPAP0()}
+METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0}
 
 
 def parse_args():
@@ -37,67 +37,6 @@ def parse_args():
     )
 
     return parser.parse_args()
-
-
-# def create_compare_to_ref_project(
-#     ci: Path,
-#     ref: Path,
-#     out: Path,
-#     metric_weights: Dict,
-#     tiles_filenames: List[str],
-#     store: Store,
-#     project_name: str,
-#     filename_result_by_tile: str = "result_by_tile.csv",
-# ) -> Project:
-#     """Prepare gpao projects to compare one classification folder to a reference folder based on a list of
-#     filenames
-#     It generates a csv file for each metrics for each tile (results for all classes are in the same file)
-#     in path out / {metric_name}
-#     Args:
-#         ci (Path): classified pointclouds folder
-#         ref (Path): reference pointclouds folder
-#         out (Path): output_folder
-#         metric_weights (Dict): weights of the different metrics
-#           (to know for which classes to generate the comparison)
-#         tiles_filenames (List[str]): list of filenames to know for which tile to generate the csv
-#         store (Store): Store object used to generate paths on gpao runner
-#         project_name (str): project name for gpao projects
-#         filename_result_by_tile (str, optional): filename for concatenated result by tile.
-#         Defaults to "result_by_tile.csv".
-
-#     Returns:
-#         Project: A project to send to GPAO
-#     """
-#     logging.debug(f"Compare Ci: {ci} to Ref: {ref} in out {out}")
-#     out.mkdir(parents=True, exist_ok=True)
-
-#     metrics_jobs = []
-#     for metric_name, metric_fn in METRICS.items():
-#         if metric_name in metric_weights.keys():
-#             metric_out = out / metric_name
-#             # exist_ok = false in order to force working from clean directory
-#             # to make sure that the concatenation is done only on the expected csv files
-#             metric_out.mkdir(parents=True, exist_ok=False)
-#             for tile_fn in tiles_filenames:
-#                 jobs = metric_fn(
-#                     ci,
-#                     ref,
-#                     metric_out,
-#                     tile_fn,
-#                     class_weights=metric_weights[metric_name],
-#                     store=store,
-#                     metric_name=metric_name,
-#                 )
-#                 metrics_jobs.extend(jobs)
-
-#     merge_job = results_by_tile.create_job_merge_tile_results(out, out / filename_result_by_tile, store)
-#     for job in metrics_jobs:
-#         merge_job.add_dependency(job)
-
-#     all_jobs = metrics_jobs + [merge_job]
-#     project = Project(project_name, all_jobs)
-
-#     return project
 
 
 def read_metrics_weights(weights_file: str) -> Dict:
@@ -175,67 +114,48 @@ def create_compare_projects(
 
     jobs = []
 
+    final_relative_jobs = []
+
     for metric_name, metric_class in METRICS.items():
         if metric_name in metrics_weights.keys():
-            out_c1_metric = out_c1 / metric_name
-            out_c2_metric = out_c2 / metric_name
-            out_ref_metric = out_ref / metric_name
+            out_c1_metric = out_c1 / metric_name / "intrinsic"
+            out_c1_metric.mkdir(parents=True, exist_ok=True)
 
-            ref_jobs = metric_class.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
-            c1_jobs = metric_class.create_metric_intrinsic_jobs("c1", tile_names, c1, out_c1_metric)
-            c2_jobs = metric_class.create_metric_intrinsic_jobs("c2", tile_names, c2, out_c2_metric)
+            out_c2_metric = out_c2 / metric_name / "intrinsic"
+            out_c2_metric.mkdir(parents=True, exist_ok=True)
 
-            out_c1_to_ref = out_c1_metric / "to_ref"
-            out_c1_to_ref.mkdir(parents=True, exist_ok=True)
+            out_ref_metric = out_ref / metric_name / "intrinsic"
+            out_ref_metric.mkdir(parents=True, exist_ok=True)
 
-            out_c2_to_ref = out_c2_metric / "to_ref"
-            out_c2_to_ref.mkdir(parents=True, exist_ok=True)
+            metric = metric_class()
+            ref_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
+            c1_jobs = metric.create_metric_intrinsic_jobs("c1", tile_names, c1, out_c1_metric)
+            c2_jobs = metric.create_metric_intrinsic_jobs("c2", tile_names, c2, out_c2_metric)
 
-            out_score = out / "score"
-            out_score.mkdir(parents=True, exist_ok=True)
+            out_c1_to_ref_metric = out_c1 / metric_name / "to_ref"
+            out_c1_to_ref_metric.mkdir(parents=True, exist_ok=True)
 
-            c1_to_ref_jobs = metric_class.create_metric_relative_to_ref_jobs(
-                "c1", out_c1_metric, out_ref_metric, out_c1_to_ref, c1_jobs, ref_jobs
+            out_c2_to_ref_metric = out_c2 / metric_name / "to_ref"
+            out_c2_to_ref_metric.mkdir(parents=True, exist_ok=True)
+
+            c1_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
+                "c1", out_c1_metric, out_ref_metric, out_c1_to_ref_metric, c1_jobs, ref_jobs
             )
-            c2_to_ref_jobs = metric_class.create_metric_relative_to_ref_jobs(
-                "c2", out_c2_metric, out_ref_metric, out_c2_to_ref, c2_jobs, ref_jobs
+            c2_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
+                "c2", out_c2_metric, out_ref_metric, out_c2_to_ref_metric, c2_jobs, ref_jobs
             )
 
-            score_jobs = metric_class.create_score_jobs(
-                out_c1_to_ref, out_c2_to_ref, out_score, c1_to_ref_jobs, c2_to_ref_jobs
-            )
+            final_relative_jobs.append(c1_to_ref_jobs[-1])
+            final_relative_jobs.append(c2_to_ref_jobs[-1])
 
             jobs.extend(c1_jobs)
             jobs.extend(c2_jobs)
             jobs.extend(ref_jobs)
             jobs.extend(c1_to_ref_jobs)
             jobs.extend(c2_to_ref_jobs)
-            jobs.extend(score_jobs)
 
-    return [Project(project_name, jobs)]
-
-    # project_c1 = create_compare_to_ref_project(
-    #     c1,
-    #     ref,
-    #     out_c1,
-    #     metrics_weights,
-    #     tiles_filenames=tile_names,
-    #     store=store,
-    #     project_name=f"{project_name}_c1",
-    #     filename_result_by_tile=filename_result_by_tile,
-    # )
-
-    # project_c2 = create_compare_to_ref_project(
-    #     c2,
-    #     ref,
-    #     out_c2,
-    #     metrics_weights,
-    #     tiles_filenames=tile_names,
-    #     store=store,
-    #     project_name=f"{project_name}_c2",
-    #     filename_result_by_tile=filename_result_by_tile,
-    # )
-
+    # TODO Create final job depending of jobs in array final_relative_jobs
+    # final_job = results_by_tile.create_job_merge_tile_results(out, out / filename_result_by_tile, store)
     # project_merge = merge.create_merge_all_results_project(
     #     out_c1 / filename_result_by_tile,
     #     out_c2 / filename_result_by_tile,
@@ -246,10 +166,7 @@ def create_compare_projects(
     #     project_name=f"{project_name}_merge",
     # )
 
-    # project_merge.add_dependency(project_c1)
-    # project_merge.add_dependency(project_c2)
-
-    # return [project_c1, project_c2, project_merge]
+    return [Project(project_name, jobs)]
 
 
 def compare(

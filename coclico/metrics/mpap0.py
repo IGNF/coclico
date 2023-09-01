@@ -33,17 +33,6 @@ class MPAP0(Metric):
 
         return [job]
 
-    def create_score_jobs(
-        self, out_c1_to_ref, out_c2_to_ref, output: Path, c1_to_ref_jobs: List[Job], c2_to_ref_jobs: List[Job]
-    ) -> Job:
-        job_name = "MPAP0_score"
-        score_job = Job(job_name, f"echo {job_name}")
-
-        [score_job.add_dependency(c1_to_ref_job) for c1_to_ref_job in c1_to_ref_jobs]
-        [score_job.add_dependency(c2_to_ref_job) for c2_to_ref_job in c2_to_ref_jobs]
-
-        return [score_job]
-
 
 def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
     """Count points on las file for all classes that are in class_weights keys
@@ -76,7 +65,7 @@ def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict) -> Dict:
         return count
 
     # get results for classes that are in weights dictionary (merged if necessary)
-    out_counts = dict({k: int(merge_counts(k)) for k in class_weights.keys()})
+    out_counts = dict({k: merge_counts(k) for k in class_weights.keys()})
 
     logging.debug(f"Class weights: {class_weights}")
     logging.debug(f"Points counts: {points_counts}")
