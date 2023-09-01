@@ -9,6 +9,7 @@ from typing import Dict, List
 import yaml
 
 from coclico.metrics.mpap0 import MPAP0
+from gpao.job import Job
 
 METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0}
 
@@ -154,17 +155,11 @@ def create_compare_projects(
             jobs.extend(c1_to_ref_jobs)
             jobs.extend(c2_to_ref_jobs)
 
-    # TODO Create final job depending of jobs in array final_relative_jobs
-    # final_job = results_by_tile.create_job_merge_tile_results(out, out / filename_result_by_tile, store)
-    # project_merge = merge.create_merge_all_results_project(
-    #     out_c1 / filename_result_by_tile,
-    #     out_c2 / filename_result_by_tile,
-    #     out / filename_result_by_metric,
-    #     out / filename_result,
-    #     store,
-    #     metrics_weights,
-    #     project_name=f"{project_name}_merge",
-    # )
+    final_job = Job("compute_score", "echo compute all score", final_relative_jobs)
+    jobs.append(final_job)
+    # final_job should do this :
+    # coclico.csv_manipulation.results_by_tile.create_job_merge_tile_results
+    # coclico.csv_manipulation.merge_result.create_merge_all_results_project
 
     return [Project(project_name, jobs)]
 
