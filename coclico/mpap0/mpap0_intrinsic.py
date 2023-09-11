@@ -60,6 +60,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    logging.basicConfig(format="%(message)s", level=logging.DEBUG)
     compute_metric_intrinsic_mpap0(
         las_file=Path(args.input_file), class_weights=args.class_weights, output_json=Path(args.output_file)
     )

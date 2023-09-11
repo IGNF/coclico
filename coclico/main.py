@@ -128,7 +128,8 @@ def create_compare_projects(
             out_ref_metric = out_ref / metric_name / "intrinsic"
             out_ref_metric.mkdir(parents=True, exist_ok=True)
 
-            metric = metric_class()
+            class_weights = metrics_weights[metric_name]
+            metric = metric_class(store, class_weights)
             ref_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
             c1_jobs = metric.create_metric_intrinsic_jobs("c1", tile_names, c1, out_c1_metric)
             c2_jobs = metric.create_metric_intrinsic_jobs("c2", tile_names, c2, out_c2_metric)

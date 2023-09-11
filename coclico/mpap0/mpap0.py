@@ -13,9 +13,24 @@ from coclico.metrics.metric import Metric
 
 
 class MPAP0(Metric):
+    def __init__(self, store: Store, class_weights: Dict):
+        super().__init__(store, class_weights)
+
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
         job_name = f"MPAP0_initrinsic_{name}_{input.stem}"
-        job = Job(job_name, f"echo {job_name}")
+
+        command = f"""
+docker run -t --rm --userns=host --shm-size=2gb
+-v {self.store.to_unix(input)}:/input
+-v {self.store.to_unix(output)}:/output
+lidar_hd/coclico:{__version__}
+python -m coclico.mpap0.mpap0_intrinsic
+--input_file /input
+--output_file /output/{input.stem}.json
+--class_weights '{json.dumps(self.class_weights)}'
+"""
+
+        job = Job(job_name, command)
         return job
 
     def create_metric_relative_to_ref_jobs(
