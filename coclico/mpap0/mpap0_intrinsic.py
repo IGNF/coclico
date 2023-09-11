@@ -43,6 +43,7 @@ def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict, output_j
     logging.debug(f"Points counts: {points_counts}")
     logging.debug(f"out counts: {out_counts}")
 
+    output_json.parent.mkdir(parents=True, exist_ok=True)
     with open(output_json, "w") as outfile:
         json.dump(out_counts, outfile, indent=4)
 
@@ -59,3 +60,6 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    compute_metric_intrinsic_mpap0(
+        las_file=Path(args.input_file), class_weights=args.class_weights, output_json=Path(args.output_file)
+    )

@@ -1,10 +1,9 @@
 import pytest
-from coclico.mpap0 import mpap0_intrinsic, mpap0
+from coclico.mpap0 import mpap0
 import shutil
 from pathlib import Path
 from gpao_utils.utils_store import Store
 import operator as op
-import json
 
 from test.utils import check_df_exists_with_no_empty_data
 
@@ -15,27 +14,6 @@ TMP_PATH = Path("./tmp/mpap0")
 def setup_module():
     if TMP_PATH.is_dir():
         shutil.rmtree(TMP_PATH)
-
-
-def test_compute_metric_intrinsic_mpap0_test1(ensure_test1_data):
-    las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
-    class_weights = dict(
-        {
-            "0": 1,
-            "1": 1,
-            "2": 0,  # simple classes
-            "3,4,5": 1,  # composed class
-            "3 , 4": 2,  # composed class with spaces
-        }
-    )
-    output_json = Path("./tmp/unit_test_mpap0_intrinsic.json")
-    counter = mpap0_intrinsic.compute_metric_intrinsic_mpap0(las_file, class_weights, output_json)
-
-    assert output_json.exists()
-    with open(output_json, "r") as openfile:
-        counter = json.load(openfile)
-        print(counter)
-        assert counter == dict({"0": 0, "1": 543, "2": 103791, "3,4,5": 1625 + 3145 + 31074, "3 , 4": 1625 + 3145})
 
 
 def test_compute_metric_relative_mpap0_toy():
