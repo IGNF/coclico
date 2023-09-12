@@ -11,6 +11,12 @@ def csv_num_rows(f: Path):
     return df.shape[0]
 
 
+def csv_num_col(f: Path):
+    assert f.exists()
+    df = pd.read_csv(f)
+    return df.shape[1]
+
+
 def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:
     """Check if a file exists, open it as a pandas dataframe to check that it has no empty data
     Returns the dataframe for potential further investigation

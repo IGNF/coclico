@@ -14,7 +14,7 @@ def setup_module(module):
         shutil.rmtree(TMP_PATH)
 
 
-def test_compute_metric_intrinsic_mpap0_test1(ensure_test1_data):
+def test_compute_metric_intrinsic(ensure_test1_data):
     las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
     class_weights = dict(
         {
@@ -26,7 +26,7 @@ def test_compute_metric_intrinsic_mpap0_test1(ensure_test1_data):
         }
     )
     output_json = TMP_PATH / "unit_test_mpap0_intrinsic.json"
-    counter = mpap0_intrinsic.compute_metric_intrinsic_mpap0(las_file, class_weights, output_json)
+    counter = mpap0_intrinsic.compute_metric_intrinsic(las_file, class_weights, output_json)
 
     assert output_json.exists()
     with open(output_json, "r") as openfile:
@@ -35,9 +35,9 @@ def test_compute_metric_intrinsic_mpap0_test1(ensure_test1_data):
         assert counter == dict({"0": 0, "1": 543, "2": 103791, "3,4,5": 1625 + 3145 + 31074, "3 , 4": 1625 + 3145})
 
 
-def test_run_mpap0_intrinsic_cli(ensure_test1_data):
+def test_run_main(ensure_test1_data):
     input_file = Path("./data/test1/ref/tile_splitted_2818_32247.laz")
-    output_json = TMP_PATH / "unit_test_run_mpap0_intrinsic_cli.json"
+    output_json = TMP_PATH / "unit_test_run_main_mpap0_intrinsic.json"
     class_weights = dict({"0": 1, "1": 1})
     cmd = f"""python -m coclico.mpap0.mpap0_intrinsic \
     --input_file {input_file} \

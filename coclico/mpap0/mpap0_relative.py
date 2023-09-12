@@ -45,8 +45,8 @@ def compute_metric_relative(
         ref_dir (Path): path to the reference classification directory,
                         where there are json files with the result of mpap0 intrinsic metric
         class_weights (Dict):   class weights dict
-        output_csv (Path):  path to output cvs file
-        output_csv_tile (Path):  path to output cvs file, result by tile
+        output_csv (Path):  path to output csv file
+        output_csv_tile (Path):  path to output csv file, result by tile
     """
     metric = "MPAP0_test" if test else "MPAPA0"
     total_ref_count = Counter()
@@ -55,8 +55,11 @@ def compute_metric_relative(
     for ref_file in ref_dir.iterdir():
         c1_file = c1_dir / ref_file.name
 
-        c1_count = json.load(open(c1_file, "r"))
-        ref_count = json.load(open(ref_file, "r"))
+        with open(c1_file, "r") as f:
+            c1_count = json.load(f)
+
+        with open(ref_file, "r") as f:
+            ref_count = json.load(f)
 
         abs_diff = compute_absolute_diff(c1_count, ref_count)
         note = compute_note(abs_diff, ref_count)
@@ -78,6 +81,7 @@ def compute_metric_relative(
     data = [{"class": cl, metric: total_notes.get(cl, 0)} for cl in class_weights.keys()]
     df = pd.DataFrame(data)
     df.to_csv(output_csv, index=False)
+
     logging.debug(df.to_markdown())
 
 

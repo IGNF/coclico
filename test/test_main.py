@@ -55,7 +55,7 @@ def test_create_compare_projects_test1_ok(ensure_test1_data):
     project_name = "coclico_test_compare_create_compare_projects_test1_fail"
     metrics_weights = {"mpap0": {"0": 1, "1,2": 2}, "mpap0_test": {"0": 1, "1,2": 2}}
 
-    projects = main.create_compare_projects(c1, c2, ref, out, STORE, project_name, metrics_weights)
+    projects = main.create_compare_project(c1, c2, ref, out, STORE, project_name, metrics_weights)
 
     assert len(projects) == 1
     projects_jsons = [json.loads(pr.to_json()) for pr in projects]
@@ -83,6 +83,11 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
 
     c1_to_ref = out / "c1" / "mpap0" / "to_ref" / "result.csv"
     assert tu.csv_num_rows(c1_to_ref) == 7  # 7 classes_weights
+
+    # TODO next step: Merge metrics
+    # c1_all_metrics = out / "c1" / "result_all_metrics.csv"
+    # assert tu.csv_num_rows(c1_all_metrics) == 7  # 7 classes_weights
+    # assert tu.csv_num_col(c1_all_metrics) == 3  # class, mpap0, mpap0_test
 
     # result_by_metric_file = out / "result_by_metric.csv"
     # tu.check_df_exists_with_no_empty_data(result_by_metric_file)
@@ -127,7 +132,7 @@ def test_compare_test1_w_weights(ensure_test1_data, use_gpao_server):
     tu.delete_projects_starting_with(project_name)
 
 
-def test_run_cli_test1(ensure_test1_data, use_gpao_server):
+def test_run_main_test1(ensure_test1_data, use_gpao_server):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
@@ -136,7 +141,7 @@ def test_run_cli_test1(ensure_test1_data, use_gpao_server):
     gpao_hostname = "localhost"
     runner_store_path = Path("./data").resolve()
     local_store_path = runner_store_path
-    project_name = "coclico_test_run_cli_test1"
+    project_name = "coclico_test_run_main_test1"
     cmd = f"""python -m coclico.main \
         --c1 {str(c1)} \
         --c2 {str(c2)} \

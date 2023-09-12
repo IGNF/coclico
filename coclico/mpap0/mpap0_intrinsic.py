@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict
 
 
-def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict, output_json: Path):
+def compute_metric_intrinsic(las_file: Path, class_weights: Dict, output_json: Path):
     """Count points on las file for all classes that are in class_weights keys, and save result in output_json file.
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
@@ -50,10 +50,13 @@ def compute_metric_intrinsic_mpap0(las_file: Path, class_weights: Dict, output_j
 
 def parse_args():
     parser = argparse.ArgumentParser("Run mpap0 metric on one tile")
-    parser.add_argument("--input_file", type=Path, help="Path to the LAS file")
-    parser.add_argument("--output_file", type=Path, help="Path to the JSON output file")
+    parser.add_argument("--input_file", type=Path, required=True, help="Path to the LAS file")
+    parser.add_argument("--output_file", type=Path, required=True, help="Path to the JSON output file")
     parser.add_argument(
-        "--class_weights", type=json.loads, help="Dictionary of the classes weights for the metric (as a string)"
+        "--class_weights",
+        type=json.loads,
+        required=True,
+        help="Dictionary of the classes weights for the metric (as a string)",
     )
     return parser.parse_args()
 
@@ -61,6 +64,6 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     logging.basicConfig(format="%(message)s", level=logging.DEBUG)
-    compute_metric_intrinsic_mpap0(
+    compute_metric_intrinsic(
         las_file=Path(args.input_file), class_weights=args.class_weights, output_json=Path(args.output_file)
     )
