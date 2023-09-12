@@ -67,7 +67,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
     total_abs_diff = compute_absolute_diff(total_c1_count, total_ref_count)
     total_notes = compute_note(total_abs_diff, total_ref_count)
 
-    new_line = [{"tile": "all", "class": cl, "MPAP0": total_notes[cl]} for cl in class_weights.keys()]
+    new_line = [{"tile": "all", "class": cl, "MPAP0": total_notes.get(cl, 0)} for cl in class_weights.keys()]
     data.extend(new_line)
 
     output_csv.parent.mkdir(parents=True, exist_ok=True)

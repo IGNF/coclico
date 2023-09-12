@@ -62,11 +62,6 @@ def test_create_compare_projects_test1_ok(ensure_test1_data):
     for pr_json in projects_jsons:
         assert len(pr_json["jobs"]) > 0  # No empty projects
         assert pr_json["name"].startswith(project_name)
-    # Assert both comparison projects have the same number of jobs
-    # assert len(projects_jsons[0]["jobs"]) == len(projects_jsons[1]["jobs"])
-    # # Assert that the merge project has one job with correct dependencies
-    # assert len(projects_jsons[2]["jobs"]) == 1
-    # assert len(projects_jsons[2]["deps"]) == 2
 
 
 def test_compare_test1_default(ensure_test1_data, use_gpao_server):
@@ -83,10 +78,10 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
 
-    # result_by_tile_c1_file = out / "c1" / "result_by_tile.csv"
-    # tu.check_df_exists_with_no_empty_data(result_by_tile_c1_file)
-    # result_by_tile_c2_file = out / "c2" / "result_by_tile.csv"
-    # tu.check_df_exists_with_no_empty_data(result_by_tile_c2_file)
+    expected_row_to_ref = (4 + 1) * 7  # (4 files + 1 total) * 7 classes_weights
+    c1_to_ref_csv_file = out / "c1" / "mpap0" / "to_ref" / "output.csv"
+    assert tu.csv_num_rows(c1_to_ref_csv_file) == expected_row_to_ref
+
     # result_by_metric_file = out / "result_by_metric.csv"
     # tu.check_df_exists_with_no_empty_data(result_by_metric_file)
     # result_file = out / "result.csv"
@@ -111,10 +106,12 @@ def test_compare_test1_w_weights(ensure_test1_data, use_gpao_server):
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
 
-    # result_by_tile_c1_file = out / "c1" / "result_by_tile.csv"
-    # tu.check_df_exists_with_no_empty_data(result_by_tile_c1_file)
-    # result_by_tile_c2_file = out / "c2" / "result_by_tile.csv"
-    # tu.check_df_exists_with_no_empty_data(result_by_tile_c2_file)
+    expected_row_to_ref = (4 + 1) * 3  # (4 files + 1 total) * 3 classes_weights
+    c1_to_ref_csv_file = out / "c1" / "mpap0" / "to_ref" / "output.csv"
+    assert tu.csv_num_rows(c1_to_ref_csv_file) == expected_row_to_ref
+    c2_to_ref_csv_file = out / "c2" / "mpap0" / "to_ref" / "output.csv"
+    assert tu.csv_num_rows(c2_to_ref_csv_file) == expected_row_to_ref
+
     # result_by_metric_file = out / "result_by_metric.csv"
     # result_by_metric = tu.check_df_exists_with_no_empty_data(result_by_metric_file)
     # assert set(result_by_metric["metric"]) == set(["mpap0", "mpap0_test"])

@@ -6,7 +6,7 @@ import subprocess as sp
 from pathlib import Path
 import shutil
 import pytest
-import pandas as pd
+from test import utils
 
 TMP_PATH = Path("./tmp/mpap0")
 
@@ -46,21 +46,12 @@ def test_compute_note(diff, counts_ref, expected):
 def test_compute_metric_relative():
     c1_dir = Path("./data/mpap0/c1/intrinsic")
     ref_dir = Path("./data/mpap0/ref/intrinsic")
-    class_weights = dict(
-        {
-            "1": 1,
-            "2": 0,  # simple classes
-            "3,4,5": 1,  # composed class
-        }
-    )
+    class_weights = dict({"1": 1, "2": 0, "3,4,5": 1, "9": 1})  # simple classes  # composed class
     output_csv = TMP_PATH / "relative" / "output.csv"
     mpap0_relative.compute_metric_relative(c1_dir, ref_dir, class_weights, output_csv)
 
-    assert output_csv.exists()
-    df = pd.read_csv(output_csv)
-    num_lines = df.shape[0]
-    expected_rows = (4 + 1) * 3  # (4 files + total) * 3 classes
-    assert num_lines == expected_rows
+    expected_rows = (4 + 1) * 4  # (4 files + total) * 4 classes
+    assert utils.csv_num_rows(output_csv) == expected_rows
 
 
 def test_run_main():
@@ -78,8 +69,5 @@ def test_run_main():
     sp.run(cmd, shell=True, check=True)
     logging.info(cmd)
 
-    assert output_csv.exists()
-    df = pd.read_csv(output_csv)
-    num_lines = df.shape[0]
     expected_rows = (4 + 1) * 2  # (4 files + total) * 2 classes
-    assert num_lines == expected_rows
+    assert utils.csv_num_rows(output_csv) == expected_rows
