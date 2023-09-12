@@ -1,5 +1,3 @@
-import numpy as np
-
 from pathlib import Path
 from typing import Dict, List
 import json
@@ -7,7 +5,6 @@ from gpao_utils.utils_store import Store
 
 from gpao.job import Job
 
-from coclico.metrics.commons import bounded_affine_function
 from coclico._version import __version__
 from coclico.metrics.metric import Metric
 
@@ -43,30 +40,6 @@ python -m coclico.mpap0.mpap0_intrinsic
         [job.add_dependency(ref_job) for ref_job in ref_jobs]
 
         return [job]
-
-
-def compute_metric_relative_mpap0(pts_counts_ci: Dict, pts_counts_ref: Dict) -> Dict:
-    all_keys = set(list(pts_counts_ci.keys()) + list(pts_counts_ref.keys()))
-    counts_absolute_diff = {k: np.abs(pts_counts_ci.get(k, 0) - pts_counts_ref.get(k, 0)) for k in all_keys}
-
-    return counts_absolute_diff
-
-
-def compute_note_mpap0(counts_absolute_diff: Dict, pts_counts_ref: Dict) -> Dict:
-    def compute_one_note(abs_diff, count):
-        if count >= 1000:
-            relative_diff = abs_diff / count
-            note = bounded_affine_function((0, 1), (0.1, 0), relative_diff)
-        else:
-            note = bounded_affine_function((20, 1), (100, 0), abs_diff)
-
-        return note
-
-    notes = {
-        k: compute_one_note(counts_absolute_diff[k], pts_counts_ref.get(k, 0)) for k in counts_absolute_diff.keys()
-    }
-
-    return notes
 
 
 def create_job_one_tile_mpap0(

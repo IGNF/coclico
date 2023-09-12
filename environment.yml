@@ -6,6 +6,7 @@ dependencies:
   - conda-forge:pdal==2.5.*
   - conda-forge:python-pdal==3.2.*
   - pandas
+  - tabulate
   - requests
   - pytest
   - pysimplegui  # required for ign-gpao-utils
