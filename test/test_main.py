@@ -78,9 +78,11 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
 
-    expected_row_to_ref = (4 + 1) * 7  # (4 files + 1 total) * 7 classes_weights
-    c1_to_ref_csv_file = out / "c1" / "mpap0" / "to_ref" / "output.csv"
-    assert tu.csv_num_rows(c1_to_ref_csv_file) == expected_row_to_ref
+    c1_to_ref_tile = out / "c1" / "mpap0" / "to_ref" / "result_tile.csv"
+    assert tu.csv_num_rows(c1_to_ref_tile) == 4 * 7  # 4 files * 7 classes_weights
+
+    c1_to_ref = out / "c1" / "mpap0" / "to_ref" / "result.csv"
+    assert tu.csv_num_rows(c1_to_ref) == 7  # 7 classes_weights
 
     # result_by_metric_file = out / "result_by_metric.csv"
     # tu.check_df_exists_with_no_empty_data(result_by_metric_file)
@@ -106,11 +108,15 @@ def test_compare_test1_w_weights(ensure_test1_data, use_gpao_server):
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
 
-    expected_row_to_ref = (4 + 1) * 3  # (4 files + 1 total) * 3 classes_weights
-    c1_to_ref_csv_file = out / "c1" / "mpap0" / "to_ref" / "output.csv"
-    assert tu.csv_num_rows(c1_to_ref_csv_file) == expected_row_to_ref
-    c2_to_ref_csv_file = out / "c2" / "mpap0" / "to_ref" / "output.csv"
-    assert tu.csv_num_rows(c2_to_ref_csv_file) == expected_row_to_ref
+    c1_to_ref_tile = out / "c1" / "mpap0" / "to_ref" / "result_tile.csv"
+    assert tu.csv_num_rows(c1_to_ref_tile) == 4 * 3  # 4 files * 3 classes_weights
+    c1_to_ref = out / "c1" / "mpap0" / "to_ref" / "result.csv"
+    assert tu.csv_num_rows(c1_to_ref) == 3  # 3 classes_weights
+
+    c2_to_ref_tile = out / "c2" / "mpap0" / "to_ref" / "result_tile.csv"
+    assert tu.csv_num_rows(c2_to_ref_tile) == 4 * 3  # 4 files * 3 classes_weights
+    c2_to_ref = out / "c2" / "mpap0" / "to_ref" / "result.csv"
+    assert tu.csv_num_rows(c2_to_ref) == 3  # 3 classes_weights
 
     # result_by_metric_file = out / "result_by_metric.csv"
     # result_by_metric = tu.check_df_exists_with_no_empty_data(result_by_metric_file)

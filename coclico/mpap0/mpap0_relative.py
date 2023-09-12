@@ -31,7 +31,9 @@ def compute_note(abs_diff: Dict, ref_count: Dict) -> Dict:
     return notes
 
 
-def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, output_csv: Path):
+def compute_metric_relative(
+    c1_dir: Path, ref_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path, test=False
+):
     """Count points on las file from c1 classification, for all classes, relative to reference classification.
     Compute also a score depending on class_weights keys, and save result in output_csv file.
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
@@ -43,9 +45,10 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
         ref_dir (Path): path to the reference classification directory,
                         where there are json files with the result of mpap0 intrinsic metric
         class_weights (Dict):   class weights dict
-        output_csv (Path):  path to output
+        output_csv (Path):  path to output cvs file
+        output_csv_tile (Path):  path to output cvs file, result by tile
     """
-
+    metric = "MPAP0_test" if test else "MPAPA0"
     total_ref_count = Counter()
     total_c1_count = Counter()
     data = []
@@ -61,16 +64,18 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
         total_ref_count += Counter(ref_count)
         total_c1_count += Counter(c1_count)
 
-        new_line = [{"tile": ref_file.stem, "class": cl, "MPAP0": note[cl]} for cl in class_weights.keys()]
+        new_line = [{"tile": ref_file.stem, "class": cl, metric: note[cl]} for cl in class_weights.keys()]
         data.extend(new_line)
+
+    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    df = pd.DataFrame(data)
+    df.to_csv(output_csv_tile, index=False)
+    logging.debug(df.to_markdown())
 
     total_abs_diff = compute_absolute_diff(total_c1_count, total_ref_count)
     total_notes = compute_note(total_abs_diff, total_ref_count)
 
-    new_line = [{"tile": "all", "class": cl, "MPAP0": total_notes.get(cl, 0)} for cl in class_weights.keys()]
-    data.extend(new_line)
-
-    output_csv.parent.mkdir(parents=True, exist_ok=True)
+    data = [{"class": cl, metric: total_notes.get(cl, 0)} for cl in class_weights.keys()]
     df = pd.DataFrame(data)
     df.to_csv(output_csv, index=False)
     logging.debug(df.to_markdown())
@@ -93,7 +98,10 @@ def parse_args():
         type=Path,
         help="Path to the reference directory, where there are json files with the result of mpap0 intrinsic metric",
     )
-    parser.add_argument("-o", "--output_csv", required=True, type=Path, help="Path to the CSV output file")
+    parser.add_argument("--output_csv", required=True, type=Path, help="Path to the CSV output file")
+    parser.add_argument(
+        "--output_csv_tile", required=True, type=Path, help="Path to the CSV output file, result by tile"
+    )
     parser.add_argument(
         "-w",
         "--class_weights",
@@ -101,6 +109,7 @@ def parse_args():
         type=json.loads,
         help="Dictionary of the classes weights for the metric (as a string)",
     )
+    parser.add_argument("-t", "--test", action="store_true", help="Test mode (for dev only)")
     return parser.parse_args()
 
 
@@ -112,4 +121,6 @@ if __name__ == "__main__":
         ref_dir=Path(args.ref_dir),
         class_weights=args.class_weights,
         output_csv=Path(args.output_csv),
+        output_csv_tile=Path(args.output_csv_tile),
+        test=args.test,
     )

@@ -8,10 +8,10 @@ from pathlib import Path, PurePosixPath
 from typing import Dict, List
 import yaml
 
-from coclico.mpap0.mpap0 import MPAP0
+from coclico.mpap0.mpap0 import MPAP0, MPAP0_test
 from gpao.job import Job
 
-METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0}
+METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0_test}
 
 
 def parse_args():

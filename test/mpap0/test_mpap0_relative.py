@@ -47,10 +47,15 @@ def test_compute_metric_relative():
     c1_dir = Path("./data/mpap0/c1/intrinsic")
     ref_dir = Path("./data/mpap0/ref/intrinsic")
     class_weights = dict({"1": 1, "2": 0, "3,4,5": 1, "9": 1})  # simple classes  # composed class
-    output_csv = TMP_PATH / "relative" / "output.csv"
-    mpap0_relative.compute_metric_relative(c1_dir, ref_dir, class_weights, output_csv)
+    output_csv = TMP_PATH / "relative" / "result.csv"
+    output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
 
-    expected_rows = (4 + 1) * 4  # (4 files + total) * 4 classes
+    mpap0_relative.compute_metric_relative(c1_dir, ref_dir, class_weights, output_csv, output_csv_tile)
+
+    expected_rows = 4 * 4  # 4 files * 4 classes
+    assert utils.csv_num_rows(output_csv_tile) == expected_rows
+
+    expected_rows = 4  # 4 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
 
 
@@ -58,16 +63,22 @@ def test_run_main():
     c1_dir = Path("./data/mpap0/c1/intrinsic")
     ref_dir = Path("./data/mpap0/ref/intrinsic")
     output_csv = TMP_PATH / "unit_test_run_main_mpap0_relative.csv"
+    output_csv_tile = TMP_PATH / "unit_test_run_main_mpap0_relative_tile.csv"
     class_weights = dict({"1": 1, "2": 1})
     cmd = f"""python -m coclico.mpap0.mpap0_relative \
         --input_dir {c1_dir} \
         --ref_dir {ref_dir} \
         --class_weights '{json.dumps(class_weights)}' \
         --output_csv {output_csv} \
+        --output_csv_tile {output_csv_tile} \
+        -t
     """
 
     sp.run(cmd, shell=True, check=True)
     logging.info(cmd)
 
-    expected_rows = (4 + 1) * 2  # (4 files + total) * 2 classes
+    expected_rows = 4 * 2  # 4 files * 2 classes
+    assert utils.csv_num_rows(output_csv_tile) == expected_rows
+
+    expected_rows = 2  # 2 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
