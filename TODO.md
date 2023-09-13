@@ -1,56 +1,53 @@
 ## Todo
 
-- deploiement: fonctionnel sous windows
-  - done : install.bat basé sur conda update
-  - todo : fichier .bat update.bat (install & update basé sur mamba update)
+### Programme utilisable
 
-- ok  enregistrer fichier yaml des poids avec les résultats
+- Publier l'image Dockerhub
+  - Revérifier le code (chemin privé), qui devient public
+  - via Github Action, quand on fait un tag
+  
+- Fonctionnel sous windows
+  - install.bat basé sur MAMBA update
+  - example.bat
 
-- Mise en GPAO
-  -  ~ok image docker (voir pbs de taille d'image)
+- Environnement de Dev:
+  - Script Ansible
+  - Verifier à la main, que l'example fonctionne
 
-  - séparer les tests qui en ont besoin des autres ?
-  - une seule image docker avec ce que fait coclico directement ? +
-  utilisation des images docker MNX à part par exemple ?
-  ou image docker uniquement avec les différentes métriques ?
-  2 codes séparés ?
-  - choisir dockerhub ou nexus
+### Archi et première métrique MPAP0
 
-  - Test de la GPAO
-    - Serveur GPAO en local avec docker compose
-    - Client GPAO qui lance le test (verifier temps d'attente du client)
-    - github action avec gpao (avec séparation tests windows vs tests linux, vs tests gpao)
-
-## première métrique MPAP0 (métrique point à point): np point par class dans C1 / ref
-  - ok un csv rempli avec des fausses notes par dalle
-  - ok génération du compte de point (metrique intrinèque)
-  - ok : comparaison entre les comptes de points (score / metric relative)
-  - ok : note à partir de la métrique relative
-  - ok: regroupement de classes 3, 4, 5
+- Merger les scores de chaque classification: Notes pondérées à partir des résultats pour chaque métrique / classe en csv
+- Merge avec des résultats précédents (pour plus tard)
+- Fonctionner avec des classes différentes pour chaque métrique
+  - ajouter un test avec un fichier de config dans lequel : Une classe qui définie pour une métrique, mais pas dans une autre métrique.
 
 
-# seconde metrique
-  - realiser une seconde metrique
-  - pense à supprimer la metric Mpap0_test. et nettoyage dans la class Map0 (parametre à la création, option -t dans le main le mpap0 relative)
+### Tests
+  
+  - Faire un test sous Windows (executé par une VM Windows)
+  
+  - Séparer les tests qui utilisent la GPAO (conftest.py run slow, ou plutôt run_gpao)
 
-## Merge des dalles et des métriques
-    - done : merge les différentes métriques / classes /dalles dans un grand csv
-    - done : stats sur l'ensemble des dalles pour chaque métrique en csv
-    - done : notes pondérées à partir des stats pour chaque métrique / classe en csv
-    - done : donner les poids des différentes classes / des différentes métriques (dans un fichier de config?)
-    - todo: merge avec des résultats précédents
-    - todo : fonctionner avec des classes différentes pour chaque métrique
+  - Test en GPAO: vérifier le timeout du client
 
-## paramétrisation
-    - done : donner les poids des différentes classes / des différentes métriques (dans un fichier de config)
-    - todo : est-ce qu'on sort les paramètres de calcul des notes pour que l'utilisateur puisse les changer ? Est-ce qu'on les laisse en dur dans le code ? (pour le moment dans le code)
 
-## Nommage
+### Seconde métrique
+  - Réaliser une seconde métrique
+  - Penser à supprimer la metric Mpap0_test. et nettoyage dans la class Map0 (parametre à la création, option -t dans le main le mpap0 relative)
+
+
+
+### Poposition
+    - Est-ce qu'on sort les paramètres de calcul des notes pour que l'utilisateur puisse les changer ?
+
+
+### Nommage
 
 MetricIntrinsic (C1)
 
 MetricRelative (C1 / Ref)
 
-Score (= comparaison)
+Note (C1 / Ref)
 
-Note (= visible par l'utilisateur)
+Score (1 seule Note pour C1 / Ref ( Note pondérée, par classe, par metrique))
+
