@@ -8,8 +8,8 @@
   - [] tester l'image avant de publier sur github (implique d'isoler les tests qui doivent tourner dans l'image docker)
 
 - Fonctionnel sous windows
-  - install.bat basé sur MAMBA update
-  - example.bat
+  - [x] install.bat basé sur MAMBA update
+  - [] example.bat
 
 - Environnement de Dev:
   - Script Ansible
