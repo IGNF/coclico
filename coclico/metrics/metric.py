@@ -1,9 +1,15 @@
 from gpao.job import Job
 from typing import List
 from pathlib import Path
+from gpao_utils.utils_store import Store
+from typing import Dict
 
 
 class Metric:
+    def __init__(self, store: Store, class_weights: Dict):
+        self.store = store
+        self.class_weights = class_weights
+
     def create_metric_intrinsic_jobs(
         self, name: str, tile_names: List[str], input_path: Path, out_path: Path
     ) -> List[Job]:

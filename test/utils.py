@@ -1,9 +1,20 @@
 from client import worker
-import logging
 import pandas as pd
 from pathlib import Path
 import requests
 import socket
+
+
+def csv_num_rows(f: Path):
+    assert f.exists()
+    df = pd.read_csv(f)
+    return df.shape[0]
+
+
+def csv_num_col(f: Path):
+    assert f.exists()
+    df = pd.read_csv(f)
+    return df.shape[1]
 
 
 def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:

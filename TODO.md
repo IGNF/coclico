@@ -28,6 +28,11 @@
   - ok : note à partir de la métrique relative
   - ok: regroupement de classes 3, 4, 5
 
+
+# seconde metrique
+  - realiser une seconde metrique
+  - pense à supprimer la metric Mpap0_test. et nettoyage dans la class Map0 (parametre à la création, option -t dans le main le mpap0 relative)
+
 ## Merge des dalles et des métriques
     - done : merge les différentes métriques / classes /dalles dans un grand csv
     - done : stats sur l'ensemble des dalles pour chaque métrique en csv

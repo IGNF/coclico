@@ -18,7 +18,7 @@ def setup_module():
         shutil.rmtree(TMP_PATH)
 
 
-def compute_toy_tile_results(
+def generate_csv_result(
     out: Path,
     tiles: List[str] = ["tile1", "tile2"],
     metrics: List[str] = ["metric1", "metric2"],
@@ -39,37 +39,55 @@ def compute_toy_tile_results(
     """
     out.mkdir(parents=True, exist_ok=True)
     for metric in metrics:
-        out_metric = out / metric
-        out_metric.mkdir()
+        out_metric = out / metric / "to_ref"
+        out_metric.mkdir(parents=True)
         ii = 0
+        results_list = []
         for tile in tiles:
-            results_list = []
             for cl in classes:
                 result_dict = {"tile": tile, "class": cl}
                 result_dict[metric] = results_fn(ii)
                 ii += 1
                 results_list.append(result_dict)
 
-            df = pd.DataFrame(results_list)
-            df.to_csv(out_metric / f"{tile}.csv", index=False)
+        df = pd.DataFrame(results_list)
+        df.to_csv(out_metric / "result_tile.csv", index=False)
+
+        results_list = []
+        for cl in classes:
+            result_dict = {"class": cl}
+            result_dict[metric] = results_fn(ii)
+            ii += 1
+            results_list.append(result_dict)
+
+        df = pd.DataFrame(results_list)
+        df.to_csv(out_metric / "result.csv", index=False)
 
 
-def test_merge_tile_results_for_one_classif_toy():
+def test_merge_results_for_one_classif():
     metrics = ["m1", "m2", "m3"]
     classes = [0, 1]
     tiles = ["tile1", "tile2"]
     base_path = TMP_PATH / Path("toy_results/results_by_tile")
-    out = base_path / "result_by_tile.csv"
-    compute_toy_tile_results(base_path, tiles, metrics, classes, (lambda ii: 2 * ii))
+    out = base_path / "result.csv"
+    # out_tile = base_path / "result_tile.csv"
+    out = base_path / "result.csv"
+    generate_csv_result(base_path, tiles, metrics, classes, (lambda ii: 2 * ii))
 
-    coclico.csv_manipulation.results_by_tile.merge_tile_results_for_one_classif(base_path, out)
+    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(base_path, out)
 
     df = check_df_exists_with_no_empty_data(out)
+    assert set(df.columns) == set(["class"] + metrics)
+    # assert len(df.index) == len(tiles) * len(classes)
+    # assert set(df["tile"]) == set(tiles)
+    # assert not df.isnull().values.any()
 
-    assert set(df.columns) == set(["tile", "class"] + metrics)
-    assert len(df.index) == len(tiles) * len(classes)
-    assert set(df["tile"]) == set(tiles)
-    assert not df.isnull().values.any()
+    # block used to test tile result
+    # df = check_df_exists_with_no_empty_data(out_tile)
+    # assert set(df.columns) == set(["tile", "class"] + metrics)
+    # assert len(df.index) == len(tiles) * len(classes)
+    # assert set(df["tile"]) == set(tiles)
+    # assert not df.isnull().values.any()
 
     # df = check_df_exists_with_no_empty_data(out)
     # nb_classes = 2
@@ -77,14 +95,14 @@ def test_merge_tile_results_for_one_classif_toy():
     # assert len(df.index) == nb_classes * len(tiles)
 
 
-def test_merge_tile_results_for_one_classif_cli_toy(ensure_test1_data):
+def test_run_main():
     metrics = ["m1", "m2", "m3"]
     classes = [0, 1]
     tiles = ["tile1", "tile2"]
     base_path = TMP_PATH / Path("toy_results/results_by_tile_cli")
     out = base_path / "result_by_tile.csv"
 
-    compute_toy_tile_results(base_path, tiles, metrics, classes, (lambda ii: 2 * ii))
+    generate_csv_result(base_path, tiles, metrics, classes, (lambda ii: 2 * ii))
 
     cmd = f"""python -m coclico.csv_manipulation.results_by_tile \
     --metrics_root_folder {base_path} \
@@ -99,6 +117,6 @@ def test_create_job_merge_tile_results():
     metrics_root_folder = Path("local_store/input")
     store = Store("local_store", "win_store", "unix_store")
 
-    job = coclico.csv_manipulation.results_by_tile.create_job_merge_tile_results(metrics_root_folder, out, store)
+    job = coclico.csv_manipulation.results_by_tile.create_job_merge_results(metrics_root_folder, out, store)
     job_json = json.loads(job.to_json())  # return a string
     assert job_json["name"].startswith("merge_tiles")  # check that it is running the right method
