@@ -4,7 +4,7 @@
 
 - Publier l'image Dockerhub
   - [x] Revérifier le code (chemin privé), qui devient public
-  - [] via Github Action, quand on fait un tag
+  - [x] via Github Action, quand on fait un tag
   - [] tester l'image avant de publier sur github (implique d'isoler les tests qui doivent tourner dans l'image docker)
 
 - Fonctionnel sous windows
