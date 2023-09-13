@@ -81,7 +81,7 @@ def use_gpao_server():
     images_list = [im.attrs["RepoTags"] for im in client.images.list()]
     images_list_flat = [item for sublist in images_list for item in sublist]
 
-    coclico_image = f"lidar_hd/coclico:{__version__}"
+    coclico_image = f"ignimagelidar/coclico:{__version__}"
     if coclico_image not in images_list_flat:
         logging.info(f"Docker images are: {images_list_flat}")
         raise Exception(f"Could not find image {coclico_image} on computer. Aborting")

@@ -20,12 +20,13 @@ def parse_args():
     parser.add_argument("--ref", type=Path, help="Dossier contenant la classification de référence")
     parser.add_argument("--out", type=Path, help="Dossier de sortie de la comparaison")
     parser.add_argument("--gpao_hostname", type=str, help="Hostname du serveur GPAO")
-    parser.add_argument("--local_store_path", type=Path, help="Chemin vers le store sur le PC qui lance ce script")
+    parser.add_argument(
+        "--local_store_path", type=Path, help="Chemin vers un store commun sur le PC qui lance ce script"
+    )
     parser.add_argument(
         "--runner_store_path",
         type=PurePosixPath,
-        help="Chemin vers le store sur les clients GPAO (Unix path)",
-        default=PurePosixPath("/var/data/store-lidarhd/"),
+        help="Chemin vers un store commun sur les clients GPAO (Unix path)",
     )
     parser.add_argument("--project_name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(

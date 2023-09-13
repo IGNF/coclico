@@ -3,9 +3,10 @@
 ### Programme utilisable
 
 - Publier l'image Dockerhub
-  - Revérifier le code (chemin privé), qui devient public
-  - via Github Action, quand on fait un tag
-  
+  - [x] Revérifier le code (chemin privé), qui devient public
+  - [] via Github Action, quand on fait un tag
+  - [] tester l'image avant de publier sur github (implique d'isoler les tests qui doivent tourner dans l'image docker)
+
 - Fonctionnel sous windows
   - install.bat basé sur MAMBA update
   - example.bat
@@ -23,9 +24,9 @@
 
 
 ### Tests
-  
+
   - Faire un test sous Windows (executé par une VM Windows)
-  
+
   - Séparer les tests qui utilisent la GPAO (conftest.py run slow, ou plutôt run_gpao)
 
   - Test en GPAO: vérifier le timeout du client

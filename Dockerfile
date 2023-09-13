@@ -21,3 +21,6 @@ RUN mkdir tmp
 COPY coclico coclico
 COPY test test
 COPY configs configs
+
+# Copy test data that are stored directly in the coclico repository
+COPY data/mpap0 data/mpap0

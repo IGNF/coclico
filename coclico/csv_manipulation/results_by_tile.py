@@ -51,7 +51,7 @@ def create_job_merge_results(metrics_root_folder: Path, out: Path, store: Store,
     docker run -t --rm --userns=host --shm-size=2gb
     -v {store.to_unix(metrics_root_folder)}:/input
     -v {store.to_unix(out.parent)}:/out
-    lidar_hd/coclico:{__version__}
+    ignimagelidar/coclico:{__version__}
     python -m coclico.csv_manipulation.results_by_tile
     --metrics_root_folder /input
     --out {PurePosixPath("/out") / out.name}

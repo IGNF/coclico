@@ -11,7 +11,7 @@ install-precommit:
 # Docker
 ##############################
 
-PROJECT_NAME=lidar_hd/coclico
+PROJECT_NAME=ignimagelidar/coclico
 VERSION=`python -m coclico._version`
 
 docker-build:
@@ -22,4 +22,7 @@ docker-test:
 
 docker-remove:
 	docker rmi -f `docker images | grep ${PROJECT_NAME} | tr -s ' ' | cut -d ' ' -f 3`
+
+docker-deploy:
+	docker push ${PROJECT_NAME}:${VERSION}
 
