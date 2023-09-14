@@ -4,26 +4,24 @@ COmparaison de CLassIfication par rapport à une référence COmmune
 
 # Installation
 
-Ce code utilise conda pour l'installation de l'environnement python (et suppose
-qu'une version de conda existe sur l'ordinateur sur lequel on veut installer le
-programme)
+Ce code utilise mamba pour l'installation de l'environnement python (et suppose qu'une version de mamba ou micromamba
+existe sur l'ordinateur sur lequel on veut installer le programme)
+
+Pour installer micromamba, voir https://mamba.readthedocs.io/en/latest/micromamba-installation.html#umamba-install
 
 Sous windows :
-* lancer `Anaconda Prompt`
-* y exectuer`install.bat`
+* lancer `Anaconda Prompt` ou `Miniforge Prompt`
+* y exectuer `install_or_update.bat`
 
 Sous linux :
 * lancer un terminal
 * y executer `make install`
 
-Note : Sous linux, on utilise mamba pour gérer l'environnement conda.
-Pour installer micromamba, voir https://mamba.readthedocs.io/en/latest/micromamba-installation.html#umamba-install
-
 # Usage
 
 ## Commande
 
-Sous Windows : lancer `Anaconda Prompt`
+Sous Windows : lancer `Anaconda Prompt` / `Miniforge Prompt`
 
 Sous Linux : lancer un terminal
 
@@ -37,22 +35,32 @@ conda activate coclico
 Lancer l'utilitaire avec la commande suivante :
 
 ```bash
-python -m coclico.main \
-    --c1 <C1> \
-    --c2 <C2> \
-    --ref <REF> \
-    --out <OUT>  \
-    --weights_file <WEIGHTS_FILE>
+python -m coclico.main --c1 <C1> \
+                       --c2 <C2> \
+                       --ref <REF> \
+                       --out <OUT> \
+                       --gpao_hostname <GPAO_HOSTNAME> \
+                       --local_store_path <LOCAL_STORE_PATH> \
+                       --runner_store_path <RUNNER_STORE_PATH> \
+                       --project_name <PROJECT_NAME> \
+                       --weights_file <WEIGHTS_FILE>
 ```
-
 
 options:
   --c1 C1               Dossier C1 contenant une des classifications à comparer
   --c2 C2               Dossier C2 contenant l'autre classification à comparer
   --ref REF             Dossier contenant la classification de référence
   --out OUT             Dossier de sortie de la comparaison
+  --gpao_hostname GPAO_HOSTNAME
+                        Hostname du serveur GPAO
+  --local_store_path LOCAL_STORE_PATH
+                        Chemin vers le store sur le PC qui lance ce script
+  --runner_store_path RUNNER_STORE_PATH
+                        Chemin vers le store sur les clients GPAO (Unix path)
+  --project_name PROJECT_NAME
+                        Nom de projet pour la GPAO
   --weights_file WEIGHTS_FILE
-                        (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on veut utiliser d'autres valeurs que le défaut (les valeurs par défaut sont dans `configs/metrics_weights.yaml`)
+                        (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on veut utiliser d'autres valeurs que le défaut
 
 ## Fichier des poids pour chaque classes (weights_file)
 
