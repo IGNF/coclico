@@ -30,7 +30,7 @@ def compute_weighted_result(input: Path, weights: Dict) -> pd.DataFrame:
         pd.Dataframe: pandas Dataframe containing the weighted value for each statistic
     """
     df = pd.read_csv(input)
-    classif_name = str(input.stem).replace("_result", "")
+    classif_name = input.parent.name
     logging.debug("Score for %s", classif_name)
     res = 0
     for metric in weights.keys():
@@ -54,8 +54,8 @@ def compute_weighted_result(input: Path, weights: Dict) -> pd.DataFrame:
 def create_merge_all_results_job(
     result_ci: List[Path], result_out: Path, store: Store, metrics_weights: Dict, deps: List[Job] = None
 ) -> Job:
-    volumes = [f" -v {store.to_unix(f.parent)}:/{f.stem}\n" for f in result_ci]
-    inputs = [f" /{f.stem}/{f.name}" for f in result_ci]
+    volumes = [f" -v {store.to_unix(f.parent)}:/{f.parent.name}\n" for f in result_ci]
+    inputs = [f" /{f.parent.name}/{f.name}" for f in result_ci]
     command = f"""
     docker run -t --rm --userns=host --shm-size=2gb
     {' '.join(volumes)}
@@ -78,7 +78,7 @@ def merge_all_results(
 
     data = [
         {
-            "classification": str(input.stem).replace("_result", ""),
+            "classification": input.parent.name,
             "score": compute_weighted_result(input, metrics_weights),
         }
         for input in input_ci
