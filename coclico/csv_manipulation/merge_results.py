@@ -23,11 +23,11 @@ def compute_weighted_result(input: Path, weights: Dict) -> pd.DataFrame:
         }
 
     Args:
-        input (Path): Path to a CSV containing note for metrics for a classification
+        input (Path): path to a CSV containing note for metrics for a classification
         weights (Dict): weights to apply to the different metrics to generate the aggregated result
 
     Returns:
-        pd.Dataframe: pandas Dataframe containing the weighted value for each statistic
+        float: score for this classification
     """
     df = pd.read_csv(input)
     classif_name = input.parent.name
