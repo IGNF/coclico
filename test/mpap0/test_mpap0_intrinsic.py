@@ -5,6 +5,9 @@ import logging
 import subprocess as sp
 from pathlib import Path
 import shutil
+import pytest
+
+pytestmark = pytest.mark.docker
 
 TMP_PATH = Path("./tmp/mpap0")
 

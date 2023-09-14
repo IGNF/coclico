@@ -6,6 +6,9 @@ from pathlib import Path
 import shutil
 import subprocess as sp
 from test.utils import csv_num_rows
+import pytest
+
+pytestmark = pytest.mark.docker
 
 TMP_PATH = Path("./tmp/csv_merge_results")
 
