@@ -94,7 +94,7 @@ def parse_args():
         "--input",
         type=Path,
         nargs="+",
-        help="Path to the CSV file containing all metrics results for one classification",
+        help="Path to the CSV files containing all metrics results for one classification (separated by a whitespace)",
     )
     parser.add_argument("--result_out", type=Path, help="Path to the file to save the global weighted result")
     parser.add_argument("--metric_weights", type=json.loads, help="Dictionary of the metrics weights")
