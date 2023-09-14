@@ -72,7 +72,7 @@ def test_merge_results_for_one_classif():
     tiles = ["tile1", "tile2"]
     base_path = TMP_PATH / Path("toy_results/results_by_tile")
     out = base_path / "result.csv"
-    # out_tile = base_path / "result_tile.csv"
+    out_tile = base_path / "result_tile.csv"
     out = base_path / "result.csv"
     generate_csv_result(base_path, tiles, metrics, classes, (lambda ii: 2 * ii))
 
@@ -80,21 +80,13 @@ def test_merge_results_for_one_classif():
 
     df = check_df_exists_with_no_empty_data(out)
     assert set(df.columns) == set(["class"] + metrics)
-    # assert len(df.index) == len(tiles) * len(classes)
-    # assert set(df["tile"]) == set(tiles)
-    # assert not df.isnull().values.any()
+    assert len(df.index) == len(classes)
 
-    # block used to test tile result
-    # df = check_df_exists_with_no_empty_data(out_tile)
-    # assert set(df.columns) == set(["tile", "class"] + metrics)
-    # assert len(df.index) == len(tiles) * len(classes)
-    # assert set(df["tile"]) == set(tiles)
-    # assert not df.isnull().values.any()
-
-    # df = check_df_exists_with_no_empty_data(out)
-    # nb_classes = 2
-    #
-    # assert len(df.index) == nb_classes * len(tiles)
+    df = check_df_exists_with_no_empty_data(out_tile)
+    assert set(df.columns) == set(["tile", "class"] + metrics)
+    assert len(df.index) == len(tiles) * len(classes)
+    assert set(df["tile"]) == set(tiles)
+    assert not df.isnull().values.any()
 
 
 def test_run_main():
