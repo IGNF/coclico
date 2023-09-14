@@ -48,7 +48,7 @@ def compute_metric_relative(
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
-    metric = "MPAP0_test" if test else "MPAPA0"
+    metric = "MPAP0_test" if test else "MPAP0"
     total_ref_count = Counter()
     total_c1_count = Counter()
     data = []

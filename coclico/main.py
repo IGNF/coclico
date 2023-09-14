@@ -7,8 +7,9 @@ import logging
 from pathlib import Path, PurePosixPath
 from typing import Dict, List
 import yaml
-from coclico.csv_manipulation import results_by_tile
+from coclico.csv_manipulation import results_by_tile, merge_results
 from coclico.mpap0.mpap0 import MPAP0, MPAP0_test
+
 
 METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0_test}
 
@@ -114,9 +115,6 @@ def create_compare_project(
     out_ref = out / "ref"
 
     out.mkdir(parents=True, exist_ok=True)
-    # filename_result_by_tile = "result_by_tile.csv"
-    # filename_result_by_metric = "result_by_metric.csv"
-    # filename_result = "result.csv"
 
     # get filenames of tiles from the local machine
     tile_names = get_tile_names(ref)
@@ -166,16 +164,18 @@ def create_compare_project(
             jobs.extend(c1_to_ref_jobs)
             jobs.extend(c2_to_ref_jobs)
 
-    merge_c1_metrics = results_by_tile.create_job_merge_results(
-        out_c1, out_c1 / "c1_results_all_metrics.csv", store, deps=c1_final_relative_jobs
-    )
-    merge_c2_metrics = results_by_tile.create_job_merge_results(
-        out_c2, out_c2 / "c2_results_all_metrics.csv", store, deps=c2_final_relative_jobs
+    result1 = out_c1 / "c1_result.csv"
+    merge_c1_metrics = results_by_tile.create_job_merge_results(out_c1, result1, store, deps=c1_final_relative_jobs)
+
+    result2 = out_c2 / "c2_result.csv"
+    merge_c2_metrics = results_by_tile.create_job_merge_results(out_c2, result2, store, deps=c2_final_relative_jobs)
+
+    score_deps = [merge_c1_metrics, merge_c2_metrics]
+    score_job = merge_results.create_merge_all_results_job(
+        [result1, result2], out / "result.csv", store, metrics_weights, score_deps
     )
 
-    jobs.extend([merge_c1_metrics, merge_c2_metrics])
-
-    # coclico.csv_manipulation.merge_result.create_merge_all_results_project
+    jobs.extend([merge_c1_metrics, merge_c2_metrics, score_job])
 
     return [Project(project_name, jobs)]
 

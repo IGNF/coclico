@@ -47,12 +47,12 @@ def read_metrics_weights_different_spacing():
         assert all([cl in expected_classes for cl in val.keys()])
 
 
-def test_create_compare_projects_test1_ok(ensure_test1_data):
+def test_create_compare_project(ensure_test1_data):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
-    out = TMP_PATH / "create_compare_projects_test1_ok"
-    project_name = "coclico_test_compare_create_compare_projects_test1_fail"
+    out = TMP_PATH / "create_compare_project"
+    project_name = "coclico_test_create_compare_projects"
     metrics_weights = {"mpap0": {"0": 1, "1,2": 2}, "mpap0_test": {"0": 1, "1,2": 2}}
 
     projects = main.create_compare_project(c1, c2, ref, out, STORE, project_name, metrics_weights)
@@ -68,7 +68,7 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
-    out = TMP_PATH / Path("test1/compare")
+    out = TMP_PATH / Path("compare_test1_default")
     gpao_hostname = "localhost"
     runner_store_path = Path("./data").resolve()
     local_store_path = Path("data").resolve()
@@ -84,25 +84,14 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     c1_to_ref = out / "c1" / "mpap0" / "to_ref" / "result.csv"
     assert tu.csv_num_rows(c1_to_ref) == 7  # 7 classes_weights
 
-    # TODO next step: Merge metrics
-    # c1_all_metrics = out / "c1" / "result_all_metrics.csv"
-    # assert tu.csv_num_rows(c1_all_metrics) == 7  # 7 classes_weights
-    # assert tu.csv_num_col(c1_all_metrics) == 3  # class, mpap0, mpap0_test
-
-    # result_by_metric_file = out / "result_by_metric.csv"
-    # tu.check_df_exists_with_no_empty_data(result_by_metric_file)
-    # result_file = out / "result.csv"
-    # tu.check_df_exists_with_no_empty_data(result_file)
-    # assert (out / "gpao_project.json").is_file()
-
-    # tu.delete_projects_starting_with(project_name)  # runs only if asserts are all true
+    tu.delete_projects_starting_with(project_name)  # runs only if asserts are all true
 
 
 def test_compare_test1_w_weights(ensure_test1_data, use_gpao_server):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
-    out = TMP_PATH / Path("test1/compare_w_weights")
+    out = TMP_PATH / Path("compare_test1_w_weights")
     weights_file = Path("./test/configs/metrics_weights_test.yaml")
     gpao_hostname = "localhost"
     runner_store_path = Path("./data").resolve()
@@ -123,11 +112,12 @@ def test_compare_test1_w_weights(ensure_test1_data, use_gpao_server):
     c2_to_ref = out / "c2" / "mpap0" / "to_ref" / "result.csv"
     assert tu.csv_num_rows(c2_to_ref) == 3  # 3 classes_weights
 
-    # result_by_metric_file = out / "result_by_metric.csv"
-    # result_by_metric = tu.check_df_exists_with_no_empty_data(result_by_metric_file)
-    # assert set(result_by_metric["metric"]) == set(["mpap0", "mpap0_test"])
-    # result_file = out / "result.csv"
-    # tu.check_df_exists_with_no_empty_data(result_file)
+    c1_all_metrics = out / "c1" / "c1_result.csv"
+    assert tu.csv_num_rows(c1_all_metrics) == 3  # 3 classes_weights
+    assert tu.csv_num_col(c1_all_metrics) == 3  # class, mpap0, mpap0_test
+
+    all_scores = out / "result.csv"
+    assert tu.csv_num_rows(all_scores) == 2  # 2 classif (c1 c2)
 
     tu.delete_projects_starting_with(project_name)
 
@@ -136,7 +126,7 @@ def test_run_main_test1(ensure_test1_data, use_gpao_server):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
-    out = TMP_PATH / Path("test1/compare_cli")
+    out = TMP_PATH / Path("run_main_test1")
     weights_file = Path("./test/configs/metrics_weights_test.yaml")
     gpao_hostname = "localhost"
     runner_store_path = Path("./data").resolve()
