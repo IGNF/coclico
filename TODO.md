@@ -5,7 +5,7 @@
 - Publier l'image Dockerhub
   - [x] Revérifier le code (chemin privé), qui devient public
   - [x] via Github Action, quand on fait un tag
-  - [] tester l'image avant de publier sur github (implique d'isoler les tests qui doivent tourner dans l'image docker)
+  - [x] tester l'image avant de publier sur github (implique d'isoler les tests qui doivent tourner dans l'image docker)
 
 - Fonctionnel sous windows
   - [x] install.bat basé sur MAMBA update
@@ -27,7 +27,7 @@
 
   - Faire un test sous Windows (executé par une VM Windows)
 
-  - Séparer les tests qui utilisent la GPAO (conftest.py run slow, ou plutôt run_gpao)
+  - [x] Séparer les tests qui utilisent la GPAO (conftest.py run slow, ou plutôt run_gpao)
 
   - Test en GPAO: vérifier le timeout du client
 
