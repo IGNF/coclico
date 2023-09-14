@@ -64,11 +64,13 @@ jobs:
           cache-environment: true
           cache-downloads: true
           generate-run-shell: true
-
+      - name: test unit
+        shell: micromamba-shell {0}
+        run: python -m pytest -m "not gpao" -s --log-cli-level DEBUG
       - name: make docker local
         shell: bash
         run: make docker-build
-      - name: test
+      - name: test GPAO
         shell: micromamba-shell {0}
-        run: python -m pytest ./test -s --log-cli-level DEBUG
+        run: python -m pytest -m gpao -s --log-cli-level DEBUG
 

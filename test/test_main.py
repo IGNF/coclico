@@ -64,6 +64,7 @@ def test_create_compare_project(ensure_test1_data):
         assert pr_json["name"].startswith(project_name)
 
 
+@pytest.mark.gpao
 def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
@@ -87,6 +88,7 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     tu.delete_projects_starting_with(project_name)  # runs only if asserts are all true
 
 
+@pytest.mark.gpao
 def test_compare_test1_w_weights(ensure_test1_data, use_gpao_server):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
@@ -122,6 +124,7 @@ def test_compare_test1_w_weights(ensure_test1_data, use_gpao_server):
     tu.delete_projects_starting_with(project_name)
 
 
+@pytest.mark.gpao
 def test_run_main_test1(ensure_test1_data, use_gpao_server):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")

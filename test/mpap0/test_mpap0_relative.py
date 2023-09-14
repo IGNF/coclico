@@ -8,6 +8,8 @@ import shutil
 import pytest
 from test import utils
 
+pytestmark = pytest.mark.docker
+
 TMP_PATH = Path("./tmp/mpap0")
 
 

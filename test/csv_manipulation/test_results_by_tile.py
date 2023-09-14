@@ -6,8 +6,10 @@ import subprocess as sp
 import shutil
 from gpao_utils.utils_store import Store
 import json
-
+import pytest
 from pathlib import Path
+
+pytestmark = pytest.mark.docker
 
 
 TMP_PATH = Path("./tmp/csv_merging/results_by_tile")
