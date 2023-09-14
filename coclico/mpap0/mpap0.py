@@ -29,7 +29,7 @@ python -m coclico.mpap0.mpap0_intrinsic
 --class_weights '{json.dumps(self.class_weights)}'
 """
 
-        job = Job(job_name, command)
+        job = Job(job_name, command, tags=["docker"])
         return job
 
     def create_metric_relative_to_ref_jobs(
@@ -54,7 +54,7 @@ python -m coclico.mpap0.mpap0_relative
 {test_option}
 """
 
-        job = Job(job_name, command)
+        job = Job(job_name, command, tags=["docker"])
 
         [job.add_dependency(c1_job) for c1_job in c1_jobs]
         [job.add_dependency(ref_job) for ref_job in ref_jobs]

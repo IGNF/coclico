@@ -17,7 +17,7 @@
 
 ### Archi et première métrique MPAP0
 
-- Merger les scores de chaque classification: Notes pondérées à partir des résultats pour chaque métrique / classe en csv
+- [x] Merger les scores de chaque classification: Notes pondérées à partir des résultats pour chaque métrique / classe en csv
 - Merge avec des résultats précédents (pour plus tard)
 - Fonctionner avec des classes différentes pour chaque métrique
   - ajouter un test avec un fichier de config dans lequel : Une classe qui définie pour une métrique, mais pas dans une autre métrique.
