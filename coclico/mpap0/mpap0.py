@@ -22,7 +22,7 @@ class MPAP0(Metric):
 docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(input)}:/input
 -v {self.store.to_unix(output)}:/output
-lidar_hd/coclico:{__version__}
+ignimagelidar/coclico:{__version__}
 python -m coclico.mpap0.mpap0_intrinsic
 --input_file /input
 --output_file /output/{input.stem}.json
@@ -44,7 +44,7 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(out_c1)}:/input
 -v {self.store.to_unix(out_ref)}:/ref
 -v {self.store.to_unix(output)}:/output
-lidar_hd/coclico:{__version__}
+ignimagelidar/coclico:{__version__}
 python -m coclico.mpap0.mpap0_relative
 --input_dir /input
 --ref_dir /ref

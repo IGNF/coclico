@@ -135,7 +135,7 @@ def create_merge_all_results_project(
     -v {store.to_unix(result_by_tile_c2_in.parent)}:/input_c2
     -v {store.to_unix(result_by_metric_out.parent)}:/out_metric
     -v {store.to_unix(result_out.parent)}:/out
-    lidar_hd/coclico:{__version__}
+    ignimagelidar/coclico:{__version__}
     python -m coclico.csv_manipulation.merge_results
     --result_by_tile_c1_in {PurePosixPath("/input_c1") / result_by_tile_c1_in.name}
     --result_by_tile_c2_in {PurePosixPath("/input_c2") / result_by_tile_c2_in.name}

@@ -15,18 +15,27 @@ METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0_test}
 
 def parse_args():
     parser = argparse.ArgumentParser(description="COmparaison de CLassIfication par rapport à une référence COmmune")
-    parser.add_argument("--c1", type=Path, help="Dossier C1 contenant une des classifications à comparer")
-    parser.add_argument("--c2", type=Path, help="Dossier C2 contenant l'autre classification à comparer")
-    parser.add_argument("--ref", type=Path, help="Dossier contenant la classification de référence")
-    parser.add_argument("--out", type=Path, help="Dossier de sortie de la comparaison")
-    parser.add_argument("--gpao_hostname", type=str, help="Hostname du serveur GPAO")
-    parser.add_argument("--local_store_path", type=Path, help="Chemin vers le store sur le PC qui lance ce script")
+    parser.add_argument(
+        "--c1", type=Path, required=True, help="Dossier C1 contenant une des classifications à comparer"
+    )
+    parser.add_argument(
+        "--c2", type=Path, required=True, help="Dossier C2 contenant l'autre classification à comparer"
+    )
+    parser.add_argument("--ref", type=Path, required=True, help="Dossier contenant la classification de référence")
+    parser.add_argument("--out", type=Path, required=True, help="Dossier de sortie de la comparaison")
+    parser.add_argument(
+        "--local_store_path",
+        type=Path,
+        required=True,
+        help="Chemin vers un store commun sur le PC qui lance ce script",
+    )
     parser.add_argument(
         "--runner_store_path",
         type=PurePosixPath,
-        help="Chemin vers le store sur les clients GPAO (Unix path)",
-        default=PurePosixPath("/var/data/store-lidarhd/"),
+        help="Chemin vers un store commun sur les clients GPAO (Unix path)",
+        required=True,
     )
+    parser.add_argument("--gpao_hostname", type=str, help="Hostname du serveur GPAO", default="localhost")
     parser.add_argument("--project_name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(
         "--weights_file",
