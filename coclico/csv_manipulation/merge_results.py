@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, List
 
 
-def compute_weighted_result(input: Path, weights: Dict) -> pd.DataFrame:
+def compute_weighted_result(input: Path, weights: Dict) -> float:
     """Compute weighted sum of notes for all metrics using the weights stored in a dictionary like:
         weights = {
             "metric1": {
