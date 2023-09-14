@@ -1,4 +1,6 @@
 # dev
+
+# 0.2.0
 - refactor
 - use GPAO
 - deploy docker image on dockerhub on tags
