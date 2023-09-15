@@ -9,11 +9,8 @@ from collections import Counter
 from coclico.metrics.commons import bounded_affine_function
 
 
-def compute_absolute_diff(c1_count: Dict, ref_count: Dict) -> Dict:
-    all_keys = set(list(c1_count.keys()) + list(ref_count.keys()))
-    abs_diff = {k: np.abs(c1_count.get(k, 0) - ref_count.get(k, 0)) for k in all_keys}
-
-    return abs_diff
+def compute_absolute_diff(c1_count: Dict, ref_count: Dict, weight: Dict) -> Dict:
+    return {k: np.abs(c1_count.get(k, 0) - ref_count.get(k, 0)) for k in weight.keys()}
 
 
 def compute_note(abs_diff: Dict, ref_count: Dict) -> Dict:
@@ -61,7 +58,7 @@ def compute_metric_relative(
         with open(ref_file, "r") as f:
             ref_count = json.load(f)
 
-        abs_diff = compute_absolute_diff(c1_count, ref_count)
+        abs_diff = compute_absolute_diff(c1_count, ref_count, class_weights)
         note = compute_note(abs_diff, ref_count)
 
         total_ref_count += Counter(ref_count)
@@ -75,7 +72,7 @@ def compute_metric_relative(
     df.to_csv(output_csv_tile, index=False)
     logging.debug(df.to_markdown())
 
-    total_abs_diff = compute_absolute_diff(total_c1_count, total_ref_count)
+    total_abs_diff = compute_absolute_diff(total_c1_count, total_ref_count, class_weights)
     total_notes = compute_note(total_abs_diff, total_ref_count)
 
     data = [{"class": cl, metric: total_notes.get(cl, 0)} for cl in class_weights.keys()]
