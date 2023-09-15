@@ -2,6 +2,27 @@
 
 COmparaison de CLassIfication par rapport à une référence COmmune
 
+*Ce projet est en cours de développement*
+
+# Principe
+
+L'objectif de ce code est de pouvoir comparer les résultats de deux processus de classification de données LiDAR
+par rapport à une classification de référence.
+
+Les résultats sont comparés par le calcul de plusieurs métriques, dont sont ensuite tirés des scores compris entre
+0 et 1.
+
+Pour l'instant les métriques implémentées sont :
+* MPAP0 (Métrique point à point 0) : calcul d'une note à partir de la comparaison du nombre de points pour chaque classe
+entre le résultat et la référence
+
+Les différentes métriques associées aux différentes classes sont ensuite aggrégées à l'aide d'une somme pondérée par
+l'importance de chaque métrique pour chaque classe
+
+Ce projet utilise une infracture de gestion de production par ordinateur [IGN GPAO](https://github.com/ign-gpao)
+développée au sein de l'IGNF pour la parallélisation des calculs.
+
+
 # Installation
 
 Ce code utilise mamba pour l'installation de l'environnement python (et suppose qu'une version de mamba ou micromamba
