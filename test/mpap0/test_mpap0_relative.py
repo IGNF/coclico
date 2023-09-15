@@ -22,8 +22,8 @@ def setup_module(module):
 def test_compute_absolute_diff():
     count_c1 = dict({"1": 12, "2": 20, "3,4": 2})
     count_ref = dict({"1": 10, "2": 20, "5": 2})
-    weight = dict({"1": 1, "3,4": 1})
-    score = mpap0_relative.compute_absolute_diff(count_c1, count_ref, weight)
+    classes = ["1", "3,4"]
+    score = mpap0_relative.compute_absolute_diff(count_c1, count_ref, classes)
     assert score == dict({"1": 2, "3,4": 2})
 
 
