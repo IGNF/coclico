@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import pytest
 from test import utils
+import pandas as pd
 
 pytestmark = pytest.mark.docker
 
@@ -21,8 +22,9 @@ def setup_module(module):
 def test_compute_absolute_diff():
     count_c1 = dict({"1": 12, "2": 20, "3,4": 2})
     count_ref = dict({"1": 10, "2": 20, "5": 2})
-    score = mpap0_relative.compute_absolute_diff(count_c1, count_ref)
-    assert score == dict({"1": 2, "2": 0, "3,4": 2, "5": 2})
+    classes = ["1", "3,4"]
+    score = mpap0_relative.compute_absolute_diff(count_c1, count_ref, classes)
+    assert score == dict({"1": 2, "3,4": 2})
 
 
 note_mpap0_data = [
@@ -59,6 +61,10 @@ def test_compute_metric_relative():
 
     expected_rows = 4  # 4 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
+
+    df = pd.read_csv(output_csv)
+    mpap0_score_class_9 = df["mpap0"][df.index[df["class"] == "9"][0]]
+    assert mpap0_score_class_9 == 1  # score for class 9 is 1. Case: 0 point for classe 9 in c1 and ref.
 
 
 def test_run_main():
