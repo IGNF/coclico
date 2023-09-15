@@ -9,8 +9,8 @@ from collections import Counter
 from coclico.metrics.commons import bounded_affine_function
 
 
-def compute_absolute_diff(c1_count: Dict, ref_count: Dict, weight: Dict) -> Dict:
-    return {k: np.abs(c1_count.get(k, 0) - ref_count.get(k, 0)) for k in weight.keys()}
+def compute_absolute_diff(c1_count: Dict, ref_count: Dict, weights: Dict) -> Dict:
+    return {k: np.abs(c1_count.get(k, 0) - ref_count.get(k, 0)) for k in weights.keys()}
 
 
 def compute_note(abs_diff: Dict, ref_count: Dict) -> Dict:

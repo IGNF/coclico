@@ -64,7 +64,7 @@ def test_compute_metric_relative():
 
     df = pd.read_csv(output_csv)
     mpap0_score_class_9 = df["mpap0"][df.index[df["class"] == "9"][0]]
-    assert mpap0_score_class_9 == 1
+    assert mpap0_score_class_9 == 1  # score for class 9 is 1
 
 
 def test_run_main():
