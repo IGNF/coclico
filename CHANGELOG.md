@@ -1,4 +1,6 @@
 # dev
+
+# 0.2.1
 - mpap0: correctif metrique relative, appliquée sur la liste des classes
 
 # 0.2.0
