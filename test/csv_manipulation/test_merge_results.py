@@ -5,7 +5,7 @@ import operator as op
 from pathlib import Path
 import shutil
 import subprocess as sp
-from test.utils import csv_num_rows
+import test.utils as tu
 import pytest
 
 pytestmark = pytest.mark.docker
@@ -22,7 +22,7 @@ def test_compute_weighted_result():
     input = Path("./data/csv/c1/c1_result.csv")
     weights = {"mpap0": {"1": 1, "2": 2, "3,4": 3}, "mpap0_test": {"1": 1, "2": 2, "3,4": 3}}
     score = merge_results.compute_weighted_result(input, weights)
-    assert score == 7
+    assert score == {'classification': 'c1', 'score': 7.0, 'mpap0': 4.6, 'mpap0_test': 2.4}
 
 
 def test_merge_all_results():
@@ -30,9 +30,16 @@ def test_merge_all_results():
     input_c2 = Path("./data/csv/c2/c2_result.csv")
     weights = {"mpap0": {"0": 1, "2": 2, "3,4": 3}, "mpap0_test": {"0": 1, "2": 2, "3,4": 3}}
     result = TMP_PATH / "results_c1_c2.csv"
+    result_detailed = TMP_PATH / "results_c1_c2_by_metric.csv"
 
     merge_results.merge_all_results([input_c1, input_c2], result, weights)
-    assert csv_num_rows(result) == 2
+    df = tu.check_df_exists_with_no_empty_data(result)
+    assert len(df.index) == 2
+
+    df = tu.check_df_exists_with_no_empty_data(result_detailed)
+    assert len(df.index) == 2
+    assert set(df.columns) == set(["classification", "score"] + list(weights.keys()) )
+
 
 
 def test_run_main():
@@ -46,12 +53,12 @@ def test_run_main():
     cmd = f"""python -m coclico.csv_manipulation.merge_results \
     -i {input_c1} \
      {input_c2} \
-    --result_out {result} \
+    --output {result} \
     --metric_weights '{json.dumps(weights)}'
     """
 
     sp.run(cmd, shell=True, check=True)
-    assert csv_num_rows(result) == 2
+    assert tu.csv_num_rows(result) == 2
 
 
 def test_create_merge_all_results_job():
