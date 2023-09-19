@@ -33,7 +33,10 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
     classif_name = input.parent.name
     logging.debug("Score for %s", classif_name)
     total_score = 0
-    res_by_metric = {}
+    result = {
+        "classification": input.parent.name,
+        "score": 0
+    }
     for metric in weights.keys():
         res_metric = 0
         logging.debug("- Metric %s", metric)
@@ -47,15 +50,11 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
                 logging.debug("-- Class %s: note %s  * weight %s = %s", i_class, val, weight_metric_class, res_local)
                 res_metric += res_local
         logging.debug("-> Metric %s = %s", metric, res_metric)
-        res_by_metric[metric] = res_metric
+        result[metric] = res_metric
         total_score += res_metric
     logging.debug("=> Score %s = %s\n", classif_name, total_score)
-    result = {
-        "classification": input.parent.name,
-        "score": total_score
-    }
-    return result | res_by_metric
-
+    result["score"] = total_score
+    return result
 
 def create_merge_all_results_job(
     result_ci: List[Path], output: Path, store: Store, metrics_weights: Dict, deps: List[Job] = None
