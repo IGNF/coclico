@@ -23,13 +23,13 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
         }
 
     Args:
-        input (Path): path to a CSV containing note for metrics for a classification
+        input (Path): input CSV file, containing notes for metrics for a classification
         weights (Dict): weights to apply to the different metrics to generate the aggregated result
 
     Returns:
         score (Dict): score for this classification, and score for the metrics, in a dict like that
         result = {
-            "classification": 'c1',
+            "classification": "c1",
             "score": 7.0,
             "mpap0": 4.6,
             "mpap0_test": 2.4
@@ -65,6 +65,18 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
 def create_merge_all_results_job(
     result_ci: List[Path], output: Path, store: Store, metrics_weights: Dict, deps: List[Job] = None
 ) -> Job:
+    """Create GPAO job, that compute the score and merge all results in CSV files.
+
+    Args:
+        result_ci (List[Path]): List of CSV input files, containing all metrics results for one classification
+        output (Path): output CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be created
+        store (Store): store
+        metrics_weights (Dict): weights to apply to the different metrics to generate the aggregated result
+        deps (List[Job], optional): job dependencies. Defaults to None.
+
+    Returns:
+        Job: GPAO Job representing the merge job
+    """    
     volumes = [f" -v {store.to_unix(f.parent)}:/{f.parent.name}\n" for f in result_ci]
     inputs = [f" /{f.parent.name}/{f.name}" for f in result_ci]
     command = f"""
@@ -85,8 +97,17 @@ def merge_all_results(
     output: Path,
     metrics_weights: Dict,
 ):
-    output.parent.mkdir(parents=True, exist_ok=True)
+    """Merge the result of all classifications. Create two CSV files
+     - one with the score for all classification
+     - another containing also the score for each metric
 
+    Args:
+        input_ci (List[Path]): input CSV files, one file for each classification.
+        output (Path): ouput CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be created.
+
+        metrics_weights (Dict): weights to apply to the different metrics to generate the aggregated result
+    """    
+    output.parent.mkdir(parents=True, exist_ok=True)
     data = [
         compute_weighted_result(input, metrics_weights)
         for input in input_ci
@@ -106,9 +127,10 @@ def parse_args():
         "--input",
         type=Path,
         nargs="+",
-        help="Path to the CSV files containing all metrics results for one classification (separated by a whitespace)",
+        help="input CSV files, one file contains all metrics results for one classification",
     )
-    parser.add_argument("-o", "--output", type=Path, help="Path to the file to save the global weighted result")
+    parser.add_argument("-o", "--output", type=Path, help="""Path to the file to save the global weighted result, for all all classifications.
+Another CSV file with the same name and postfix '_by_metric.csv' will be created""")
     parser.add_argument("--metric_weights", type=json.loads, help="Dictionary of the metrics weights")
 
     return parser.parse_args()
