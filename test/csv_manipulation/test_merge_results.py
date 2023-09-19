@@ -5,7 +5,7 @@ import operator as op
 from pathlib import Path
 import shutil
 import subprocess as sp
-from test.utils import csv_num_rows, check_df_exists_with_no_empty_data
+import test.utils as tu
 import pytest
 
 pytestmark = pytest.mark.docker
@@ -33,10 +33,10 @@ def test_merge_all_results():
     result_detailed = TMP_PATH / "results_c1_c2_by_metric.csv"
 
     merge_results.merge_all_results([input_c1, input_c2], result, weights)
-    df = check_df_exists_with_no_empty_data(result)
+    df = tu.check_df_exists_with_no_empty_data(result)
     assert len(df.index) == 2
 
-    df = check_df_exists_with_no_empty_data(result_detailed)
+    df = tu.check_df_exists_with_no_empty_data(result_detailed)
     assert len(df.index) == 2
     assert set(df.columns) == set(["classification", "score"] + list(weights.keys()) )
 
@@ -58,7 +58,7 @@ def test_run_main():
     """
 
     sp.run(cmd, shell=True, check=True)
-    assert csv_num_rows(result) == 2
+    assert tu.csv_num_rows(result) == 2
 
 
 def test_create_merge_all_results_job():
