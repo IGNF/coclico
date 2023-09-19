@@ -1,5 +1,5 @@
 from coclico.csv_manipulation import merge_results
-from gpao_utils.utils_store import Store
+from gpao_utils.store import Store
 import json
 import operator as op
 from pathlib import Path
@@ -22,7 +22,7 @@ def test_compute_weighted_result():
     input = Path("./data/csv/c1/c1_result.csv")
     weights = {"mpap0": {"1": 1, "2": 2, "3,4": 3}, "mpap0_test": {"1": 1, "2": 2, "3,4": 3}}
     score = merge_results.compute_weighted_result(input, weights)
-    assert score == {'classification': 'c1', 'score': 7.0, 'mpap0': 4.6, 'mpap0_test': 2.4}
+    assert score == {"classification": "c1", "score": 7.0, "mpap0": 4.6, "mpap0_test": 2.4}
 
 
 def test_merge_all_results():
@@ -38,8 +38,7 @@ def test_merge_all_results():
 
     df = tu.check_df_exists_with_no_empty_data(result_detailed)
     assert len(df.index) == 2
-    assert set(df.columns) == set(["classification", "score"] + list(weights.keys()) )
-
+    assert set(df.columns) == set(["classification", "score"] + list(weights.keys()))
 
 
 def test_run_main():

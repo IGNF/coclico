@@ -1,7 +1,7 @@
 from gpao.job import Job
 from typing import List
 from pathlib import Path
-from gpao_utils.utils_store import Store
+from gpao_utils.store import Store
 from typing import Dict
 
 

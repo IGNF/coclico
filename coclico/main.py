@@ -2,7 +2,7 @@ import argparse
 from coclico.gpao_utils import save_projects_as_json
 from gpao.builder import Builder
 from gpao.project import Project
-from gpao_utils.utils_store import Store
+from gpao_utils.store import Store
 import logging
 from pathlib import Path, PurePosixPath
 from typing import Dict, List
@@ -211,7 +211,7 @@ def compare(
 
     logging.debug(f"Create GPAO projects to Compare C1: {c1} to Ref: {ref} AND C2:{c2} to {ref} in out {out}.")
     logging.debug(f"Use GPAO server: {gpao_hostname}")
-    store = Store(local_store_path, unix_runner_path=runner_store_path)
+    store = Store(local_store_path, unix_path=runner_store_path)
     logging.debug(f"Local store path ({local_store_path}) converted to client store path ({runner_store_path})")
 
     metrics_weights = read_metrics_weights(weights_file)
