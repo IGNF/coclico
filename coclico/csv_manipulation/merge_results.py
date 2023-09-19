@@ -1,7 +1,7 @@
 import argparse
 from coclico._version import __version__
 from gpao.job import Job
-from gpao_utils.utils_store import Store
+from gpao_utils.store import Store
 import json
 import logging
 import pandas as pd
@@ -39,10 +39,7 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
     classif_name = input.parent.name
     logging.debug("Score for %s", classif_name)
     total_score = 0
-    result = {
-        "classification": input.parent.name,
-        "score": 0
-    }
+    result = {"classification": input.parent.name, "score": 0}
     for metric in weights.keys():
         res_metric = 0
         logging.debug("- Metric %s", metric)
@@ -62,6 +59,7 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
     result["score"] = total_score
     return result
 
+
 def create_merge_all_results_job(
     result_ci: List[Path], output: Path, store: Store, metrics_weights: Dict, deps: List[Job] = None
 ) -> Job:
@@ -69,14 +67,15 @@ def create_merge_all_results_job(
 
     Args:
         result_ci (List[Path]): List of CSV input files, containing all metrics results for one classification
-        output (Path): output CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be created
+        output (Path): output CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be
+        created
         store (Store): store
         metrics_weights (Dict): weights to apply to the different metrics to generate the aggregated result
         deps (List[Job], optional): job dependencies. Defaults to None.
 
     Returns:
         Job: GPAO Job representing the merge job
-    """    
+    """
     volumes = [f" -v {store.to_unix(f.parent)}:/{f.parent.name}\n" for f in result_ci]
     inputs = [f" /{f.parent.name}/{f.name}" for f in result_ci]
     command = f"""
@@ -103,15 +102,13 @@ def merge_all_results(
 
     Args:
         input_ci (List[Path]): input CSV files, one file for each classification.
-        output (Path): ouput CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be created.
+        output (Path): ouput CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be
+        created.
 
         metrics_weights (Dict): weights to apply to the different metrics to generate the aggregated result
-    """    
+    """
     output.parent.mkdir(parents=True, exist_ok=True)
-    data = [
-        compute_weighted_result(input, metrics_weights)
-        for input in input_ci
-    ]
+    data = [compute_weighted_result(input, metrics_weights) for input in input_ci]
 
     df_by_metric = pd.DataFrame(data)
     output_by_metric = output.parent / (output.stem + "_by_metric.csv")
@@ -119,6 +116,7 @@ def merge_all_results(
 
     df = df_by_metric.iloc[:, 0:2]
     df.to_csv(output, index=False)
+
 
 def parse_args():
     parser = argparse.ArgumentParser("Run merge results")
@@ -129,8 +127,13 @@ def parse_args():
         nargs="+",
         help="input CSV files, one file contains all metrics results for one classification",
     )
-    parser.add_argument("-o", "--output", type=Path, help="""Path to the file to save the global weighted result, for all all classifications.
-Another CSV file with the same name and postfix '_by_metric.csv' will be created""")
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        help="""Path to the file to save the global weighted result, for all all classifications.
+Another CSV file with the same name and postfix '_by_metric.csv' will be created""",
+    )
     parser.add_argument("--metric_weights", type=json.loads, help="Dictionary of the metrics weights")
 
     return parser.parse_args()

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, List
 import json
-from gpao_utils.utils_store import Store
+from gpao_utils.store import Store
 
 from gpao.job import Job
 

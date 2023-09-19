@@ -3,8 +3,8 @@ from pathlib import Path
 import shutil
 import pytest
 import subprocess as sp
-from gpao_utils.utils_store import Store
-from gpao_utils.utils_test import wait_running_job
+from gpao_utils.store import Store
+from gpao_utils.gpao_test import wait_running_job
 import test.utils as tu
 import json
 

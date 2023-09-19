@@ -4,7 +4,7 @@ import coclico.csv_manipulation.results_by_tile
 from test.utils import check_df_exists_with_no_empty_data
 import subprocess as sp
 import shutil
-from gpao_utils.utils_store import Store
+from gpao_utils.store import Store
 import json
 import pytest
 from pathlib import Path
