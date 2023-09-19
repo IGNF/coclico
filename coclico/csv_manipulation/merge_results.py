@@ -27,7 +27,13 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
         weights (Dict): weights to apply to the different metrics to generate the aggregated result
 
     Returns:
-        float: score for this classification
+        score (Dict): score for this classification, and score for the metrics, in a dict like that
+        result = {
+            "classification": 'c1',
+            "score": 7.0,
+            "mpap0": 4.6,
+            "mpap0_test": 2.4
+        }
     """
     df = pd.read_csv(input)
     classif_name = input.parent.name
