@@ -31,7 +31,7 @@ existe sur l'ordinateur sur lequel on veut installer le programme)
 Pour installer micromamba, voir https://mamba.readthedocs.io/en/latest/micromamba-installation.html#umamba-install
 
 Sous windows :
-* lancer `Anaconda Prompt` ou `Miniforge Prompt`
+* lancer `Miniforge Prompt`
 * y exectuer `install_or_update.bat`
 
 Sous linux :
@@ -42,7 +42,7 @@ Sous linux :
 
 ## Commande
 
-Sous Windows : lancer `Anaconda Prompt` / `Miniforge Prompt`
+Sous Windows : lancer `Miniforge Prompt`
 
 Sous Linux : lancer un terminal
 
