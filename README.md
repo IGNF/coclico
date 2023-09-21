@@ -56,8 +56,7 @@ conda activate coclico
 Lancer l'utilitaire avec la commande suivante :
 
 ```bash
-python -m coclico.main --c1 <C1> \
-                       --c2 <C2> \
+python -m coclico.main -i <C1> <C2> \
                        --ref <REF> \
                        --out <OUT> \
                        --gpao_hostname <GPAO_HOSTNAME> \
@@ -68,8 +67,7 @@ python -m coclico.main --c1 <C1> \
 ```
 
 options:
-  --c1 C1               Dossier C1 contenant une des classifications à comparer
-  --c2 C2               Dossier C2 contenant l'autre classification à comparer
+  -i INPUT              Dossier(s) contenant une ou plusieurs classification(s) à comparer. ex: -i /chemin/c1 chemin/c2
   --ref REF             Dossier contenant la classification de référence
   --out OUT             Dossier de sortie de la comparaison
   --gpao_hostname GPAO_HOSTNAME

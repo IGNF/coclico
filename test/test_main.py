@@ -47,6 +47,21 @@ def read_metrics_weights_different_spacing():
         assert all([cl in expected_classes for cl in val.keys()])
 
 
+def test_create_compare_project_error():
+    # C1 and C2 ends with the same name, should raise RuntimeError
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    c3 = Path("./same/name/niv1/")
+
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / "create_compare_project_error"
+    project_name = "test_create_compare_projects_errors"
+    metrics_weights = {"mpap0": {"0": 1, "2": 2}}
+
+    with pytest.raises(ValueError):
+        main.create_compare_project([c1, c2, c3], ref, out, STORE, project_name, metrics_weights)
+
+
 def test_create_compare_project(ensure_test1_data):
     c1 = Path("./data/test1/niv1/")
     c2 = Path("./data/test1/niv4/")
@@ -55,7 +70,7 @@ def test_create_compare_project(ensure_test1_data):
     project_name = "coclico_test_create_compare_projects"
     metrics_weights = {"mpap0": {"0": 1, "1,2": 2}, "mpap0_test": {"0": 1, "1,2": 2}}
 
-    projects = main.create_compare_project(c1, c2, ref, out, STORE, project_name, metrics_weights)
+    projects = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
 
     assert len(projects) == 1
     projects_jsons = [json.loads(pr.to_json()) for pr in projects]
@@ -75,51 +90,54 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     local_store_path = Path("data").resolve()
     project_name = "coclico_test_compare_test1_default"
 
-    main.compare(c1, c2, ref, out, gpao_hostname, local_store_path, runner_store_path, project_name)
+    main.compare([c1, c2], ref, out, gpao_hostname, local_store_path, runner_store_path, project_name)
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
 
-    c1_to_ref_tile = out / "c1" / "mpap0" / "to_ref" / "result_tile.csv"
+    c1_to_ref_tile = out / "niv1" / "mpap0" / "to_ref" / "result_tile.csv"
     assert tu.csv_num_rows(c1_to_ref_tile) == 4 * 7  # 4 files * 7 classes_weights
 
-    c1_to_ref = out / "c1" / "mpap0" / "to_ref" / "result.csv"
+    c1_to_ref = out / "niv1" / "mpap0" / "to_ref" / "result.csv"
     assert tu.csv_num_rows(c1_to_ref) == 7  # 7 classes_weights
 
     tu.delete_projects_starting_with(project_name)  # runs only if asserts are all true
 
 
 @pytest.mark.gpao
-def test_compare_test1_w_weights(ensure_test1_data, use_gpao_server):
-    c1 = Path("./data/test1/niv1/")
-    c2 = Path("./data/test1/niv4/")
+def test_compare_test1_weights(ensure_test1_data, use_gpao_server):
+    niv1 = Path("./data/test1/niv1/")
+    niv2 = Path("./data/test1/niv2/")
+    niv4 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
-    out = TMP_PATH / Path("compare_test1_w_weights")
+    out = TMP_PATH / Path("compare_test1_weights")
     weights_file = Path("./test/configs/metrics_weights_test.yaml")
     gpao_hostname = "localhost"
     runner_store_path = Path("./data").resolve()
     local_store_path = Path("data").resolve()
     project_name = "coclico_test_compare_test1_w_weights"
 
-    main.compare(c1, c2, ref, out, gpao_hostname, local_store_path, runner_store_path, project_name, weights_file)
+    main.compare(
+        [niv1, niv2, niv4], ref, out, gpao_hostname, local_store_path, runner_store_path, project_name, weights_file
+    )
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
 
-    c1_to_ref_tile = out / "c1" / "mpap0" / "to_ref" / "result_tile.csv"
+    c1_to_ref_tile = out / "niv1" / "mpap0" / "to_ref" / "result_tile.csv"
     assert tu.csv_num_rows(c1_to_ref_tile) == 4 * 3  # 4 files * 3 classes_weights
-    c1_to_ref = out / "c1" / "mpap0" / "to_ref" / "result.csv"
+    c1_to_ref = out / "niv1" / "mpap0" / "to_ref" / "result.csv"
     assert tu.csv_num_rows(c1_to_ref) == 3  # 3 classes_weights
 
-    c2_to_ref_tile = out / "c2" / "mpap0" / "to_ref" / "result_tile.csv"
+    c2_to_ref_tile = out / "niv4" / "mpap0" / "to_ref" / "result_tile.csv"
     assert tu.csv_num_rows(c2_to_ref_tile) == 4 * 3  # 4 files * 3 classes_weights
-    c2_to_ref = out / "c2" / "mpap0" / "to_ref" / "result.csv"
+    c2_to_ref = out / "niv4" / "mpap0" / "to_ref" / "result.csv"
     assert tu.csv_num_rows(c2_to_ref) == 3  # 3 classes_weights
 
-    c1_all_metrics = out / "c1" / "c1_result.csv"
+    c1_all_metrics = out / "niv1" / "niv1_result.csv"
     assert tu.csv_num_rows(c1_all_metrics) == 3  # 3 classes_weights
     assert tu.csv_num_col(c1_all_metrics) == 3  # class, mpap0, mpap0_test
 
     all_scores = out / "result.csv"
-    assert tu.csv_num_rows(all_scores) == 2  # 2 classif (c1 c2)
+    assert tu.csv_num_rows(all_scores) == 3  # 3 classif (niv1 niv2 niv4)
 
     tu.delete_projects_starting_with(project_name)
 
@@ -136,8 +154,7 @@ def test_run_main_test1(ensure_test1_data, use_gpao_server):
     local_store_path = runner_store_path
     project_name = "coclico_test_run_main_test1"
     cmd = f"""python -m coclico.main \
-        --c1 {str(c1)} \
-        --c2 {str(c2)} \
+        -i {str(c1)} {str(c2)} \
         --ref {str(ref)} \
         --out {str(out)} \
         --weights_file {str(weights_file)} \
