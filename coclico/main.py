@@ -17,10 +17,12 @@ METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0_test}
 def parse_args():
     parser = argparse.ArgumentParser(description="COmparaison de CLassIfication par rapport à une référence COmmune")
     parser.add_argument(
-        "--c1", type=Path, required=True, help="Dossier C1 contenant une des classifications à comparer"
-    )
-    parser.add_argument(
-        "--c2", type=Path, required=True, help="Dossier C2 contenant l'autre classification à comparer"
+        "-i",
+        "--input",
+        type=Path,
+        nargs="+",
+        required=True,
+        help="Dossier(s) contenant une ou plusieurs classification(s) à comparer. ex: -i /chemin/c1 chemin/c2",
     )
     parser.add_argument("--ref", type=Path, required=True, help="Dossier contenant la classification de référence")
     parser.add_argument("--out", type=Path, required=True, help="Dossier de sortie de la comparaison")
@@ -84,22 +86,28 @@ def get_tile_names(folder: Path) -> List[str]:
     return filenames
 
 
+def check_pathes_ends_with_different_names(classifications: List[Path]):
+    names_dict = dict([(ci.name, []) for ci in classifications])
+    [names_dict[ci.name].append(str(ci)) for ci in classifications]
+    for name in names_dict.keys():
+        if len(names_dict[name]) > 1:
+            raise (ValueError("Classifications input pathes ends with same name: " + " ; ".join(names_dict[name])))
+
+
 def create_compare_project(
-    c1: Path,
-    c2: Path,
+    classifications: List[Path],
     ref: Path,
     out: Path,
     store: Store,
     project_name: str,
     metrics_weights: Dict,
 ) -> List[Project]:
-    """Main function to generate all GPAO projects needed to compare 2 classification (c1, c2) with respect to a
+    """Main function to generate a GPAO project needed to compare classifications (c1, c2..) with respect to a
     reference classification (ref) and save it as json files in out.
     This function works on folders containing las files.
 
     Args:
-        c1 (Path): path to the folder containing c1 classified point clouds
-        c2 (Path): path to the folder containing c2 classified point clouds
+        ci (List[Path]): list of path to the folder containing each classified point clouds (c1, c2..)
         ref (Path): path to the folder containing the reference classified point clouds
         out (Path): output path for the json outputs
         store (Store): store object to convert local paths to runner paths
@@ -107,82 +115,77 @@ def create_compare_project(
         metrics_weights (Dict): Dict containing the weight of each metric for each class.
     """
 
-    logging.debug(f"Create GPAO projects to Compare C1: {c1} to Ref: {ref} AND C2:{c2} to {ref} in out {out}.")
+    check_pathes_ends_with_different_names(classifications)
+
+    logging.debug(
+        f"Create GPAO projects to compare {len(classifications)} classification(s): {classifications}"
+        + " to Ref: {ref} in Out: {out}."
+    )
     Project.reset()
 
-    out_c1 = out / "c1"
-    out_c2 = out / "c2"
     out_ref = out / "ref"
-
     out.mkdir(parents=True, exist_ok=True)
 
     # get filenames of tiles from the local machine
     tile_names = get_tile_names(ref)
-
     jobs = []
-
-    c1_final_relative_jobs = []
-    c2_final_relative_jobs = []
+    final_relative_jobs = {k.name: [] for k in classifications}
 
     for metric_name, metric_class in METRICS.items():
         if metric_name in metrics_weights.keys():
-            out_c1_metric = out_c1 / metric_name / "intrinsic"
-            out_c1_metric.mkdir(parents=True, exist_ok=True)
-
-            out_c2_metric = out_c2 / metric_name / "intrinsic"
-            out_c2_metric.mkdir(parents=True, exist_ok=True)
+            class_weights = metrics_weights[metric_name]
+            metric = metric_class(store, class_weights)
 
             out_ref_metric = out_ref / metric_name / "intrinsic"
             out_ref_metric.mkdir(parents=True, exist_ok=True)
 
-            class_weights = metrics_weights[metric_name]
-            metric = metric_class(store, class_weights)
-
             ref_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
-            c1_jobs = metric.create_metric_intrinsic_jobs("c1", tile_names, c1, out_c1_metric)
-            c2_jobs = metric.create_metric_intrinsic_jobs("c2", tile_names, c2, out_c2_metric)
-
-            out_c1_to_ref_metric = out_c1 / metric_name / "to_ref"
-            out_c1_to_ref_metric.mkdir(parents=True, exist_ok=True)
-
-            out_c2_to_ref_metric = out_c2 / metric_name / "to_ref"
-            out_c2_to_ref_metric.mkdir(parents=True, exist_ok=True)
-
-            c1_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
-                "c1", out_c1_metric, out_ref_metric, out_c1_to_ref_metric, c1_jobs, ref_jobs
-            )
-            c2_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
-                "c2", out_c2_metric, out_ref_metric, out_c2_to_ref_metric, c2_jobs, ref_jobs
-            )
-
-            c1_final_relative_jobs.append(c1_to_ref_jobs[-1])
-            c2_final_relative_jobs.append(c2_to_ref_jobs[-1])
-
-            jobs.extend(c1_jobs)
-            jobs.extend(c2_jobs)
             jobs.extend(ref_jobs)
-            jobs.extend(c1_to_ref_jobs)
-            jobs.extend(c2_to_ref_jobs)
 
-    result1 = out_c1 / "c1_result.csv"
-    merge_c1_metrics = results_by_tile.create_job_merge_results(out_c1, result1, store, deps=c1_final_relative_jobs)
+            for ci in classifications:
+                out_c1 = out / ci.name
+                out_c1_metric = out_c1 / metric_name / "intrinsic"
+                out_c1_metric.mkdir(parents=True, exist_ok=True)
 
-    result2 = out_c2 / "c2_result.csv"
-    merge_c2_metrics = results_by_tile.create_job_merge_results(out_c2, result2, store, deps=c2_final_relative_jobs)
+                c1_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_c1_metric)
 
-    score_deps = [merge_c1_metrics, merge_c2_metrics]
+                out_c1_to_ref_metric = out_c1 / metric_name / "to_ref"
+                out_c1_to_ref_metric.mkdir(parents=True, exist_ok=True)
+
+                c1_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
+                    ci.name, out_c1_metric, out_ref_metric, out_c1_to_ref_metric, c1_jobs, ref_jobs
+                )
+
+                final_relative_jobs[ci.name].append(c1_to_ref_jobs[-1])
+
+                jobs.extend(c1_jobs)
+                jobs.extend(c1_to_ref_jobs)
+
+    score_deps = []
+    score_results = []
+    for ci in classifications:
+        out_c1 = out / ci.name
+        result1 = out_c1 / (str(ci.name) + "_result.csv")
+        c1_final_relative_jobs = final_relative_jobs[ci.name]
+        merge_c1_metrics = results_by_tile.create_job_merge_results(
+            out_c1, result1, store, deps=c1_final_relative_jobs
+        )
+
+        score_deps.append(merge_c1_metrics)
+        score_results.append(result1)
+        jobs.append(merge_c1_metrics)
+
     score_job = merge_results.create_merge_all_results_job(
-        [result1, result2], out / "result.csv", store, metrics_weights, score_deps
+        score_results, out / "result.csv", store, metrics_weights, score_deps
     )
 
-    jobs.extend([merge_c1_metrics, merge_c2_metrics, score_job])
+    jobs.append(score_job)
 
     return [Project(project_name, jobs)]
 
 
 def compare(
-    c1: Path,
-    c2: Path,
+    classifications: List[Path],
     ref: Path,
     out: Path,
     gpao_hostname: str,
@@ -191,14 +194,13 @@ def compare(
     project_name: str,
     weights_file: Path = Path("./configs/metrics_weights.yaml"),
 ):
-    """Main function to compare 2 classification (c1, c2) with respect to a reference
+    """Main function to compare one or more classifications (c1, c2..) with respect to a reference
     classification (ref) and save it as json files in out.
     This function works on folders containing las files.
     It uses a GPAO setup to handle the amount of work : it generates it and sends it to a GPAO server
 
     Args:
-        c1 (Path): path to the folder containing c1 classified point clouds
-        c2 (Path): path to the folder containing c2 classified point clouds
+        classifications (List[Path]): list of path to the folder containing each classified point clouds (c1, c2..)
         ref (Path): path to the folder containing the reference classified point clouds
         out (Path): output path for the json outputs
         gpao_hostname (str): Hostname of the GPAO server
@@ -209,7 +211,10 @@ def compare(
         Defaults to Path("./configs/metrics_weights.yaml").
     """
 
-    logging.debug(f"Create GPAO projects to Compare C1: {c1} to Ref: {ref} AND C2:{c2} to {ref} in out {out}.")
+    logging.debug(
+        f"Create GPAO projects to compare {len(classifications)} classifications: {classifications}"
+        + " to Ref: {ref} in Out {out}."
+    )
     logging.debug(f"Use GPAO server: {gpao_hostname}")
     store = Store(local_store_path, unix_path=runner_store_path)
     logging.debug(f"Local store path ({local_store_path}) converted to client store path ({runner_store_path})")
@@ -220,8 +225,7 @@ def compare(
         yaml.safe_dump(metrics_weights, f)
 
     projects = create_compare_project(
-        c1,
-        c2,
+        classifications,
         ref,
         out,
         store,
@@ -242,8 +246,7 @@ if __name__ == "__main__":
 
     args = parse_args()
     compare(
-        args.c1,
-        args.c2,
+        args.input,
         args.ref,
         args.out,
         args.gpao_hostname,

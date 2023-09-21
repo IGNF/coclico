@@ -3,7 +3,7 @@
 ### Archi et première métrique MPAP0
 
 - [x] résultat intermediaire manquant : score c1 pondéré (poids des classes). Une valeur pour chaque metrique.
-- [ ] utiliser une liste de dossiers au lieu de `c1` et `c2` en utilisant le nom de dossier comme identifiant
+- [x] utiliser une liste de dossiers au lieu de `c1` et `c2` en utilisant le nom de dossier comme identifiant
 - [ ] Ne pas refaire les jobs quand les dossiers existent déjà
 - [ ] Ne pas écraser un fichier de score et le compléter
 - [ ] Fonctionner avec des classes différentes pour chaque métrique
