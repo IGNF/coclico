@@ -107,7 +107,7 @@ def create_compare_project(
     store: Store,
     project_name: str,
     metrics_weights: Dict,
-) -> List[Project]:
+) -> Project:
     """Main function to generate a GPAO project needed to compare classifications (c1, c2..) with respect to a
     reference classification (ref) and save it as json files in out.
     This function works on folders containing las files.
@@ -187,7 +187,7 @@ def create_compare_project(
 
     jobs.append(score_job)
 
-    return [Project(project_name, jobs)]
+    return Project(project_name, jobs)
 
 
 def compare(
@@ -230,7 +230,7 @@ def compare(
 
     shutil.copyfile(weights_file, out / weights_file.name)
 
-    projects = create_compare_project(
+    project = create_compare_project(
         classifications,
         ref,
         out,
@@ -239,12 +239,12 @@ def compare(
         metrics_weights,
     )
 
-    builder = Builder(projects)
+    builder = Builder([project])
     logging.info(f"Send projects to gpao server: {gpao_hostname}")
     builder.send_project_to_api(f"http://{gpao_hostname}:8080")
     # Do not use builder.save_as_json because it resets projects/jobs ids.
     # cf https://github.com/ign-gpao/builder-python/issues/10
-    save_projects_as_json(projects, out / "gpao_project.json")
+    save_projects_as_json([project], out / "gpao_project.json")
 
 
 if __name__ == "__main__":

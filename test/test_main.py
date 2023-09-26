@@ -70,13 +70,12 @@ def test_create_compare_project(ensure_test1_data):
     project_name = "coclico_test_create_compare_projects"
     metrics_weights = {"mpap0": {"0": 1, "1-2": 2}, "mpap0_test": {"0": 1, "1-2": 2}}
 
-    projects = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
 
-    assert len(projects) == 1
-    projects_jsons = [json.loads(pr.to_json()) for pr in projects]
-    for pr_json in projects_jsons:
-        assert len(pr_json["jobs"]) > 0  # No empty projects
-        assert pr_json["name"].startswith(project_name)
+    assert project is not None
+    project_json = json.loads(project.to_json())
+    assert len(project_json["jobs"]) > 0  # No empty projects
+    assert project_json["name"].startswith(project_name)
 
 
 @pytest.mark.gpao
