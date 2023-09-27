@@ -130,12 +130,19 @@ def create_compare_project(
     Project.reset()
 
     out_ref = out / "ref"
-    out.mkdir(parents=True, exist_ok=True)
+    ref_exists = out_ref.exists()
+    if ref_exists:
+        logging.info(f"Skipping creation of REF jobs, since folder exists: {out_ref}")
 
     # get filenames of tiles from the local machine
     tile_names = get_tile_names(ref)
     jobs = []
-    final_relative_jobs = {k.name: [] for k in classifications}
+    final_relative_jobs = {ci.name: [] for ci in classifications}
+
+    output_ci_exists = {ci.name: (out / ci.name).exists() for ci in classifications}
+    for ci in classifications:
+        if output_ci_exists[ci.name]:
+            logging.info(f"Skipping classification {ci.name} jobs, since folder exists {(out / ci.name)}")
 
     for metric_name, metric_class in METRICS.items():
         if metric_name in metrics_weights.keys():
@@ -143,26 +150,28 @@ def create_compare_project(
             metric = metric_class(store, class_weights)
 
             out_ref_metric = out_ref / metric_name / "intrinsic"
-            out_ref_metric.mkdir(parents=True, exist_ok=True)
-
-            ref_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
-            jobs.extend(ref_jobs)
+            ref_jobs = []
+            if not ref_exists:
+                out_ref_metric.mkdir(parents=True, exist_ok=True)
+                ref_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
+                jobs.extend(ref_jobs)
 
             for ci in classifications:
                 out_c1 = out / ci.name
                 out_c1_metric = out_c1 / metric_name / "intrinsic"
-                out_c1_metric.mkdir(parents=True, exist_ok=True)
 
-                c1_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_c1_metric)
+                if not output_ci_exists[ci.name]:
+                    out_c1_metric.mkdir(parents=True, exist_ok=True)
+                    c1_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_c1_metric)
 
-                out_c1_to_ref_metric = out_c1 / metric_name / "to_ref"
-                out_c1_to_ref_metric.mkdir(parents=True, exist_ok=True)
+                    out_c1_to_ref_metric = out_c1 / metric_name / "to_ref"
+                    out_c1_to_ref_metric.mkdir(parents=True, exist_ok=True)
 
-                c1_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
-                    ci.name, out_c1_metric, out_ref_metric, out_c1_to_ref_metric, c1_jobs, ref_jobs
-                )
+                    c1_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
+                        ci.name, out_c1_metric, out_ref_metric, out_c1_to_ref_metric, c1_jobs, ref_jobs
+                    )
 
-                final_relative_jobs[ci.name].append(c1_to_ref_jobs[-1])
+                    final_relative_jobs[ci.name].append(c1_to_ref_jobs[-1])
 
                 jobs.extend(c1_jobs)
                 jobs.extend(c1_to_ref_jobs)
