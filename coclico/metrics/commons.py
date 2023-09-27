@@ -1,4 +1,16 @@
-from typing import Tuple
+from typing import Tuple, List
+
+
+def split_composed_class(class_key: str) -> List[str]:
+    """Split composed class key (separated by "-") into its elementary classes.
+    Example "3-4-5" becomes ["3", "4", "5"]
+    Args:
+        class_key (str): origin key
+
+    Returns:
+        List[str]: splitted keys
+    """
+    return class_key.split("-")
 
 
 def bounded_affine_function(coordinates_min: Tuple, coordinates_max: Tuple, x_query: float) -> float:

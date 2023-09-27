@@ -1,4 +1,6 @@
 # dev
+- add one-letter options
+- use "-" separator instead of "," in composed classes
 
 # 0.2.1
 - mpap0: correctif metrique relative, appliquée sur la liste des classes

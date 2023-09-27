@@ -106,12 +106,12 @@ Le fichier des poids pour chaque classe / métrique est un fichier `yaml` du typ
 metric1:
   "1": 1
   "2": 2
-  "3,4": 2
+  "3-4": 2
 
 metric2:
   "1": 1
   "2": 0
-  "3,4": 2
+  "3-4": 2
 ```
 
 Au premier niveau : les métriques, qui doivent correspondre aux clés du dictionnaire `METRICS`
@@ -120,7 +120,7 @@ décrit dans `coclico/main.py`
 Au 2e niveau : les classes
 Chaque clé de classe peut contenir (placé entre guillemets):
 * un nom de classe
-* ou un sous-ensemble des classes contenues dans les fichiers LAS séparées par une virgule (`,`).
+* ou un sous-ensemble des classes contenues dans les fichiers LAS séparées par un tiret (`-`).
 Dans ce cas, c'est dans le code de chaque métrique qu'est décidée la façon de regrouper les classes
 (eg. somme du compte des points sur l'ensemble des classes pour MPAP0)
 

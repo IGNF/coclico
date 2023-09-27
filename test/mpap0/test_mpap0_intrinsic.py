@@ -24,8 +24,8 @@ def test_compute_metric_intrinsic(ensure_test1_data):
             "0": 1,
             "1": 1,
             "2": 0,  # simple classes
-            "3,4,5": 1,  # composed class
-            "3 , 4": 2,  # composed class with spaces
+            "3-4-5": 1,  # composed class
+            "3 - 4": 2,  # composed class with spaces
         }
     )
     output_json = TMP_PATH / "unit_test_mpap0_intrinsic.json"
@@ -35,7 +35,7 @@ def test_compute_metric_intrinsic(ensure_test1_data):
     with open(output_json, "r") as openfile:
         counter = json.load(openfile)
         print(counter)
-        assert counter == dict({"0": 0, "1": 543, "2": 103791, "3,4,5": 1625 + 3145 + 31074, "3 , 4": 1625 + 3145})
+        assert counter == dict({"0": 0, "1": 543, "2": 103791, "3-4-5": 1625 + 3145 + 31074, "3 - 4": 1625 + 3145})
 
 
 def test_run_main(ensure_test1_data):

@@ -6,6 +6,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Dict
+from coclico.metrics.commons import split_composed_class
 
 
 def compute_metric_intrinsic(las_file: Path, class_weights: Dict, output_json: Path):
@@ -31,7 +32,7 @@ def compute_metric_intrinsic(las_file: Path, class_weights: Dict, output_json: P
     points_counts = dict({value.split(".")[0]: int(count) for value, count in split_counts})
 
     def merge_counts(class_key):
-        splitted_class_key = class_key.split(",")
+        splitted_class_key = split_composed_class(class_key)
         count = np.sum([points_counts.get(k.strip(), 0) for k in splitted_class_key])
 
         return count
