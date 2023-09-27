@@ -91,6 +91,10 @@ def create_merge_all_results_job(
     return Job("merge_all_results", command, tags=["docker"], deps=deps)
 
 
+def filter_out_rows(df, col, values):
+    return df[~df[col].isin(values)]
+
+
 def merge_all_results(
     input_ci: List[Path],
     output: Path,
@@ -110,12 +114,22 @@ def merge_all_results(
     output.parent.mkdir(parents=True, exist_ok=True)
     data = [compute_weighted_result(input, metrics_weights) for input in input_ci]
 
-    df_by_metric = pd.DataFrame(data)
+    df = pd.DataFrame(data)
     output_by_metric = output.parent / (output.stem + "_by_metric.csv")
-    df_by_metric.to_csv(output_by_metric, index=False)
+    if output_by_metric.exists():
+        existing_df = pd.read_csv(output_by_metric)
+        existing_classif = existing_df["classification"].to_list()
+        incoming_classif = df["classification"].to_list()
+        to_remove_classif = list(set(existing_classif) & set(incoming_classif))
+        if len(to_remove_classif) > 0:
+            logging.info("Replace existing classification(s): %s in the score file" % to_remove_classif)
+            existing_df = filter_out_rows(existing_df, "classification", to_remove_classif)
+        df = pd.concat([existing_df, df])
 
-    df = df_by_metric.iloc[:, 0:2]
-    df.to_csv(output, index=False)
+    df.to_csv(output_by_metric, index=False)
+
+    df_summary = df.iloc[:, 0:2]
+    df_summary.to_csv(output, index=False)
 
 
 def parse_args():
