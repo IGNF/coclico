@@ -7,7 +7,7 @@ from gpao_utils.store import Store
 from gpao_utils.gpao_test import wait_running_job
 import test.utils as tu
 import json
-
+import numpy as np
 
 TMP_PATH = Path("./tmp/main")
 
@@ -76,6 +76,50 @@ def test_create_compare_project(ensure_test1_data):
     project_json = json.loads(project.to_json())
     assert len(project_json["jobs"]) > 0  # No empty projects
     assert project_json["name"].startswith(project_name)
+
+
+def test_create_compare_project_existing_ref(ensure_test1_data):
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / "create_compare_project_existing_ref"
+
+    project_name = "test_create_compare_projects_existing_ref"
+    metrics_weights = {"mpap0": {"0": 1, "2": 2}}
+
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+
+    assert np.sum([job.name.startswith("MPAP0_intrinsic_ref") for job in project.jobs]) == 4
+
+    shutil.rmtree(out / "niv1")
+    shutil.rmtree(out / "niv4")
+
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+
+    assert np.sum([job.name.startswith("MPAP0_intrinsic_ref") for job in project.jobs]) == 0
+
+
+def test_create_compare_project_existing_c2(ensure_test1_data):
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / "create_compare_project_existing_c2"
+
+    project_name = "test_create_compare_projects_existing_c2"
+    metrics_weights = {"mpap0": {"0": 1, "2": 2}}
+
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+
+    assert np.sum([job.name.startswith("MPAP0_intrinsic_niv4") for job in project.jobs]) == 4
+    assert np.sum([job.name.startswith("MPAP0_niv4_relative_to_ref") for job in project.jobs]) == 1
+
+    shutil.rmtree(out / "niv1")
+    shutil.rmtree(out / "ref")
+
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+
+    assert np.sum([job.name.startswith("MPAP0_intrinsic_niv4") for job in project.jobs]) == 0
+    assert np.sum([job.name.startswith("MPAP0_niv4_relative_to_ref") for job in project.jobs]) == 0
 
 
 @pytest.mark.gpao
