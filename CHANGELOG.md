@@ -1,6 +1,7 @@
 # dev
 - add one-letter options
 - use "-" separator instead of "," in composed classes
+- copy metrics file instead of dumping weights dictionary
 
 # 0.2.1
 - mpap0: correctif metrique relative, appliquée sur la liste des classes

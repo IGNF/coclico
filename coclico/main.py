@@ -5,6 +5,7 @@ from gpao.project import Project
 from gpao_utils.store import Store
 import logging
 from pathlib import Path, PurePosixPath
+import shutil
 from typing import Dict, List
 import yaml
 from coclico.csv_manipulation import results_by_tile, merge_results
@@ -226,8 +227,8 @@ def compare(
 
     metrics_weights = read_metrics_weights(weights_file)
     out.mkdir(parents=True, exist_ok=True)
-    with open(out / "metrics_weights.yaml", "w") as f:
-        yaml.safe_dump(metrics_weights, f)
+
+    shutil.copyfile(weights_file, out / weights_file.name)
 
     projects = create_compare_project(
         classifications,
