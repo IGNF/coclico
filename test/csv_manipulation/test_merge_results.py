@@ -41,6 +41,52 @@ def test_merge_all_results():
     assert set(df.columns) == set(["classification", "score"] + list(weights.keys()))
 
 
+def test_merge_result_append_existing_file():
+    input_c1 = Path("./data/csv/c1/c1_result.csv")
+    input_c2 = Path("./data/csv/c2/c2_result.csv")
+    weights = {"mpap0": {"0": 1, "2": 2, "3,4": 3}, "mpap0_test": {"2": 2, "5": 3}}
+    result = TMP_PATH / "results_c1_c2_append.csv"
+    result_detailed = TMP_PATH / "results_c1_c2_append_by_metric.csv"
+
+    merge_results.merge_all_results([input_c1], result, weights)
+
+    df = tu.check_df_exists_with_no_empty_data(result)
+    assert len(df.index) == 1
+    df = tu.check_df_exists_with_no_empty_data(result_detailed)
+    assert len(df.index) == 1
+
+    merge_results.merge_all_results([input_c2], result, weights)
+
+    df = tu.check_df_exists_with_no_empty_data(result)
+    assert len(df.index) == 2
+    df = tu.check_df_exists_with_no_empty_data(result_detailed)
+    assert len(df.index) == 2
+
+
+def test_merge_result_merge_existing_file():
+    input_c1 = Path("./data/csv/c1/c1_result.csv")
+    input_c2 = Path("./data/csv/c2/c2_result.csv")
+    weights = {"mpap0": {"0": 1, "2": 2, "3,4": 3}, "mpap0_test": {"2": 2, "5": 3}}
+    result = TMP_PATH / "results_c1_existing.csv"
+    result_detailed = TMP_PATH / "results_c1_existing_by_metric.csv"
+
+    merge_results.merge_all_results([input_c1, input_c2], result, weights)
+
+    df = tu.check_df_exists_with_no_empty_data(result)
+    assert len(df.index) == 2
+    df = tu.check_df_exists_with_no_empty_data(result_detailed)
+    assert len(df.index) == 2
+    assert set(df.columns) == set(["classification", "score"] + list(weights.keys()))
+
+    merge_results.merge_all_results([input_c1], result, weights)
+
+    df = tu.check_df_exists_with_no_empty_data(result)
+    assert len(df.index) == 2
+    df = tu.check_df_exists_with_no_empty_data(result_detailed)
+    assert len(df.index) == 2
+    assert set(df.columns) == set(["classification", "score"] + list(weights.keys()))
+
+
 def test_run_main():
     base_path = TMP_PATH / Path("merge_run_main/")
     base_path.mkdir(parents=True)

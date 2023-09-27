@@ -1,4 +1,5 @@
 # dev
+- score: si le fichier resultat existe, concatène ou remplace dans le fichier.
 - archi: évite de refaire les job si le dossier de sortie existe, produit un log pour l'utilisateur
 - ajout d'indicateurs d'options à une seule lettre dans main
 - utilisation de "-" au lieur de "," comme séparateur des classes composées
