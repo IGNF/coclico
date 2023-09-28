@@ -11,7 +11,7 @@
 - [x] Main, options à une seule lettre
 
 ### Remontée utisateur
-- [x] cvs: classe composée, pas mettre de virgules (mettre des espaces par exemple) (tester à la main l'ouverture du fichier CSV avec openOffice)
+- [x] csv: classe composée, pas mettre de virgules (mettre des espaces par exemple) (tester à la main l'ouverture du fichier CSV avec openOffice)
 - [x] fichier de poids dans le dossier de resultat, faire une copie de fichier (pas un dump du fichier lu) (sinon l'ordre est changé)
 
 ### Tests

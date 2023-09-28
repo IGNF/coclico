@@ -16,7 +16,7 @@ class MPAP0(Metric):
         self.metric_name = "MPAP0_test" if test else "MPAP0"
 
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
-        job_name = f"{self.metric_name}_initrinsic_{name}_{input.stem}"
+        job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
 
         command = f"""
 docker run -t --rm --userns=host --shm-size=2gb
