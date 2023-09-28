@@ -24,11 +24,12 @@ def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path):
     merged_df = pd.DataFrame(columns=["class"])
     merged_df_tile = pd.DataFrame(columns=["tile", "class"])
     for folder in metric_folders:
-        metric_df_tile = pd.concat([pd.read_csv(folder / "to_ref" / "result_tile.csv", dtype={"class": str})])
-        merged_df_tile = merged_df_tile.merge(metric_df_tile, on=["tile", "class"], how="right")
+        metric_df_tile = pd.read_csv(folder / "to_ref" / "result_tile.csv", dtype={"class": str})
+        merged_df_tile = merged_df_tile.merge(metric_df_tile, on=["tile", "class"], how="outer")
+        print(merged_df_tile)
 
-        metric_df = pd.concat([pd.read_csv(folder / "to_ref" / "result.csv", dtype={"class": str})])
-        merged_df = merged_df.merge(metric_df, on=["class"], how="right")
+        metric_df = pd.read_csv(folder / "to_ref" / "result.csv", dtype={"class": str})
+        merged_df = merged_df.merge(metric_df, on=["class"], how="outer")
 
     merged_df_tile.to_csv(output_path.parent / (output_path.stem + "_tile.csv"), index=False)
     merged_df.to_csv(output_path, index=False)
