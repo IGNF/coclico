@@ -6,8 +6,8 @@
 - [x] utiliser une liste de dossiers au lieu de `c1` et `c2` en utilisant le nom de dossier comme identifiant
 - [x] Ne pas refaire les jobs quand les dossiers existent déjà
 - [ ] Ne pas écraser un fichier de score et le compléter
-- [ ] Fonctionner avec des classes différentes pour chaque métrique
-  - [ ] ajouter un test avec un fichier de config dans lequel : Une classe qui définie pour une métrique, mais pas dans une autre métrique. (pas definie= la ligne n'est pas écrite)
+- [x] Fonctionner avec des classes différentes pour chaque métrique
+  - [x] ajouter un test avec un fichier de config dans lequel : Une classe qui définie pour une métrique, mais pas dans une autre métrique. (pas definie= la ligne n'est pas écrite)
 - [x] Main, options à une seule lettre
 
 ### Remontée utisateur

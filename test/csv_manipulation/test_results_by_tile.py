@@ -67,6 +67,7 @@ def generate_csv_result(
 
 
 def test_merge_results_for_one_classif():
+    """Check that all the fields are filled when classes are the same for all metrics"""
     metrics = ["m1", "m2", "m3"]
     classes = [0, 1]
     tiles = ["tile1", "tile2"]
@@ -86,17 +87,44 @@ def test_merge_results_for_one_classif():
     assert set(df.columns) == set(["tile", "class"] + metrics)
     assert len(df.index) == len(tiles) * len(classes)
     assert set(df["tile"]) == set(tiles)
-    assert not df.isnull().values.any()
+
+
+def test_merge_results_for_one_classif_on_different_classes():
+    """Check that the result file is created correctly when classes are not the same for all metrics"""
+    metrics = ["m1", "m2", "m3"]
+    classes = [0, 1, 2, 3]
+    tiles = ["tile1", "tile2"]
+    base_path = TMP_PATH / Path("toy_results/results_by_tile_on_different_classes")
+    out = base_path / "result.csv"
+    out_tile = base_path / "result_tile.csv"
+    generate_csv_result(base_path, tiles, ["m1", "m2"], [0, 1, 2], (lambda ii: 2 * ii))
+    generate_csv_result(base_path, tiles, ["m3"], [1, 2, 3], (lambda ii: 3 * ii))
+
+    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(base_path, out)
+
+    assert out.is_file()
+    df = pd.read_csv(out, dtype={"class": str})
+    assert set(df.columns) == set(["class"] + metrics)
+    assert len(df.index) == len(classes)
+    assert all([not df[m].isnull().values.all() for m in metrics])  # check that no metric is completely empty
+
+    assert out_tile.is_file()
+    df = pd.read_csv(out_tile, dtype={"class": str})
+    assert set(df.columns) == set(["tile", "class"] + metrics)
+    assert len(df.index) == len(tiles) * len(classes)
+    assert set(df["tile"]) == set(tiles)
+    assert all([not df[m].isnull().values.all() for m in metrics])  # check that no metric is completely empty
 
 
 def test_run_main():
-    metrics = ["m1", "m2", "m3"]
+    metrics = ["m1", "m2", "m3", "m4"]
     classes = [0, 1]
     tiles = ["tile1", "tile2"]
     base_path = TMP_PATH / Path("toy_results/results_by_tile_cli")
     out = base_path / "result_by_tile.csv"
 
-    generate_csv_result(base_path, tiles, metrics, classes, (lambda ii: 2 * ii))
+    generate_csv_result(base_path, tiles, metrics[:-1], classes, (lambda ii: 2 * ii))
+    generate_csv_result(base_path, tiles, metrics[-1], [1, 2], (lambda ii: 3 * ii))
 
     cmd = f"""python -m coclico.csv_manipulation.results_by_tile \
     --metrics_root_folder {base_path} \

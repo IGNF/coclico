@@ -176,7 +176,7 @@ def test_compare_test1_weights(ensure_test1_data, use_gpao_server):
     assert tu.csv_num_rows(c2_to_ref) == 3  # 3 classes_weights
 
     c1_all_metrics = out / "niv1" / "niv1_result.csv"
-    assert tu.csv_num_rows(c1_all_metrics) == 3  # 3 classes_weights
+    assert tu.csv_num_rows(c1_all_metrics) == 4  # 4 classes_weights (one differs between mpap0 and mpap0_test)
     assert tu.csv_num_col(c1_all_metrics) == 3  # class, mpap0, mpap0_test
 
     all_scores = out / "result.csv"
