@@ -41,7 +41,7 @@ def read_metrics_weights_different_spacing():
     with pytest.raises(ValueError):
         weights = main.read_metrics_weights(weights_file)
     assert all([k in main.METRICS.keys() for k in weights.keys()])
-    expected_classes = {"1", "2", "3,4"}
+    expected_classes = {"1", "2", "3-4"}
     for _, val in weights.items():
         assert isinstance(val, dict)
         assert all([cl in expected_classes for cl in val.keys()])
@@ -68,7 +68,7 @@ def test_create_compare_project(ensure_test1_data):
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / "create_compare_project"
     project_name = "coclico_test_create_compare_projects"
-    metrics_weights = {"mpap0": {"0": 1, "1,2": 2}, "mpap0_test": {"0": 1, "1,2": 2}}
+    metrics_weights = {"mpap0": {"0": 1, "1-2": 2}, "mpap0_test": {"0": 1, "1-2": 2}}
 
     projects = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
 

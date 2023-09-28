@@ -8,11 +8,11 @@
 - [ ] Ne pas écraser un fichier de score et le compléter
 - [ ] Fonctionner avec des classes différentes pour chaque métrique
   - [ ] ajouter un test avec un fichier de config dans lequel : Une classe qui définie pour une métrique, mais pas dans une autre métrique. (pas definie= la ligne n'est pas écrite)
-- [ ] Main, options à une seule lettre
+- [x] Main, options à une seule lettre
 
 ### Remontée utisateur
-- [ ] cvs: classe composée, pas mettre de virgules (mettre des espaces par exemple) (tester à la main l'ouverture du fichier CSV avec openOffice)
-- [ ] fichier de poids dans le dossier de resultat, faire une copie de fichier (pas un dump du fichier lu) (sinon l'ordre est changé)
+- [x] csv: classe composée, pas mettre de virgules (mettre des espaces par exemple) (tester à la main l'ouverture du fichier CSV avec openOffice)
+- [x] fichier de poids dans le dossier de resultat, faire une copie de fichier (pas un dump du fichier lu) (sinon l'ordre est changé)
 
 ### Tests
 

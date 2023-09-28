@@ -5,6 +5,7 @@ from gpao.project import Project
 from gpao_utils.store import Store
 import logging
 from pathlib import Path, PurePosixPath
+import shutil
 from typing import Dict, List
 import yaml
 from coclico.csv_manipulation import results_by_tile, merge_results
@@ -24,23 +25,28 @@ def parse_args():
         required=True,
         help="Dossier(s) contenant une ou plusieurs classification(s) à comparer. ex: -i /chemin/c1 chemin/c2",
     )
-    parser.add_argument("--ref", type=Path, required=True, help="Dossier contenant la classification de référence")
-    parser.add_argument("--out", type=Path, required=True, help="Dossier de sortie de la comparaison")
     parser.add_argument(
+        "-r", "--ref", type=Path, required=True, help="Dossier contenant la classification de référence"
+    )
+    parser.add_argument("-o", "--out", type=Path, required=True, help="Dossier de sortie de la comparaison")
+    parser.add_argument(
+        "-l",
         "--local_store_path",
         type=Path,
         required=True,
         help="Chemin vers un store commun sur le PC qui lance ce script",
     )
     parser.add_argument(
+        "-s",
         "--runner_store_path",
         type=PurePosixPath,
         help="Chemin vers un store commun sur les clients GPAO (Unix path)",
         required=True,
     )
-    parser.add_argument("--gpao_hostname", type=str, help="Hostname du serveur GPAO", default="localhost")
-    parser.add_argument("--project_name", type=str, default="coclico", help="Nom de projet pour la GPAO")
+    parser.add_argument("-g", "--gpao_hostname", type=str, help="Hostname du serveur GPAO", default="localhost")
+    parser.add_argument("-p", "--project_name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(
+        "-w",
         "--weights_file",
         type=Path,
         default=Path("./configs/metrics_weights.yaml"),
@@ -221,8 +227,8 @@ def compare(
 
     metrics_weights = read_metrics_weights(weights_file)
     out.mkdir(parents=True, exist_ok=True)
-    with open(out / "metrics_weights.yaml", "w") as f:
-        yaml.safe_dump(metrics_weights, f)
+
+    shutil.copyfile(weights_file, out / weights_file.name)
 
     projects = create_compare_project(
         classifications,

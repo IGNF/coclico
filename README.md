@@ -66,20 +66,37 @@ python -m coclico.main -i <C1> <C2> \
                        --weights_file <WEIGHTS_FILE>
 ```
 
+ou
+
+```bash
+python -m coclico.main -i <C1> <C2> \
+                       -r <REF> \
+                       -o <OUT> \
+                       -g <GPAO_HOSTNAME> \
+                       -l <LOCAL_STORE_PATH> \
+                       -s <RUNNER_STORE_PATH> \
+                       -p <PROJECT_NAME> \
+                       -w <WEIGHTS_FILE>
+```
+
 options:
-  -i INPUT              Dossier(s) contenant une ou plusieurs classification(s) à comparer. ex: -i /chemin/c1 chemin/c2
-  --ref REF             Dossier contenant la classification de référence
-  --out OUT             Dossier de sortie de la comparaison
-  --gpao_hostname GPAO_HOSTNAME
+*  -i INPUT [INPUT ...], --input INPUT [INPUT ...]
+                        Dossier(s) contenant une ou plusieurs classification(s) à comparer. ex: -i
+                        /chemin/c1 chemin/c2
+*  -r REF, --ref REF     Dossier contenant la classification de référence
+*  -o OUT, --out OUT     Dossier de sortie de la comparaison
+*  -l LOCAL_STORE_PATH, --local_store_path LOCAL_STORE_PATH
+                        Chemin vers un store commun sur le PC qui lance ce script
+*  -s RUNNER_STORE_PATH, --runner_store_path RUNNER_STORE_PATH
+                        Chemin vers un store commun sur les clients GPAO (Unix path)
+*  -g GPAO_HOSTNAME, --gpao_hostname GPAO_HOSTNAME
                         Hostname du serveur GPAO
-  --local_store_path LOCAL_STORE_PATH
-                        Chemin vers le store sur le PC qui lance ce script
-  --runner_store_path RUNNER_STORE_PATH
-                        Chemin vers le store sur les clients GPAO (Unix path)
-  --project_name PROJECT_NAME
+*  -p PROJECT_NAME, --project_name PROJECT_NAME
                         Nom de projet pour la GPAO
-  --weights_file WEIGHTS_FILE
-                        (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on veut utiliser d'autres valeurs que le défaut
+*  -w WEIGHTS_FILE, --weights_file WEIGHTS_FILE
+                        (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on
+                        veut utiliser d'autres valeurs que le défaut
+
 
 ## Fichier des poids pour chaque classes (weights_file)
 
@@ -89,12 +106,12 @@ Le fichier des poids pour chaque classe / métrique est un fichier `yaml` du typ
 metric1:
   "1": 1
   "2": 2
-  "3,4": 2
+  "3-4": 2
 
 metric2:
   "1": 1
   "2": 0
-  "3,4": 2
+  "3-4": 2
 ```
 
 Au premier niveau : les métriques, qui doivent correspondre aux clés du dictionnaire `METRICS`
@@ -103,7 +120,7 @@ décrit dans `coclico/main.py`
 Au 2e niveau : les classes
 Chaque clé de classe peut contenir (placé entre guillemets):
 * un nom de classe
-* ou un sous-ensemble des classes contenues dans les fichiers LAS séparées par une virgule (`,`).
+* ou un sous-ensemble des classes contenues dans les fichiers LAS séparées par un tiret (`-`).
 Dans ce cas, c'est dans le code de chaque métrique qu'est décidée la façon de regrouper les classes
 (eg. somme du compte des points sur l'ensemble des classes pour MPAP0)
 

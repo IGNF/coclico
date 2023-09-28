@@ -20,24 +20,24 @@ def setup_module(module):
 
 
 def test_compute_absolute_diff():
-    count_c1 = dict({"1": 12, "2": 20, "3,4": 2})
+    count_c1 = dict({"1": 12, "2": 20, "3-4": 2})
     count_ref = dict({"1": 10, "2": 20, "5": 2})
-    classes = ["1", "3,4"]
+    classes = ["1", "3-4"]
     score = mpap0_relative.compute_absolute_diff(count_c1, count_ref, classes)
-    assert score == dict({"1": 2, "3,4": 2})
+    assert score == dict({"1": 2, "3-4": 2})
 
 
 note_mpap0_data = [
     ({}, {}, {}),  # limit case
     (
-        {"0": 0, "1": 50, "2,3": 300},  # diff c1 to ref
-        {"0": 1000, "1": 1000, "2,3": 2000},  # count_ref (point per class)
-        {"0": 1, "1": 0.5, "2,3": 0},  # expected score
+        {"0": 0, "1": 50, "2-3": 300},  # diff c1 to ref
+        {"0": 1000, "1": 1000, "2-3": 2000},  # count_ref (point per class)
+        {"0": 1, "1": 0.5, "2-3": 0},  # expected score
     ),  # cases over 1000 ref points
     (
-        {"0": 10, "1": 60, "2": 100, "3,4,5": 500},  # diff c1 to ref
-        {"1": 100, "2": 200, "3,4,5": 100},  # count_ref (point per class)
-        {"0": 1, "1": 0.5, "2": 0, "3,4,5": 0},  # expected score
+        {"0": 10, "1": 60, "2": 100, "3-4-5": 500},  # diff c1 to ref
+        {"1": 100, "2": 200, "3-4-5": 100},  # count_ref (point per class)
+        {"0": 1, "1": 0.5, "2": 0, "3-4-5": 0},  # expected score
     ),  # cases under 1000 ref points
 ]
 
