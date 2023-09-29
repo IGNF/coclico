@@ -1,18 +1,8 @@
 ## Todo
 
-### Archi et première métrique MPAP0
-
-- [x] résultat intermediaire manquant : score c1 pondéré (poids des classes). Une valeur pour chaque metrique.
-- [x] utiliser une liste de dossiers au lieu de `c1` et `c2` en utilisant le nom de dossier comme identifiant
-- [x] Ne pas refaire les jobs quand les dossiers existent déjà
-- [x] Ne pas écraser un fichier de score et le compléter
-- [x] Fonctionner avec des classes différentes pour chaque métrique
-  - [x] ajouter un test avec un fichier de config dans lequel : Une classe qui définie pour une métrique, mais pas dans une autre métrique. (pas definie= la ligne n'est pas écrite)
-- [x] Main, options à une seule lettre
-
 ### Remontée utisateur
-- [x] csv: classe composée, pas mettre de virgules (mettre des espaces par exemple) (tester à la main l'ouverture du fichier CSV avec openOffice)
-- [x] fichier de poids dans le dossier de resultat, faire une copie de fichier (pas un dump du fichier lu) (sinon l'ordre est changé)
+- [ ] csv: utiliser le séparateur ';'. Quand on lit, et quand on écrit.
+- [ ] classes composées: utiliser des '_' au lieu des '-' actuel
 
 ### Tests
 
