@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path, PurePosixPath
 from gpao.job import Job
 from gpao_utils.store import Store
-from coclico._version import __version__
+from coclico.version import __version__
 import logging
 from typing import List
 

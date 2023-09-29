@@ -16,7 +16,7 @@
 
 ### Robustesse
 
-- [ ] rendre robuste aux fichiers terrascan mal encodés (job séparé avant les métriques avec option pour l'activer)
+- [x] rendre robuste aux fichiers terrascan mal encodés (job séparé avant les métriques avec option pour l'activer)
 
 ### Propositions
 

@@ -5,7 +5,7 @@ from gpao_utils.store import Store
 
 from gpao.job import Job
 
-from coclico._version import __version__
+from coclico.version import __version__
 from coclico.metrics.metric import Metric
 
 

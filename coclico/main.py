@@ -1,5 +1,6 @@
 import argparse
-from coclico.gpao_utils import save_projects_as_json
+from coclico.unlock import create_unlock_job
+from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
 from gpao.builder import Builder
 from gpao.project import Project
 from gpao_utils.store import Store
@@ -50,8 +51,16 @@ def parse_args():
         "--weights_file",
         type=Path,
         default=Path("./configs/metrics_weights.yaml"),
-        help="(Optionel) Fichier yaml contenant les poids pour chaque classe/métrique "
+        help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "
         + "si on veut utiliser d'autres valeurs que le défaut",
+    )
+    parser.add_argument(
+        "-u",
+        "--unlock",
+        action="store_true",
+        default=False,
+        help="Ajouter une étape de pré-processing pour corriger l'encodage des fichiers issus de TerraScan (unlock) "
+        + "Attention: l'entête des fichiers d'entrée sera modifiée !",
     )
 
     return parser.parse_args()
@@ -107,6 +116,7 @@ def create_compare_project(
     store: Store,
     project_name: str,
     metrics_weights: Dict,
+    unlock: bool = False,
 ) -> Project:
     """Main function to generate a GPAO project needed to compare classifications (c1, c2..) with respect to a
     reference classification (ref) and save it as json files in out.
@@ -119,13 +129,17 @@ def create_compare_project(
         store (Store): store object to convert local paths to runner paths
         project_name (str): base project name for gpao projects
         metrics_weights (Dict): Dict containing the weight of each metric for each class.
+        unlock (bool, optional): If True, Defaults to False.
+
+    Returns:
+        Project: gpao project
     """
 
     check_pathes_ends_with_different_names(classifications)
 
     logging.debug(
         f"Create GPAO projects to compare {len(classifications)} classification(s): {classifications}"
-        + " to Ref: {ref} in Out: {out}."
+        + f" to Ref: {ref} in Out: {out}."
     )
     Project.reset()
 
@@ -144,6 +158,12 @@ def create_compare_project(
         logging.info(f"Skipping creation of REF jobs, since folder exists: {out_ref}")
 
     else:
+        unlock_job = None
+        if unlock:
+            logging.info("Overwriting REF input files to fix malformed WKT encoding.")
+            unlock_job = create_unlock_job("ref", tile_names, ref, store)
+            jobs.append(unlock_job)
+
         for metric_name, metric_class in METRICS.items():
             if metric_name in metrics_weights.keys():
                 class_weights = metrics_weights[metric_name]
@@ -152,6 +172,8 @@ def create_compare_project(
                 out_ref_metric = out_ref / metric_name / "intrinsic"
                 out_ref_metric.mkdir(parents=True, exist_ok=True)
                 metric_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
+                add_dependency_to_jobs(metric_jobs, unlock_job)
+
                 ref_jobs[metric_name] = metric_jobs
 
                 jobs.extend(metric_jobs)
@@ -164,6 +186,12 @@ def create_compare_project(
             logging.info(f"Skipping classification {ci.name} jobs, since folder exists {(out / ci.name)}")
 
         else:
+            unlock_job = None
+            if unlock:
+                logging.info(f"Overwriting classification {ci.name} input files to fix malformed WKT encoding.")
+                unlock_job = create_unlock_job(ci.name, tile_names, ci, store)
+                jobs.append(unlock_job)
+
             for metric_name, metric_class in METRICS.items():
                 if metric_name in metrics_weights.keys():
                     class_weights = metrics_weights[metric_name]
@@ -173,6 +201,7 @@ def create_compare_project(
 
                     out_ci_metric.mkdir(parents=True, exist_ok=True)
                     ci_intrinsic_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_ci_metric)
+                    add_dependency_to_jobs(ci_intrinsic_jobs, unlock_job)
 
                     out_ci_to_ref_metric = out_ci / metric_name / "to_ref"
                     out_ci_to_ref_metric.mkdir(parents=True, exist_ok=True)
@@ -219,6 +248,7 @@ def compare(
     runner_store_path: PurePosixPath,
     project_name: str,
     weights_file: Path = Path("./configs/metrics_weights.yaml"),
+    unlock: bool = False,
 ):
     """Main function to compare one or more classifications (c1, c2..) with respect to a reference
     classification (ref) and save it as json files in out.
@@ -235,6 +265,7 @@ def compare(
         project_name (str): base project name for gpao projects
         weights_file (Path, optional): Yaml file containing the weight of each metric for each class.
         Defaults to Path("./configs/metrics_weights.yaml").
+        unlock (bool, optional): If True, Defaults to False.
     """
 
     logging.debug(
@@ -250,14 +281,7 @@ def compare(
 
     shutil.copyfile(weights_file, out / weights_file.name)
 
-    project = create_compare_project(
-        classifications,
-        ref,
-        out,
-        store,
-        project_name,
-        metrics_weights,
-    )
+    project = create_compare_project(classifications, ref, out, store, project_name, metrics_weights, unlock)
 
     builder = Builder([project])
     logging.info(f"Send projects to gpao server: {gpao_hostname}")
@@ -280,4 +304,5 @@ if __name__ == "__main__":
         args.runner_store_path,
         args.project_name,
         args.weights_file,
+        args.unlock,
     )

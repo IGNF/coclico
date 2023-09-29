@@ -7,6 +7,7 @@
 - main: prend une liste de dossier de classification en entrée, pas obligatoirement 2 classifications (c1 et c2)
 - résultat intermediaire, avec le score pondéré (une valeur pour chaque métrique)
 - possibilité d'avoir des classes différentes pour des métriques différentes
+- robustesse aux fichiers avec CRS mal encodé
 
 # 0.2.1
 - mpap0: correctif metrique relative, appliquée sur la liste des classes

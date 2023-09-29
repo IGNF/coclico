@@ -1,5 +1,5 @@
 import argparse
-from coclico._version import __version__
+from coclico.version import __version__
 from gpao.job import Job
 from gpao_utils.store import Store
 import json

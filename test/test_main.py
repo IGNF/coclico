@@ -122,6 +122,24 @@ def test_create_compare_project_existing_c2(ensure_test1_data):
     assert np.sum([job.name.startswith("MPAP0_niv4_relative_to_ref") for job in project.jobs]) == 0
 
 
+def test_create_compare_project_unlock(ensure_test1_data):
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / "create_compare_project_unlock"
+    project_name = "coclico_test_create_compare_projects_unlock"
+    metrics_weights = {"mpap0": {"0": 1, "1-2": 2}, "mpap0_test": {"0": 1, "1-2": 2}}
+
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights, unlock=False)
+
+    assert all(["unlock" not in job.name for job in project.jobs])  # No unlock job
+
+    shutil.rmtree(out)
+
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights, unlock=True)
+    assert np.sum([job.name.endswith("_unlock") for job in project.jobs]) == 3
+
+
 @pytest.mark.gpao
 def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     c1 = Path("./data/test1/niv1/")
@@ -205,6 +223,34 @@ def test_run_main_test1(ensure_test1_data, use_gpao_server):
         --runner_store_path {runner_store_path} \
         --project_name {project_name} \
         --local_store_path {local_store_path}"""
+    sp.run(cmd, shell=True, check=True)
+    tu.execute_gpao_client(tags="docker", num_thread=4)
+    wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
+
+    tu.delete_projects_starting_with(project_name)
+
+
+@pytest.mark.gpao
+def test_run_main_test1_unlock(ensure_test1_data, use_gpao_server):
+    c1 = Path("./data/test1/niv1/")
+    c2 = Path("./data/test1/niv4/")
+    ref = Path("./data/test1/ref/")
+    out = TMP_PATH / Path("run_main_test1_unlock")
+    weights_file = Path("./test/configs/metrics_weights_test.yaml")
+    gpao_hostname = "localhost"
+    runner_store_path = Path("./data").resolve()
+    local_store_path = runner_store_path
+    project_name = "coclico_test_run_main_test1_unlock"
+    cmd = f"""python -m coclico.main \
+        -i {str(c1)} {str(c2)} \
+        --ref {str(ref)} \
+        --out {str(out)} \
+        --weights_file {str(weights_file)} \
+        --gpao_hostname {gpao_hostname} \
+        --runner_store_path {runner_store_path} \
+        --project_name {project_name} \
+        --local_store_path {local_store_path} \
+        --unlock"""
     sp.run(cmd, shell=True, check=True)
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
