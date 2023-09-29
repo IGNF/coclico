@@ -130,65 +130,76 @@ def create_compare_project(
     Project.reset()
 
     out_ref = out / "ref"
-    ref_exists = out_ref.exists()
-    if ref_exists:
-        logging.info(f"Skipping creation of REF jobs, since folder exists: {out_ref}")
 
     # get filenames of tiles from the local machine
     tile_names = get_tile_names(ref)
+
     jobs = []
-    final_relative_jobs = {ci.name: [] for ci in classifications}
-
-    output_ci_exists = {ci.name: (out / ci.name).exists() for ci in classifications}
-    for ci in classifications:
-        if output_ci_exists[ci.name]:
-            logging.info(f"Skipping classification {ci.name} jobs, since folder exists {(out / ci.name)}")
-
-    for metric_name, metric_class in METRICS.items():
-        if metric_name in metrics_weights.keys():
-            class_weights = metrics_weights[metric_name]
-            metric = metric_class(store, class_weights)
-
-            out_ref_metric = out_ref / metric_name / "intrinsic"
-            ref_jobs = []
-            if not ref_exists:
-                out_ref_metric.mkdir(parents=True, exist_ok=True)
-                ref_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
-                jobs.extend(ref_jobs)
-
-            for ci in classifications:
-                out_c1 = out / ci.name
-                out_c1_metric = out_c1 / metric_name / "intrinsic"
-
-                if not output_ci_exists[ci.name]:
-                    out_c1_metric.mkdir(parents=True, exist_ok=True)
-                    c1_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_c1_metric)
-
-                    out_c1_to_ref_metric = out_c1 / metric_name / "to_ref"
-                    out_c1_to_ref_metric.mkdir(parents=True, exist_ok=True)
-
-                    c1_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
-                        ci.name, out_c1_metric, out_ref_metric, out_c1_to_ref_metric, c1_jobs, ref_jobs
-                    )
-
-                    final_relative_jobs[ci.name].append(c1_to_ref_jobs[-1])
-
-                jobs.extend(c1_jobs)
-                jobs.extend(c1_to_ref_jobs)
-
     score_deps = []
     score_results = []
-    for ci in classifications:
-        out_c1 = out / ci.name
-        result1 = out_c1 / (str(ci.name) + "_result.csv")
-        c1_final_relative_jobs = final_relative_jobs[ci.name]
-        merge_c1_metrics = results_by_tile.create_job_merge_results(
-            out_c1, result1, store, deps=c1_final_relative_jobs
-        )
 
-        score_deps.append(merge_c1_metrics)
-        score_results.append(result1)
-        jobs.append(merge_c1_metrics)
+    ref_jobs = {}
+    # create intrinsic metrics jobs for reference
+    if out_ref.exists():
+        logging.info(f"Skipping creation of REF jobs, since folder exists: {out_ref}")
+
+    else:
+        for metric_name, metric_class in METRICS.items():
+            if metric_name in metrics_weights.keys():
+                class_weights = metrics_weights[metric_name]
+                metric = metric_class(store, class_weights)
+
+                out_ref_metric = out_ref / metric_name / "intrinsic"
+                out_ref_metric.mkdir(parents=True, exist_ok=True)
+                metric_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
+                ref_jobs[metric_name] = metric_jobs
+
+                jobs.extend(metric_jobs)
+
+    for ci in classifications:
+        ci_jobs = []
+        ci_merge_deps = []
+        out_ci = out / ci.name
+        if (out / ci.name).exists():
+            logging.info(f"Skipping classification {ci.name} jobs, since folder exists {(out / ci.name)}")
+
+        else:
+            for metric_name, metric_class in METRICS.items():
+                if metric_name in metrics_weights.keys():
+                    class_weights = metrics_weights[metric_name]
+                    metric = metric_class(store, class_weights)
+
+                    out_ci_metric = out_ci / metric_name / "intrinsic"
+
+                    out_ci_metric.mkdir(parents=True, exist_ok=True)
+                    ci_intrinsic_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_ci_metric)
+
+                    out_ci_to_ref_metric = out_ci / metric_name / "to_ref"
+                    out_ci_to_ref_metric.mkdir(parents=True, exist_ok=True)
+
+                    out_ref_metric = out_ref / metric_name / "intrinsic"
+                    ci_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
+                        ci.name,
+                        out_ci_metric,
+                        out_ref_metric,
+                        out_ci_to_ref_metric,
+                        ci_intrinsic_jobs,
+                        ref_jobs.get(metric_name, []),
+                    )
+
+                    ci_merge_deps.append(ci_to_ref_jobs[-1])
+
+                    ci_jobs.extend(ci_intrinsic_jobs)
+                    ci_jobs.extend(ci_to_ref_jobs)
+
+        resulti = out_ci / (str(ci.name) + "_result.csv")
+        merge_ci_metrics = results_by_tile.create_job_merge_results(out_ci, resulti, store, deps=ci_merge_deps)
+
+        score_deps.append(merge_ci_metrics)
+        score_results.append(resulti)
+        ci_jobs.append(merge_ci_metrics)
+
+        jobs.extend(ci_jobs)
 
     score_job = merge_results.create_merge_all_results_job(
         score_results, out / "result.csv", store, metrics_weights, score_deps
