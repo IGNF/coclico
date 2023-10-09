@@ -63,7 +63,8 @@ python -m coclico.main -i <C1> <C2> \
                        --local_store_path <LOCAL_STORE_PATH> \
                        --runner_store_path <RUNNER_STORE_PATH> \
                        --project_name <PROJECT_NAME> \
-                       --weights_file <WEIGHTS_FILE>
+                       --weights_file <WEIGHTS_FILE> \
+                       --unlock
 ```
 
 ou
@@ -76,7 +77,8 @@ python -m coclico.main -i <C1> <C2> \
                        -l <LOCAL_STORE_PATH> \
                        -s <RUNNER_STORE_PATH> \
                        -p <PROJECT_NAME> \
-                       -w <WEIGHTS_FILE>
+                       -w <WEIGHTS_FILE> \
+                       -u
 ```
 
 options:
@@ -96,6 +98,9 @@ options:
 *  -w WEIGHTS_FILE, --weights_file WEIGHTS_FILE
                         (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on
                         veut utiliser d'autres valeurs que le défaut
+*  -u, --unlock         Ajouter une étape de pré-processing pour corriger l'encodage des fichiers issus de TerraScan (unlock)
+                        Attention: l'entête des fichiers d'entrée sera modifiée !
+
 
 
 ## Fichier des poids pour chaque classes (weights_file)

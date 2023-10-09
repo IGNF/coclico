@@ -20,3 +20,4 @@ dependencies:
     - ign-gpao-utils==0.2.2
     - ign-gpao-project-builder==0.10.0
     - ign-gpao-client==0.18.0
+    - ign-pdal-tools==1.3.0

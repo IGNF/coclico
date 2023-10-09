@@ -1,5 +1,6 @@
 import argparse
-from coclico.gpao_utils import save_projects_as_json
+from coclico.unlock import create_unlock_job
+from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
 from gpao.builder import Builder
 from gpao.project import Project
 from gpao_utils.store import Store
@@ -50,8 +51,16 @@ def parse_args():
         "--weights_file",
         type=Path,
         default=Path("./configs/metrics_weights.yaml"),
-        help="(Optionel) Fichier yaml contenant les poids pour chaque classe/métrique "
+        help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "
         + "si on veut utiliser d'autres valeurs que le défaut",
+    )
+    parser.add_argument(
+        "-u",
+        "--unlock",
+        action="store_true",
+        default=False,
+        help="Ajouter une étape de pré-processing pour corriger l'encodage des fichiers issus de TerraScan (unlock) "
+        + "Attention: l'entête des fichiers d'entrée sera modifiée !",
     )
 
     return parser.parse_args()
@@ -107,6 +116,7 @@ def create_compare_project(
     store: Store,
     project_name: str,
     metrics_weights: Dict,
+    unlock: bool = False,
 ) -> Project:
     """Main function to generate a GPAO project needed to compare classifications (c1, c2..) with respect to a
     reference classification (ref) and save it as json files in out.
@@ -119,76 +129,106 @@ def create_compare_project(
         store (Store): store object to convert local paths to runner paths
         project_name (str): base project name for gpao projects
         metrics_weights (Dict): Dict containing the weight of each metric for each class.
+        unlock (bool, optional): If True, Defaults to False.
+
+    Returns:
+        Project: gpao project
     """
 
     check_pathes_ends_with_different_names(classifications)
 
     logging.debug(
         f"Create GPAO projects to compare {len(classifications)} classification(s): {classifications}"
-        + " to Ref: {ref} in Out: {out}."
+        + f" to Ref: {ref} in Out: {out}."
     )
     Project.reset()
 
     out_ref = out / "ref"
-    ref_exists = out_ref.exists()
-    if ref_exists:
-        logging.info(f"Skipping creation of REF jobs, since folder exists: {out_ref}")
 
     # get filenames of tiles from the local machine
     tile_names = get_tile_names(ref)
+
     jobs = []
-    final_relative_jobs = {ci.name: [] for ci in classifications}
-
-    output_ci_exists = {ci.name: (out / ci.name).exists() for ci in classifications}
-    for ci in classifications:
-        if output_ci_exists[ci.name]:
-            logging.info(f"Skipping classification {ci.name} jobs, since folder exists {(out / ci.name)}")
-
-    for metric_name, metric_class in METRICS.items():
-        if metric_name in metrics_weights.keys():
-            class_weights = metrics_weights[metric_name]
-            metric = metric_class(store, class_weights)
-
-            out_ref_metric = out_ref / metric_name / "intrinsic"
-            ref_jobs = []
-            if not ref_exists:
-                out_ref_metric.mkdir(parents=True, exist_ok=True)
-                ref_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
-                jobs.extend(ref_jobs)
-
-            for ci in classifications:
-                out_c1 = out / ci.name
-                out_c1_metric = out_c1 / metric_name / "intrinsic"
-
-                if not output_ci_exists[ci.name]:
-                    out_c1_metric.mkdir(parents=True, exist_ok=True)
-                    c1_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_c1_metric)
-
-                    out_c1_to_ref_metric = out_c1 / metric_name / "to_ref"
-                    out_c1_to_ref_metric.mkdir(parents=True, exist_ok=True)
-
-                    c1_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
-                        ci.name, out_c1_metric, out_ref_metric, out_c1_to_ref_metric, c1_jobs, ref_jobs
-                    )
-
-                    final_relative_jobs[ci.name].append(c1_to_ref_jobs[-1])
-
-                jobs.extend(c1_jobs)
-                jobs.extend(c1_to_ref_jobs)
-
     score_deps = []
     score_results = []
-    for ci in classifications:
-        out_c1 = out / ci.name
-        result1 = out_c1 / (str(ci.name) + "_result.csv")
-        c1_final_relative_jobs = final_relative_jobs[ci.name]
-        merge_c1_metrics = results_by_tile.create_job_merge_results(
-            out_c1, result1, store, deps=c1_final_relative_jobs
-        )
 
-        score_deps.append(merge_c1_metrics)
-        score_results.append(result1)
-        jobs.append(merge_c1_metrics)
+    ref_jobs = {}
+    # create intrinsic metrics jobs for reference
+    if out_ref.exists():
+        logging.info(f"Skipping creation of REF jobs, since folder exists: {out_ref}")
+
+    else:
+        unlock_job = None
+        if unlock:
+            logging.info("Overwriting REF input files to fix malformed WKT encoding.")
+            unlock_job = create_unlock_job("ref", tile_names, ref, store)
+            jobs.append(unlock_job)
+
+        for metric_name, metric_class in METRICS.items():
+            if metric_name in metrics_weights.keys():
+                class_weights = metrics_weights[metric_name]
+                metric = metric_class(store, class_weights)
+
+                out_ref_metric = out_ref / metric_name / "intrinsic"
+                out_ref_metric.mkdir(parents=True, exist_ok=True)
+                metric_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
+                add_dependency_to_jobs(metric_jobs, unlock_job)
+
+                ref_jobs[metric_name] = metric_jobs
+
+                jobs.extend(metric_jobs)
+
+    for ci in classifications:
+        ci_jobs = []
+        ci_merge_deps = []
+        out_ci = out / ci.name
+        if (out / ci.name).exists():
+            logging.info(f"Skipping classification {ci.name} jobs, since folder exists {(out / ci.name)}")
+
+        else:
+            unlock_job = None
+            if unlock:
+                logging.info(f"Overwriting classification {ci.name} input files to fix malformed WKT encoding.")
+                unlock_job = create_unlock_job(ci.name, tile_names, ci, store)
+                jobs.append(unlock_job)
+
+            for metric_name, metric_class in METRICS.items():
+                if metric_name in metrics_weights.keys():
+                    class_weights = metrics_weights[metric_name]
+                    metric = metric_class(store, class_weights)
+
+                    out_ci_metric = out_ci / metric_name / "intrinsic"
+
+                    out_ci_metric.mkdir(parents=True, exist_ok=True)
+                    ci_intrinsic_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_ci_metric)
+                    add_dependency_to_jobs(ci_intrinsic_jobs, unlock_job)
+
+                    out_ci_to_ref_metric = out_ci / metric_name / "to_ref"
+                    out_ci_to_ref_metric.mkdir(parents=True, exist_ok=True)
+
+                    out_ref_metric = out_ref / metric_name / "intrinsic"
+                    ci_to_ref_jobs = metric.create_metric_relative_to_ref_jobs(
+                        ci.name,
+                        out_ci_metric,
+                        out_ref_metric,
+                        out_ci_to_ref_metric,
+                        ci_intrinsic_jobs,
+                        ref_jobs.get(metric_name, []),
+                    )
+
+                    ci_merge_deps.append(ci_to_ref_jobs[-1])
+
+                    ci_jobs.extend(ci_intrinsic_jobs)
+                    ci_jobs.extend(ci_to_ref_jobs)
+
+        resulti = out_ci / (str(ci.name) + "_result.csv")
+        merge_ci_metrics = results_by_tile.create_job_merge_results(out_ci, resulti, store, deps=ci_merge_deps)
+
+        score_deps.append(merge_ci_metrics)
+        score_results.append(resulti)
+        ci_jobs.append(merge_ci_metrics)
+
+        jobs.extend(ci_jobs)
 
     score_job = merge_results.create_merge_all_results_job(
         score_results, out / "result.csv", store, metrics_weights, score_deps
@@ -208,6 +248,7 @@ def compare(
     runner_store_path: PurePosixPath,
     project_name: str,
     weights_file: Path = Path("./configs/metrics_weights.yaml"),
+    unlock: bool = False,
 ):
     """Main function to compare one or more classifications (c1, c2..) with respect to a reference
     classification (ref) and save it as json files in out.
@@ -224,6 +265,7 @@ def compare(
         project_name (str): base project name for gpao projects
         weights_file (Path, optional): Yaml file containing the weight of each metric for each class.
         Defaults to Path("./configs/metrics_weights.yaml").
+        unlock (bool, optional): If True, Defaults to False.
     """
 
     logging.debug(
@@ -239,14 +281,7 @@ def compare(
 
     shutil.copyfile(weights_file, out / weights_file.name)
 
-    project = create_compare_project(
-        classifications,
-        ref,
-        out,
-        store,
-        project_name,
-        metrics_weights,
-    )
+    project = create_compare_project(classifications, ref, out, store, project_name, metrics_weights, unlock)
 
     builder = Builder([project])
     logging.info(f"Send projects to gpao server: {gpao_hostname}")
@@ -269,4 +304,5 @@ if __name__ == "__main__":
         args.runner_store_path,
         args.project_name,
         args.weights_file,
+        args.unlock,
     )

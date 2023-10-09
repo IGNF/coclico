@@ -1,4 +1,4 @@
-from coclico._version import __version__
+from coclico.version import __version__
 import docker
 from gpao.project import Project
 import logging
