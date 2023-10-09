@@ -1,8 +1,8 @@
 ## Todo
 
 ### Remontée utisateur
-- [ ] csv: utiliser le séparateur ';'. Quand on lit, et quand on écrit.
-- [ ] classes composées: utiliser des '_' au lieu des '-' actuel
+- [x] csv: utiliser le séparateur ';'. Quand on lit, et quand on écrit.
+- [x] classes composées: utiliser des '_' au lieu des '-' actuel
 
 ### Tests
 

@@ -1,16 +1,17 @@
 from typing import Tuple, List
+from coclico.config import composed_class_separator
 
 
 def split_composed_class(class_key: str) -> List[str]:
-    """Split composed class key (separated by "-") into its elementary classes.
-    Example "3-4-5" becomes ["3", "4", "5"]
+    """Split composed class key (separated by COMPOSED_CLASS_SEPARATOR) into its elementary classes.
+    Example "3_4_5" becomes ["3", "4", "5"]
     Args:
         class_key (str): origin key
 
     Returns:
         List[str]: splitted keys
     """
-    return class_key.split("-")
+    return class_key.split(composed_class_separator)
 
 
 def bounded_affine_function(coordinates_min: Tuple, coordinates_max: Tuple, x_query: float) -> float:

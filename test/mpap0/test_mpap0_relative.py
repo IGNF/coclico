@@ -1,4 +1,5 @@
 from coclico.mpap0 import mpap0_relative
+from coclico.config import csv_separator
 
 import json
 import logging
@@ -20,24 +21,24 @@ def setup_module(module):
 
 
 def test_compute_absolute_diff():
-    count_c1 = dict({"1": 12, "2": 20, "3-4": 2})
+    count_c1 = dict({"1": 12, "2": 20, "3_4": 2})
     count_ref = dict({"1": 10, "2": 20, "5": 2})
-    classes = ["1", "3-4"]
+    classes = ["1", "3_4"]
     score = mpap0_relative.compute_absolute_diff(count_c1, count_ref, classes)
-    assert score == dict({"1": 2, "3-4": 2})
+    assert score == dict({"1": 2, "3_4": 2})
 
 
 note_mpap0_data = [
     ({}, {}, {}),  # limit case
     (
-        {"0": 0, "1": 50, "2-3": 300},  # diff c1 to ref
-        {"0": 1000, "1": 1000, "2-3": 2000},  # count_ref (point per class)
-        {"0": 1, "1": 0.5, "2-3": 0},  # expected score
+        {"0": 0, "1": 50, "2_3": 300},  # diff c1 to ref
+        {"0": 1000, "1": 1000, "2_3": 2000},  # count_ref (point per class)
+        {"0": 1, "1": 0.5, "2_3": 0},  # expected score
     ),  # cases over 1000 ref points
     (
-        {"0": 10, "1": 60, "2": 100, "3-4-5": 500},  # diff c1 to ref
-        {"1": 100, "2": 200, "3-4-5": 100},  # count_ref (point per class)
-        {"0": 1, "1": 0.5, "2": 0, "3-4-5": 0},  # expected score
+        {"0": 10, "1": 60, "2": 100, "3_4_5": 500},  # diff c1 to ref
+        {"1": 100, "2": 200, "3_4_5": 100},  # count_ref (point per class)
+        {"0": 1, "1": 0.5, "2": 0, "3_4_5": 0},  # expected score
     ),  # cases under 1000 ref points
 ]
 
@@ -62,7 +63,7 @@ def test_compute_metric_relative():
     expected_rows = 4  # 4 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
 
-    df = pd.read_csv(output_csv)
+    df = pd.read_csv(output_csv, sep=csv_separator)
     mpap0_score_class_9 = df["mpap0"][df.index[df["class"] == "9"][0]]
     assert mpap0_score_class_9 == 1  # score for class 9 is 1. Case: 0 point for classe 9 in c1 and ref.
 

@@ -1,6 +1,7 @@
 import pandas as pd
 from typing import Callable, List
 import coclico.csv_manipulation.results_by_tile
+from coclico.config import csv_separator
 from test.utils import check_df_exists_with_no_empty_data
 import subprocess as sp
 import shutil
@@ -53,7 +54,7 @@ def generate_csv_result(
                 results_list.append(result_dict)
 
         df = pd.DataFrame(results_list)
-        df.to_csv(out_metric / "result_tile.csv", index=False)
+        df.to_csv(out_metric / "result_tile.csv", index=False, sep=csv_separator)
 
         results_list = []
         for cl in classes:
@@ -63,7 +64,7 @@ def generate_csv_result(
             results_list.append(result_dict)
 
         df = pd.DataFrame(results_list)
-        df.to_csv(out_metric / "result.csv", index=False)
+        df.to_csv(out_metric / "result.csv", index=False, sep=csv_separator)
 
 
 def test_merge_results_for_one_classif():
@@ -103,13 +104,13 @@ def test_merge_results_for_one_classif_on_different_classes():
     coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(base_path, out)
 
     assert out.is_file()
-    df = pd.read_csv(out, dtype={"class": str})
+    df = pd.read_csv(out, dtype={"class": str}, sep=csv_separator)
     assert set(df.columns) == set(["class"] + metrics)
     assert len(df.index) == len(classes)
     assert all([not df[m].isnull().values.all() for m in metrics])  # check that no metric is completely empty
 
     assert out_tile.is_file()
-    df = pd.read_csv(out_tile, dtype={"class": str})
+    df = pd.read_csv(out_tile, dtype={"class": str}, sep=csv_separator)
     assert set(df.columns) == set(["tile", "class"] + metrics)
     assert len(df.index) == len(tiles) * len(classes)
     assert set(df["tile"]) == set(tiles)

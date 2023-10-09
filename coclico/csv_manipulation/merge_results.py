@@ -7,6 +7,7 @@ import logging
 import pandas as pd
 from pathlib import Path
 from typing import Dict, List
+from coclico.config import csv_separator
 
 
 def compute_weighted_result(input: Path, weights: Dict) -> Dict:
@@ -35,7 +36,7 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
             "mpap0_test": 2.4
         }
     """
-    df = pd.read_csv(input)
+    df = pd.read_csv(input, sep=csv_separator)
     classif_name = input.parent.name
     logging.debug("Score for %s", classif_name)
     total_score = 0
@@ -117,7 +118,7 @@ def merge_all_results(
     df = pd.DataFrame(data)
     output_by_metric = output.parent / (output.stem + "_by_metric.csv")
     if output_by_metric.exists():
-        existing_df = pd.read_csv(output_by_metric)
+        existing_df = pd.read_csv(output_by_metric, sep=csv_separator)
         existing_classif = existing_df["classification"].to_list()
         incoming_classif = df["classification"].to_list()
         to_remove_classif = list(set(existing_classif) & set(incoming_classif))
@@ -126,10 +127,10 @@ def merge_all_results(
             existing_df = filter_out_rows(existing_df, "classification", to_remove_classif)
         df = pd.concat([existing_df, df])
 
-    df.to_csv(output_by_metric, index=False)
+    df.to_csv(output_by_metric, index=False, sep=csv_separator)
 
     df_summary = df.iloc[:, 0:2]
-    df_summary.to_csv(output, index=False)
+    df_summary.to_csv(output, index=False, sep=csv_separator)
 
 
 def parse_args():
