@@ -3,17 +3,18 @@ import pandas as pd
 from pathlib import Path
 import requests
 import socket
+from coclico.config import csv_separator
 
 
 def csv_num_rows(f: Path):
     assert f.exists()
-    df = pd.read_csv(f)
+    df = pd.read_csv(f, sep=csv_separator)
     return df.shape[0]
 
 
 def csv_num_col(f: Path):
     assert f.exists()
-    df = pd.read_csv(f)
+    df = pd.read_csv(f, sep=csv_separator)
     return df.shape[1]
 
 
@@ -28,7 +29,7 @@ def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:
         pd.DataFrame: read dataframe
     """
     assert (f).is_file()
-    df = pd.read_csv(f, dtype={"class": str})
+    df = pd.read_csv(f, dtype={"class": str}, sep=csv_separator)
     assert not df.isnull().values.any()
     return df
 

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, List
 from collections import Counter
 from coclico.metrics.commons import bounded_affine_function
+from coclico.config import csv_separator
 
 
 def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dict:
@@ -70,7 +71,7 @@ def compute_metric_relative(
 
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(data)
-    df.to_csv(output_csv_tile, index=False)
+    df.to_csv(output_csv_tile, index=False, sep=csv_separator)
     logging.debug(df.to_markdown())
 
     total_abs_diff = compute_absolute_diff(total_c1_count, total_ref_count, classes)
@@ -78,7 +79,7 @@ def compute_metric_relative(
 
     data = [{"class": cl, metric: total_notes.get(cl, 0)} for cl in classes]
     df = pd.DataFrame(data)
-    df.to_csv(output_csv, index=False)
+    df.to_csv(output_csv, index=False, sep=csv_separator)
 
     logging.debug(df.to_markdown())
 
