@@ -51,7 +51,7 @@ def test_compute_note(diff, counts_ref, expected):
 def test_compute_metric_relative():
     c1_dir = Path("./data/mpap0/c1/intrinsic")
     ref_dir = Path("./data/mpap0/ref/intrinsic")
-    class_weights = dict({"1": 1, "2": 0, "3,4,5": 1, "9": 1})  # simple classes  # composed class
+    class_weights = dict({"1": 1, "2": 0, "3_4_5": 1, "9": 1})  # simple classes  # composed class
     output_csv = TMP_PATH / "relative" / "result.csv"
     output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
 
