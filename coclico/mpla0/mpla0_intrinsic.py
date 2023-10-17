@@ -21,7 +21,6 @@ def create_2d_binary_map(
     """Create 2d binary occupancy map from points coordinates:
     boolean 2d map with 1 where at least one point falls in the pixel, 0 everywhere else.
 
-
     Args:
         xs (np.array): vector of x coordinates of all points
         ys (np.array): vector of y coordinates of all points

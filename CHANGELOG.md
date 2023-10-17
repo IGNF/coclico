@@ -1,3 +1,7 @@
+# dev
+* ajout seconde métrique : MPLA0
+* retrait métrique de test MPAP0-test
+
 # 0.2.2
 Améliorations architecture :
 - score: si le fichier resultat existe, concatène ou remplace dans le fichier.

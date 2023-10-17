@@ -15,9 +15,15 @@ Les résultats sont comparés par le calcul de plusieurs métriques, dont sont e
 Pour l'instant les métriques implémentées sont :
 * MPAP0 (Métrique point à point 0) : calcul d'une note à partir de la comparaison du nombre de points pour chaque classe
 entre le résultat et la référence
+* MPLA0 (Métrique planimétrique 0) : calcul d'une note à partir de l'intersection et l'union de cartes de classes 2D
+entre le résultat et la référence
+
 
 Les différentes métriques associées aux différentes classes sont ensuite aggrégées à l'aide d'une somme pondérée par
 l'importance de chaque métrique pour chaque classe
+
+Plus de détails sur les métriques dans le fichier de définition de la classe représentant chaque métrique
+(eg. `coclico/mpap0/mpap0.py` pour MPAP0)
 
 Ce projet utilise une infracture de gestion de production par ordinateur [IGN GPAO](https://github.com/ign-gpao)
 développée au sein de l'IGNF pour la parallélisation des calculs.
@@ -111,12 +117,12 @@ Le fichier des poids pour chaque classe / métrique est un fichier `yaml` du typ
 metric1:
   "1": 1
   "2": 2
-  "3-4": 2
+  "3_4": 2
 
 metric2:
   "1": 1
   "2": 0
-  "3-4": 2
+  "3_4": 2
 ```
 
 Au premier niveau : les métriques, qui doivent correspondre aux clés du dictionnaire `METRICS`
@@ -125,7 +131,7 @@ décrit dans `coclico/main.py`
 Au 2e niveau : les classes
 Chaque clé de classe peut contenir (placé entre guillemets):
 * un nom de classe
-* ou un sous-ensemble des classes contenues dans les fichiers LAS séparées par un tiret (`-`).
+* ou un sous-ensemble des classes contenues dans les fichiers LAS séparées par un tiret (`_`).
 Dans ce cas, c'est dans le code de chaque métrique qu'est décidée la façon de regrouper les classes
 (eg. somme du compte des points sur l'ensemble des classes pour MPAP0)
 

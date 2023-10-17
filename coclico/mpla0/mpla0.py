@@ -9,16 +9,20 @@ from coclico.metrics.metric import Metric
 
 
 class MPLA0(Metric):
-    """Planimetric metric:
-    Compute a note from the comparison of 2d classification maps
+    """Metric MPLA0 (for "Métrique planimetric 0")
+    Comparison of 2d classification maps (occupancy maps) for each class between the classification and the
+    reference
 
     - metric_intrinsic:
-        for each component, generate a tif file with one layer by class in the class_weight dictionary
+        for each input file, generate a tif file with one layer by class in the class_weight dictionary
         for each class, the corresponding layer contains a kind of 2d occupancy map for the class (ie. if any point
         of this class belongs to the pixel, the pixel has a value of 1, the value is 0 everywhere else)
 
-    - metric extrinsic: TODO
+    - metric extrinsic: compute intersection and union of the classification maps
 
+    - note:
+        * if reference data has more than 1000 points: affine function on the intersection over union for each class
+        * otherwise: affine function on {union - intersection}
     """
 
     # Pixel size for the intermediate result: 2d binary maps for each class

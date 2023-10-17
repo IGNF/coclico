@@ -9,6 +9,15 @@ from coclico.metrics.metric import Metric
 
 
 class MPAP0(Metric):
+    """Metric MPAP0 (for "Métrique point à point 0")
+    Comparison of the number of points for each class between the classification and the reference
+    - metric intrinsic: compute number of points for each class
+    - metric relative: compare number of points for each class
+    - note:
+        * if reference data has more than 1000 points: affine function on the relative difference in number of points
+        * otherwise: affine function on the absolute difference in number of points
+    """
+
     metric_name = "MPAP0"
 
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
