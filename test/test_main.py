@@ -128,7 +128,7 @@ def test_create_compare_project_unlock(ensure_test1_data):
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / "create_compare_project_unlock"
     project_name = "coclico_test_create_compare_projects_unlock"
-    metrics_weights = {"mpap0": {"0": 1, "1-2": 2}, "mpap0_test": {"0": 1, "1-2": 2}}
+    metrics_weights = {"mpap0": {"0": 1, "1-2": 2}, "mpla0": {"0": 1, "1-2": 2}}
 
     project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights, unlock=False)
 
@@ -200,8 +200,8 @@ def test_compare_test1_weights(ensure_test1_data, use_gpao_server):
     assert tu.csv_num_rows(c2_to_ref) == 3  # 3 classes_weights
 
     c1_all_metrics = out / "niv1" / "niv1_result.csv"
-    assert tu.csv_num_rows(c1_all_metrics) == 4  # 4 classes_weights (one differs between mpap0 and mpap0_test)
-    assert tu.csv_num_col(c1_all_metrics) == 3  # class, mpap0, mpap0_test
+    assert tu.csv_num_rows(c1_all_metrics) == 4  # 4 classes_weights (one differs between mpap0 and mpla0)
+    assert tu.csv_num_col(c1_all_metrics) == 3  # class, mpap0, mpla0
 
     all_scores = out / "result.csv"
     assert tu.csv_num_rows(all_scores) == 3  # 3 classif (niv1 niv2 niv4)

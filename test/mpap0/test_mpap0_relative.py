@@ -80,7 +80,6 @@ def test_run_main():
         --class_weights '{json.dumps(class_weights)}' \
         --output_csv {output_csv} \
         --output_csv_tile {output_csv_tile} \
-        -t
     """
 
     sp.run(cmd, shell=True, check=True)

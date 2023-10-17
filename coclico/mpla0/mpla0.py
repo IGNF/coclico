@@ -1,7 +1,6 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 import json
-from gpao_utils.store import Store
 
 from gpao.job import Job
 
@@ -25,9 +24,6 @@ class MPLA0(Metric):
     # Pixel size for the intermediate result: 2d binary maps for each class
     map_pixel_size = 0.5
     metric_name = "MPLA0"
-
-    def __init__(self, store: Store, class_weights: Dict):
-        super().__init__(store, class_weights)
 
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"

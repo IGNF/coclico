@@ -33,7 +33,7 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
             "classification": "c1",
             "score": 7.0,
             "mpap0": 4.6,
-            "mpap0_test": 2.4
+            "mpla0": 2.4
         }
     """
     df = pd.read_csv(input, sep=csv_separator)
