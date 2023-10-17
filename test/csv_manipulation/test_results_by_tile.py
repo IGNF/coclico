@@ -130,8 +130,8 @@ def test_run_main():
     generate_csv_result(base_path, tiles, metrics[-1], [1, 2], (lambda ii: 3 * ii))
 
     cmd = f"""python -m coclico.csv_manipulation.results_by_tile \
-    --metrics_root_folder {base_path} \
-    --output_path {out}
+    ----metrics-root-folder {base_path} \
+    --output-path {out}
     """
 
     sp.run(cmd, shell=True, check=True)

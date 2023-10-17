@@ -38,10 +38,10 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(output)}:/output
 ignimagelidar/coclico:{__version__}
 python -m coclico.mpla0.mpla0_intrinsic
---input_file /input
---output_file /output/{input.stem}.json
---class_weights '{json.dumps(self.class_weights)}'
---pixel_size {self.map_pixel_size}
+--input-file /input
+--output-file /output/{input.stem}.json
+--class-weights '{json.dumps(self.class_weights)}'
+--pixel-size {self.map_pixel_size}
 """
 
         job = Job(job_name, command, tags=["docker"])
@@ -58,11 +58,11 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(output)}:/output
 ignimagelidar/coclico:{__version__}
 python -m coclico.mpla0.mpla0_relative
---input_dir /input
---ref_dir /ref
---output_csv_tile /output/result_tile.csv
---output_csv /output/result.csv
---class_weights '{json.dumps(self.class_weights)}'
+--input-dir /input
+--ref-dir /ref
+--output-csv-tile /output/result_tile.csv
+--output-csv /output/result.csv
+--class-weights '{json.dumps(self.class_weights)}'
 """
 
         job = Job(job_name, command, tags=["docker"])

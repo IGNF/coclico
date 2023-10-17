@@ -101,7 +101,7 @@ def test_run_main():
     -i {input_c1} \
      {input_c2} \
     --output {result} \
-    --metric_weights '{json.dumps(weights)}'
+    --metric-weights '{json.dumps(weights)}'
     """
 
     sp.run(cmd, shell=True, check=True)

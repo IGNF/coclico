@@ -34,14 +34,14 @@ def parse_args():
     parser.add_argument("-o", "--out", type=Path, required=True, help="Dossier de sortie de la comparaison")
     parser.add_argument(
         "-l",
-        "--local_store_path",
+        "--local-store-path",
         type=Path,
         required=True,
         help="Chemin vers un store commun sur le PC qui lance ce script",
     )
     parser.add_argument(
         "-s",
-        "--runner_store_path",
+        "--runner-store-path",
         type=PurePosixPath,
         help="Chemin vers un store commun sur les clients GPAO (Unix path)",
         required=True,
@@ -50,7 +50,7 @@ def parse_args():
     parser.add_argument("-p", "--project_name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(
         "-w",
-        "--weights_file",
+        "--weights-file",
         type=Path,
         default=Path("./configs/metrics_weights.yaml"),
         help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "

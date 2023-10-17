@@ -115,15 +115,16 @@ def compute_metric_intrinsic(las_file: Path, class_weights: Dict, output_tif: Pa
 
 def parse_args():
     parser = argparse.ArgumentParser("Run mpla0 intrinsic metric on one tile")
-    parser.add_argument("--input_file", type=Path, required=True, help="Path to the LAS file")
-    parser.add_argument("--output_file", type=Path, required=True, help="Path to the TIF output file")
+    parser.add_argument("-i", "--input-file", type=Path, required=True, help="Path to the LAS file")
+    parser.add_argument("-o", "--output-file", type=Path, required=True, help="Path to the TIF output file")
     parser.add_argument(
-        "--class_weights",
+        "-w",
+        "--class-weights",
         type=json.loads,
         required=True,
         help="Dictionary of the classes weights for the metric (as a string)",
     )
-    parser.add_argument("--pixel_size", type=float, required=True, help="Size of the output raster pixels")
+    parser.add_argument("-p", "--pixel-size", type=float, required=True, help="Size of the output raster pixels")
     return parser.parse_args()
 
 

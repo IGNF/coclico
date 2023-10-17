@@ -110,7 +110,7 @@ def parse_args():
     parser = argparse.ArgumentParser("Run mpla0 metric on one tile")
     parser.add_argument(
         "-i",
-        "--input_dir",
+        "--input-dir",
         required=True,
         type=Path,
         help="Path to the classification directory, \
@@ -118,18 +118,18 @@ def parse_args():
     )
     parser.add_argument(
         "-r",
-        "--ref_dir",
+        "--ref-dir",
         required=True,
         type=Path,
         help="Path to the reference directory, where there are json files with the result of mpla0 intrinsic metric",
     )
-    parser.add_argument("--output_csv", required=True, type=Path, help="Path to the CSV output file")
+    parser.add_argument("-o", "--output-csv", required=True, type=Path, help="Path to the CSV output file")
     parser.add_argument(
-        "--output_csv_tile", required=True, type=Path, help="Path to the CSV output file, result by tile"
+        "-t", "--output-csv-tile", required=True, type=Path, help="Path to the CSV output file, result by tile"
     )
     parser.add_argument(
         "-w",
-        "--class_weights",
+        "--class-weights",
         required=True,
         type=json.loads,
         help="Dictionary of the classes weights for the metric (as a string)",
