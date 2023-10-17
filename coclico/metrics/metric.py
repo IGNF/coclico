@@ -1,8 +1,8 @@
-from gpao.job import Job
-from typing import List
 from pathlib import Path
+from typing import Dict, List
+
+from gpao.job import Job
 from gpao_utils.store import Store
-from typing import Dict
 
 
 class Metric:

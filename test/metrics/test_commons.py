@@ -1,6 +1,6 @@
-import coclico.metrics.commons
 import pytest
 
+import coclico.metrics.commons
 
 affine_func_data = [
     ((1, 3), (2, 1), [(0, 3), (1, 3), (1.5, 2), (1.75, 1.5), (2, 1), (3, 1)]),

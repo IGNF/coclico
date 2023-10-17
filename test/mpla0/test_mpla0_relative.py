@@ -1,15 +1,16 @@
-from coclico.mpla0 import mpla0_relative
-from coclico.config import csv_separator
-
 import json
 import logging
+import shutil
 import subprocess as sp
 from pathlib import Path
-import shutil
-import pytest
 from test import utils
+
 import pandas as pd
+import pytest
 import rasterio
+
+from coclico.config import csv_separator
+from coclico.mpla0 import mpla0_relative
 
 pytestmark = pytest.mark.docker
 

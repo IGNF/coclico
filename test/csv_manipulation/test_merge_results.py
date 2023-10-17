@@ -1,12 +1,14 @@
-from coclico.csv_manipulation import merge_results
-from gpao_utils.store import Store
 import json
 import operator as op
-from pathlib import Path
 import shutil
 import subprocess as sp
 import test.utils as tu
+from pathlib import Path
+
 import pytest
+from gpao_utils.store import Store
+
+from coclico.csv_manipulation import merge_results
 
 pytestmark = pytest.mark.docker
 

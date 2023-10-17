@@ -1,13 +1,15 @@
 import argparse
-from coclico.version import __version__
-from gpao.job import Job
-from gpao_utils.store import Store
 import json
 import logging
-import pandas as pd
 from pathlib import Path
 from typing import Dict, List
+
+import pandas as pd
+from gpao.job import Job
+from gpao_utils.store import Store
+
 from coclico.config import csv_separator
+from coclico.version import __version__
 
 
 def compute_weighted_result(input: Path, weights: Dict) -> Dict:

@@ -1,13 +1,15 @@
-from coclico import main
-from pathlib import Path
-import shutil
-import pytest
-import subprocess as sp
-from gpao_utils.store import Store
-from gpao_utils.gpao_test import wait_running_job
-import test.utils as tu
 import json
+import shutil
+import subprocess as sp
+import test.utils as tu
+from pathlib import Path
+
 import numpy as np
+import pytest
+from gpao_utils.gpao_test import wait_running_job
+from gpao_utils.store import Store
+
+from coclico import main
 
 TMP_PATH = Path("./tmp/main")
 

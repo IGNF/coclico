@@ -1,18 +1,19 @@
 import argparse
-from coclico.unlock import create_unlock_job
-from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
+import logging
+import shutil
+from pathlib import Path, PurePosixPath
+from typing import Dict, List
+
+import yaml
 from gpao.builder import Builder
 from gpao.project import Project
 from gpao_utils.store import Store
-import logging
-from pathlib import Path, PurePosixPath
-import shutil
-from typing import Dict, List
-import yaml
-from coclico.csv_manipulation import results_by_tile, merge_results
+
+from coclico.csv_manipulation import merge_results, results_by_tile
+from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
 from coclico.mpap0.mpap0 import MPAP0
 from coclico.mpla0.mpla0 import MPLA0
-
+from coclico.unlock import create_unlock_job
 
 METRICS = {"mpap0": MPAP0, "mpla0": MPLA0}
 

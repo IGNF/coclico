@@ -1,11 +1,12 @@
-from coclico.mpap0 import mpap0_intrinsic
-
 import json
 import logging
+import shutil
 import subprocess as sp
 from pathlib import Path
-import shutil
+
 import pytest
+
+from coclico.mpap0 import mpap0_intrinsic
 
 pytestmark = pytest.mark.docker
 

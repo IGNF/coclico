@@ -1,14 +1,15 @@
-from coclico.mpla0 import mpla0_intrinsic
-
 import json
 import logging
-import numpy as np
+import shutil
 import subprocess as sp
 from pathlib import Path
-import shutil
+
+import numpy as np
 import pytest
 import rasterio
 from pdaltools.las_info import las_info_metadata
+
+from coclico.mpla0 import mpla0_intrinsic
 
 pytestmark = pytest.mark.docker
 

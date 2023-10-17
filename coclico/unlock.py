@@ -1,8 +1,8 @@
-from gpao.project import Job
-from gpao_utils.store import Store
-
 from pathlib import Path
 from typing import List
+
+from gpao.project import Job
+from gpao_utils.store import Store
 
 from coclico.version import __version__
 

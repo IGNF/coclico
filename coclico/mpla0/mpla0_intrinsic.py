@@ -1,13 +1,14 @@
 import argparse
-
-import numpy as np
 import json
 import logging
 from pathlib import Path
 from typing import Dict, Tuple
-from coclico.metrics.commons import split_composed_class
+
 import laspy
+import numpy as np
 import rasterio
+
+from coclico.metrics.commons import split_composed_class
 
 
 def create_2d_binary_map(

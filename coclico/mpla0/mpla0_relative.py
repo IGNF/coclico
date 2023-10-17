@@ -1,14 +1,16 @@
 import argparse
-import pandas as pd
-import numpy as np
 import json
 import logging
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List
-from collections import Counter
-from coclico.metrics.commons import bounded_affine_function
-from coclico.config import csv_separator
+
+import numpy as np
+import pandas as pd
 import rasterio
+
+from coclico.config import csv_separator
+from coclico.metrics.commons import bounded_affine_function
 
 
 def compute_note(union_count: Dict, intersection_count: Dict, ref_count: Dict, classes: Dict) -> Dict:

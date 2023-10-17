@@ -1,13 +1,14 @@
-import pandas as pd
 import argparse
-
+import logging
 from pathlib import Path, PurePosixPath
+from typing import List
+
+import pandas as pd
 from gpao.job import Job
 from gpao_utils.store import Store
-from coclico.version import __version__
+
 from coclico.config import csv_separator
-import logging
-from typing import List
+from coclico.version import __version__
 
 
 def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path):

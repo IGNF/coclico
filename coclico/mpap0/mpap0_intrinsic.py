@@ -1,11 +1,12 @@
 import argparse
-
-import numpy as np
-import pdal
 import json
 import logging
 from pathlib import Path
 from typing import Dict
+
+import numpy as np
+import pdal
+
 from coclico.metrics.commons import split_composed_class
 
 

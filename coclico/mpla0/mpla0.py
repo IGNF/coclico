@@ -1,11 +1,11 @@
+import json
 from pathlib import Path
 from typing import List
-import json
 
 from gpao.job import Job
 
-from coclico.version import __version__
 from coclico.metrics.metric import Metric
+from coclico.version import __version__
 
 
 class MPLA0(Metric):

@@ -1,14 +1,15 @@
-from coclico.mpap0 import mpap0_relative
-from coclico.config import csv_separator
-
 import json
 import logging
+import shutil
 import subprocess as sp
 from pathlib import Path
-import shutil
-import pytest
 from test import utils
+
 import pandas as pd
+import pytest
+
+from coclico.config import csv_separator
+from coclico.mpap0 import mpap0_relative
 
 pytestmark = pytest.mark.docker
 

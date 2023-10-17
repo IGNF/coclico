@@ -1,13 +1,15 @@
 import argparse
-import pandas as pd
-import numpy as np
 import json
 import logging
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List
-from collections import Counter
-from coclico.metrics.commons import bounded_affine_function
+
+import numpy as np
+import pandas as pd
+
 from coclico.config import csv_separator
+from coclico.metrics.commons import bounded_affine_function
 
 
 def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dict:

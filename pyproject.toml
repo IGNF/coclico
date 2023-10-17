@@ -17,3 +17,6 @@ markers = [
     "docker: marks tests that must be run to test our docker image",
     "gpao: marks tests that need GPAO server, and that are slow",
 ]
+
+[tool.isort]
+profile = "black"
