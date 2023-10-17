@@ -11,8 +11,8 @@
 
 ### Seconde métrique
 
-- [ ] Réaliser une seconde métrique
-- [ ] Penser à supprimer la metric Mpap0_test. et nettoyage dans la class Map0 (parametre à la création, option -t dans le main le mpap0 relative)
+- [x] Réaliser une seconde métrique
+- [x] Penser à supprimer la metric Mpap0_test. et nettoyage dans la class Map0 (parametre à la création, option -t dans le main le mpap0 relative)
 
 ### Robustesse
 

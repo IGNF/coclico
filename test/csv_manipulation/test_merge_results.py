@@ -20,15 +20,15 @@ def setup_module():
 
 def test_compute_weighted_result():
     input = Path("./data/csv/c1/c1_result.csv")
-    weights = {"mpap0": {"1": 1, "2": 2, "3_4": 3}, "mpap0_test": {"1": 1, "2": 2, "5": 3}}
+    weights = {"mpap0": {"1": 1, "2": 2, "3_4": 3}, "mpla0": {"1": 1, "2": 2, "5": 3}}
     score = merge_results.compute_weighted_result(input, weights)
-    assert score == {"classification": "c1", "score": 7.0, "mpap0": 4.6, "mpap0_test": 2.4}
+    assert score == {"classification": "c1", "score": 7.0, "mpap0": 4.6, "mpla0": 2.4}
 
 
 def test_merge_all_results():
     input_c1 = Path("./data/csv/c1/c1_result.csv")
     input_c2 = Path("./data/csv/c2/c2_result.csv")
-    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpap0_test": {"2": 2, "5": 3}}
+    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpla0": {"2": 2, "5": 3}}
     result = TMP_PATH / "results_c1_c2.csv"
     result_detailed = TMP_PATH / "results_c1_c2_by_metric.csv"
 
@@ -44,7 +44,7 @@ def test_merge_all_results():
 def test_merge_result_append_existing_file():
     input_c1 = Path("./data/csv/c1/c1_result.csv")
     input_c2 = Path("./data/csv/c2/c2_result.csv")
-    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpap0_test": {"2": 2, "5": 3}}
+    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpla0": {"2": 2, "5": 3}}
     result = TMP_PATH / "results_c1_c2_append.csv"
     result_detailed = TMP_PATH / "results_c1_c2_append_by_metric.csv"
 
@@ -66,7 +66,7 @@ def test_merge_result_append_existing_file():
 def test_merge_result_merge_existing_file():
     input_c1 = Path("./data/csv/c1/c1_result.csv")
     input_c2 = Path("./data/csv/c2/c2_result.csv")
-    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpap0_test": {"2": 2, "5": 3}}
+    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpla0": {"2": 2, "5": 3}}
     result = TMP_PATH / "results_c1_existing.csv"
     result_detailed = TMP_PATH / "results_c1_existing_by_metric.csv"
 
@@ -92,7 +92,7 @@ def test_run_main():
     base_path.mkdir(parents=True)
     input_c1 = Path("./data/csv/c1/c1_result.csv")
     input_c2 = Path("./data/csv/c2/c2_result.csv")
-    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpap0_test": {"0": 1, "2": 2, "5": 3}}
+    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpla0": {"0": 1, "2": 2, "5": 3}}
     result = base_path / "results.csv"
 
     cmd = f"""python -m coclico.csv_manipulation.merge_results \
@@ -107,7 +107,7 @@ def test_run_main():
 
 
 def test_create_merge_all_results_job():
-    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpap0_test": {"0": 1, "2": 2, "5": 3}}
+    weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}, "mpla0": {"0": 1, "2": 2, "5": 3}}
     input_c1 = Path("./data/csv/c1/c1_result.csv")
     input_c2 = Path("./data/csv/c2/c2_result.csv")
     result = Path("local_store/results.csv")

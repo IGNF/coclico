@@ -10,10 +10,11 @@ import shutil
 from typing import Dict, List
 import yaml
 from coclico.csv_manipulation import results_by_tile, merge_results
-from coclico.mpap0.mpap0 import MPAP0, MPAP0_test
+from coclico.mpap0.mpap0 import MPAP0
+from coclico.mpla0.mpla0 import MPLA0
 
 
-METRICS = {"mpap0": MPAP0, "mpap0_test": MPAP0_test}
+METRICS = {"mpap0": MPAP0, "mpla0": MPLA0}
 
 
 def parse_args():
