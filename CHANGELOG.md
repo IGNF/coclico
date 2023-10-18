@@ -1,6 +1,7 @@
-# dev
-* ajout seconde métrique : MPLA0
-* retrait métrique de test MPAP0-test
+# 0.3.0
+- ajout seconde métrique : MPLA0
+- retrait métrique de test MPAP0-test
+- les arguments sont maintenant passés en style unix. eg: --input-file
 
 # 0.2.2
 Améliorations architecture :
