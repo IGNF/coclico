@@ -1,12 +1,14 @@
-from coclico.csv_manipulation import merge_results
-from gpao_utils.store import Store
 import json
 import operator as op
-from pathlib import Path
 import shutil
 import subprocess as sp
 import test.utils as tu
+from pathlib import Path
+
 import pytest
+from gpao_utils.store import Store
+
+from coclico.csv_manipulation import merge_results
 
 pytestmark = pytest.mark.docker
 
@@ -99,7 +101,7 @@ def test_run_main():
     -i {input_c1} \
      {input_c2} \
     --output {result} \
-    --metric_weights '{json.dumps(weights)}'
+    --metric-weights '{json.dumps(weights)}'
     """
 
     sp.run(cmd, shell=True, check=True)

@@ -1,14 +1,15 @@
-from coclico.mpla0 import mpla0_intrinsic
-
 import json
 import logging
-import numpy as np
+import shutil
 import subprocess as sp
 from pathlib import Path
-import shutil
+
+import numpy as np
 import pytest
 import rasterio
 from pdaltools.las_info import las_info_metadata
+
+from coclico.mpla0 import mpla0_intrinsic
 
 pytestmark = pytest.mark.docker
 
@@ -64,10 +65,10 @@ def test_run_main(ensure_test1_data):
     output_tif = TMP_PATH / "unit_test_run_main_mpla0_intrinsic.tif"
     class_weights = dict({"0": 1, "1": 1})
     cmd = f"""python -m coclico.mpla0.mpla0_intrinsic \
-    --input_file {input_file} \
-    --output_file {output_tif} \
-    --class_weights '{json.dumps(class_weights)}' \
-    --pixel_size {pixel_size}
+    --input-file {input_file} \
+    --output-file {output_tif} \
+    --class-weights '{json.dumps(class_weights)}' \
+    --pixel-size {pixel_size}
     """
     sp.run(cmd, shell=True, check=True)
 

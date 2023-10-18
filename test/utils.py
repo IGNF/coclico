@@ -1,8 +1,10 @@
-from client import worker
-import pandas as pd
-from pathlib import Path
-import requests
 import socket
+from pathlib import Path
+
+import pandas as pd
+import requests
+from client import worker
+
 from coclico.config import csv_separator
 
 

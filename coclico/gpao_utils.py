@@ -1,9 +1,9 @@
-from gpao.builder import handler
-from gpao.project import Job, Project
-
 import json
 from pathlib import Path
 from typing import List
+
+from gpao.builder import handler
+from gpao.project import Job, Project
 
 
 def save_projects_as_json(projects: List[Project], dest: Path):

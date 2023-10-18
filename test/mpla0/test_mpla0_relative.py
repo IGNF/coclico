@@ -1,15 +1,16 @@
-from coclico.mpla0 import mpla0_relative
-from coclico.config import csv_separator
-
 import json
 import logging
+import shutil
 import subprocess as sp
 from pathlib import Path
-import shutil
-import pytest
 from test import utils
+
 import pandas as pd
+import pytest
 import rasterio
+
+from coclico.config import csv_separator
+from coclico.mpla0 import mpla0_relative
 
 pytestmark = pytest.mark.docker
 
@@ -104,11 +105,11 @@ def test_run_main():
     output_csv_tile = TMP_PATH / "unit_test_run_main_mpla0_relative_tile.csv"
     class_weights = dict({"1": 1, "2": 1})
     cmd = f"""python -m coclico.mpla0.mpla0_relative \
-        --input_dir {c1_dir} \
-        --ref_dir {ref_dir} \
-        --class_weights '{json.dumps(class_weights)}' \
-        --output_csv {output_csv} \
-        --output_csv_tile {output_csv_tile} \
+        --input-dir {c1_dir} \
+        --ref-dir {ref_dir} \
+        --class-weights '{json.dumps(class_weights)}' \
+        --output-csv {output_csv} \
+        --output-csv-tile {output_csv_tile} \
     """
 
     sp.run(cmd, shell=True, check=True)

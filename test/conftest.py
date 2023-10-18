@@ -1,11 +1,12 @@
-from coclico.version import __version__
-import docker
-from gpao.project import Project
 import logging
 from pathlib import Path
+
+import docker
 import pytest
 import requests
+from gpao.project import Project
 
+from coclico.version import __version__
 
 remote_url = "https://raw.githubusercontent.com/IGNF/coclico-data/main/"
 local_path = Path("./data/")

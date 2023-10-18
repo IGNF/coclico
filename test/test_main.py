@@ -1,13 +1,15 @@
-from coclico import main
-from pathlib import Path
-import shutil
-import pytest
-import subprocess as sp
-from gpao_utils.store import Store
-from gpao_utils.gpao_test import wait_running_job
-import test.utils as tu
 import json
+import shutil
+import subprocess as sp
+import test.utils as tu
+from pathlib import Path
+
 import numpy as np
+import pytest
+from gpao_utils.gpao_test import wait_running_job
+from gpao_utils.store import Store
+
+from coclico import main
 
 TMP_PATH = Path("./tmp/main")
 
@@ -224,11 +226,11 @@ def test_run_main_test1(ensure_test1_data, use_gpao_server):
         -i {str(c1)} {str(c2)} \
         --ref {str(ref)} \
         --out {str(out)} \
-        --weights_file {str(weights_file)} \
+        --weights-file {str(weights_file)} \
         --gpao_hostname {gpao_hostname} \
-        --runner_store_path {runner_store_path} \
+        --runner-store-path {runner_store_path} \
         --project_name {project_name} \
-        --local_store_path {local_store_path}"""
+        --local-store-path {local_store_path}"""
     sp.run(cmd, shell=True, check=True)
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
@@ -251,11 +253,11 @@ def test_run_main_test1_unlock(ensure_test1_data, use_gpao_server):
         -i {str(c1)} {str(c2)} \
         --ref {str(ref)} \
         --out {str(out)} \
-        --weights_file {str(weights_file)} \
+        --weights-file {str(weights_file)} \
         --gpao_hostname {gpao_hostname} \
-        --runner_store_path {runner_store_path} \
+        --runner-store-path {runner_store_path} \
         --project_name {project_name} \
-        --local_store_path {local_store_path} \
+        --local-store-path {local_store_path} \
         --unlock"""
     sp.run(cmd, shell=True, check=True)
     tu.execute_gpao_client(tags="docker", num_thread=4)

@@ -1,13 +1,15 @@
 import argparse
-from coclico.version import __version__
-from gpao.job import Job
-from gpao_utils.store import Store
 import json
 import logging
-import pandas as pd
 from pathlib import Path
 from typing import Dict, List
+
+import pandas as pd
+from gpao.job import Job
+from gpao_utils.store import Store
+
 from coclico.config import csv_separator
+from coclico.version import __version__
 
 
 def compute_weighted_result(input: Path, weights: Dict) -> Dict:
@@ -87,7 +89,7 @@ def create_merge_all_results_job(
     python -m coclico.csv_manipulation.merge_results
     -i {' '.join(inputs)}
     --output /out/{output.name}
-    --metric_weights '{json.dumps(metrics_weights)}'
+    --metric-weights '{json.dumps(metrics_weights)}'
     """
     return Job("merge_all_results", command, tags=["docker"], deps=deps)
 
@@ -149,7 +151,7 @@ def parse_args():
         help="""Path to the file to save the global weighted result, for all all classifications.
 Another CSV file with the same name and postfix '_by_metric.csv' will be created""",
     )
-    parser.add_argument("--metric_weights", type=json.loads, help="Dictionary of the metrics weights")
+    parser.add_argument("--metric-weights", type=json.loads, help="Dictionary of the metrics weights")
 
     return parser.parse_args()
 

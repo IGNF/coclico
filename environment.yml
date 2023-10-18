@@ -16,6 +16,7 @@ dependencies:
   # --- linting (cf https://dev.to/m1yag1/how-to-setup-your-project-with-pre-commit-black-and-flake8-183k)
   - black
   - flake8
+  - isort
   - pre-commit
   - pip
   - pip:

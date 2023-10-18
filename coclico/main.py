@@ -1,18 +1,19 @@
 import argparse
-from coclico.unlock import create_unlock_job
-from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
+import logging
+import shutil
+from pathlib import Path, PurePosixPath
+from typing import Dict, List
+
+import yaml
 from gpao.builder import Builder
 from gpao.project import Project
 from gpao_utils.store import Store
-import logging
-from pathlib import Path, PurePosixPath
-import shutil
-from typing import Dict, List
-import yaml
-from coclico.csv_manipulation import results_by_tile, merge_results
+
+from coclico.csv_manipulation import merge_results, results_by_tile
+from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
 from coclico.mpap0.mpap0 import MPAP0
 from coclico.mpla0.mpla0 import MPLA0
-
+from coclico.unlock import create_unlock_job
 
 METRICS = {"mpap0": MPAP0, "mpla0": MPLA0}
 
@@ -33,14 +34,14 @@ def parse_args():
     parser.add_argument("-o", "--out", type=Path, required=True, help="Dossier de sortie de la comparaison")
     parser.add_argument(
         "-l",
-        "--local_store_path",
+        "--local-store-path",
         type=Path,
         required=True,
         help="Chemin vers un store commun sur le PC qui lance ce script",
     )
     parser.add_argument(
         "-s",
-        "--runner_store_path",
+        "--runner-store-path",
         type=PurePosixPath,
         help="Chemin vers un store commun sur les clients GPAO (Unix path)",
         required=True,
@@ -49,7 +50,7 @@ def parse_args():
     parser.add_argument("-p", "--project_name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(
         "-w",
-        "--weights_file",
+        "--weights-file",
         type=Path,
         default=Path("./configs/metrics_weights.yaml"),
         help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "

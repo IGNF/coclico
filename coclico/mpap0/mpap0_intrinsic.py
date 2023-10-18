@@ -1,11 +1,12 @@
 import argparse
-
-import numpy as np
-import pdal
 import json
 import logging
 from pathlib import Path
 from typing import Dict
+
+import numpy as np
+import pdal
+
 from coclico.metrics.commons import split_composed_class
 
 
@@ -51,10 +52,10 @@ def compute_metric_intrinsic(las_file: Path, class_weights: Dict, output_json: P
 
 def parse_args():
     parser = argparse.ArgumentParser("Run mpap0 metric on one tile")
-    parser.add_argument("--input_file", type=Path, required=True, help="Path to the LAS file")
-    parser.add_argument("--output_file", type=Path, required=True, help="Path to the JSON output file")
+    parser.add_argument("-i", "--input-file", type=Path, required=True, help="Path to the LAS file")
+    parser.add_argument("-o", "--output-file", type=Path, required=True, help="Path to the JSON output file")
     parser.add_argument(
-        "--class_weights",
+        "--class-weights",
         type=json.loads,
         required=True,
         help="Dictionary of the classes weights for the metric (as a string)",

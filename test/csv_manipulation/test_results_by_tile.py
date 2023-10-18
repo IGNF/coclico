@@ -1,14 +1,16 @@
-import pandas as pd
+import json
+import shutil
+import subprocess as sp
+from pathlib import Path
+from test.utils import check_df_exists_with_no_empty_data
 from typing import Callable, List
+
+import pandas as pd
+import pytest
+from gpao_utils.store import Store
+
 import coclico.csv_manipulation.results_by_tile
 from coclico.config import csv_separator
-from test.utils import check_df_exists_with_no_empty_data
-import subprocess as sp
-import shutil
-from gpao_utils.store import Store
-import json
-import pytest
-from pathlib import Path
 
 pytestmark = pytest.mark.docker
 
@@ -128,8 +130,8 @@ def test_run_main():
     generate_csv_result(base_path, tiles, metrics[-1], [1, 2], (lambda ii: 3 * ii))
 
     cmd = f"""python -m coclico.csv_manipulation.results_by_tile \
-    --metrics_root_folder {base_path} \
-    --output_path {out}
+    ----metrics-root-folder {base_path} \
+    --output-path {out}
     """
 
     sp.run(cmd, shell=True, check=True)

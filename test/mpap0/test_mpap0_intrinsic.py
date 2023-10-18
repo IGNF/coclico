@@ -1,11 +1,12 @@
-from coclico.mpap0 import mpap0_intrinsic
-
 import json
 import logging
+import shutil
 import subprocess as sp
 from pathlib import Path
-import shutil
+
 import pytest
+
+from coclico.mpap0 import mpap0_intrinsic
 
 pytestmark = pytest.mark.docker
 
@@ -43,9 +44,9 @@ def test_run_main(ensure_test1_data):
     output_json = TMP_PATH / "unit_test_run_main_mpap0_intrinsic.json"
     class_weights = dict({"0": 1, "1": 1})
     cmd = f"""python -m coclico.mpap0.mpap0_intrinsic \
-    --input_file {input_file} \
-    --output_file {output_json} \
-    --class_weights '{json.dumps(class_weights)}' \
+    --input-file {input_file} \
+    --output-file {output_json} \
+    --class-weights '{json.dumps(class_weights)}' \
     """
     sp.run(cmd, shell=True, check=True)
 

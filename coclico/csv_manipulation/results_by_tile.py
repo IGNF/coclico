@@ -1,13 +1,14 @@
-import pandas as pd
 import argparse
-
+import logging
 from pathlib import Path, PurePosixPath
+from typing import List
+
+import pandas as pd
 from gpao.job import Job
 from gpao_utils.store import Store
-from coclico.version import __version__
+
 from coclico.config import csv_separator
-import logging
-from typing import List
+from coclico.version import __version__
 
 
 def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path):
@@ -55,8 +56,8 @@ def create_job_merge_results(metrics_root_folder: Path, out: Path, store: Store,
     -v {store.to_unix(out.parent)}:/out
     ignimagelidar/coclico:{__version__}
     python -m coclico.csv_manipulation.results_by_tile
-    --metrics_root_folder /input
-    --out {PurePosixPath("/out") / out.name}
+    ----metrics-root-folder /input
+    --output-path {PurePosixPath("/out") / out.name}
     """
     job = Job(f"merge_tiles_{out.name.split('.')[0]}", command, tags=["docker"], deps=deps)
 
@@ -66,13 +67,13 @@ def create_job_merge_results(metrics_root_folder: Path, out: Path, store: Store,
 def parse_args():
     parser = argparse.ArgumentParser("Merge CSV result")
     parser.add_argument(
-        "--metrics_root_folder",
+        "----metrics-root-folder",
         "-m",
         type=Path,
         required=True,
         help="Path to the root folder of the csv files generated for each metric + tile",
     )
-    parser.add_argument("--output_path", type=Path, required=True, help="Path to output csv file")
+    parser.add_argument("-o", "--output-path", type=Path, required=True, help="Path to output csv file")
 
     return parser.parse_args()
 

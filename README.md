@@ -66,10 +66,10 @@ python -m coclico.main -i <C1> <C2> \
                        --ref <REF> \
                        --out <OUT> \
                        --gpao_hostname <GPAO_HOSTNAME> \
-                       --local_store_path <LOCAL_STORE_PATH> \
-                       --runner_store_path <RUNNER_STORE_PATH> \
+                       --local-store-path <LOCAL_STORE_PATH> \
+                       --runner-store-path <RUNNER_STORE_PATH> \
                        --project_name <PROJECT_NAME> \
-                       --weights_file <WEIGHTS_FILE> \
+                       --weights-file <WEIGHTS_FILE> \
                        --unlock
 ```
 
@@ -93,15 +93,15 @@ options:
                         /chemin/c1 chemin/c2
 *  -r REF, --ref REF     Dossier contenant la classification de référence
 *  -o OUT, --out OUT     Dossier de sortie de la comparaison
-*  -l LOCAL_STORE_PATH, --local_store_path LOCAL_STORE_PATH
+*  -l LOCAL_STORE_PATH, --local-store-path LOCAL_STORE_PATH
                         Chemin vers un store commun sur le PC qui lance ce script
-*  -s RUNNER_STORE_PATH, --runner_store_path RUNNER_STORE_PATH
+*  -s RUNNER_STORE_PATH, --runner-store-path RUNNER_STORE_PATH
                         Chemin vers un store commun sur les clients GPAO (Unix path)
 *  -g GPAO_HOSTNAME, --gpao_hostname GPAO_HOSTNAME
                         Hostname du serveur GPAO
 *  -p PROJECT_NAME, --project_name PROJECT_NAME
                         Nom de projet pour la GPAO
-*  -w WEIGHTS_FILE, --weights_file WEIGHTS_FILE
+*  -w WEIGHTS_FILE, --weights-file WEIGHTS_FILE
                         (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on
                         veut utiliser d'autres valeurs que le défaut
 *  -u, --unlock         Ajouter une étape de pré-processing pour corriger l'encodage des fichiers issus de TerraScan (unlock)
