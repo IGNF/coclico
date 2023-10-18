@@ -1,22 +1,14 @@
 ## Todo
 
-### Remontée utisateur
-- [x] csv: utiliser le séparateur ';'. Quand on lit, et quand on écrit.
-- [x] classes composées: utiliser des '_' au lieu des '-' actuel
-
 ### Tests
 
 - [ ] Utiliser pytest-timeout pour avoir un timeout global sur les tests
 - [ ] Test en GPAO: ajouter un timeout quand on attend qu'un job se fasse (dans wait_running_jobs)
 
-### Seconde métrique
+### Metriques (objectif v1)
+- [ ] ajouter MALT0 (mesure de différence altimétrique à base de modèle numérique pour chqaue classe)
+- [ ] ajouter MOBJ0 (mesure de différence de nombre d'objets (amas 2D de points d'une même classe))
 
-- [x] Réaliser une seconde métrique
-- [x] Penser à supprimer la metric Mpap0_test. et nettoyage dans la class Map0 (parametre à la création, option -t dans le main le mpap0 relative)
-
-### Robustesse
-
-- [x] rendre robuste aux fichiers terrascan mal encodés (job séparé avant les métriques avec option pour l'activer)
 
 ### Propositions
 
