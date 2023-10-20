@@ -65,10 +65,10 @@ Lancer l'utilitaire avec la commande suivante :
 python -m coclico.main -i <C1> <C2> \
                        --ref <REF> \
                        --out <OUT> \
-                       --gpao_hostname <GPAO_HOSTNAME> \
+                       --gpao-hostname <GPAO_HOSTNAME> \
                        --local-store-path <LOCAL_STORE_PATH> \
                        --runner-store-path <RUNNER_STORE_PATH> \
-                       --project_name <PROJECT_NAME> \
+                       --project-name <PROJECT_NAME> \
                        --weights-file <WEIGHTS_FILE> \
                        --unlock
 ```
@@ -97,9 +97,9 @@ options:
                         Chemin vers un store commun sur le PC qui lance ce script
 *  -s RUNNER_STORE_PATH, --runner-store-path RUNNER_STORE_PATH
                         Chemin vers un store commun sur les clients GPAO (Unix path)
-*  -g GPAO_HOSTNAME, --gpao_hostname GPAO_HOSTNAME
+*  -g GPAO_HOSTNAME, --gpao-hostname GPAO_HOSTNAME
                         Hostname du serveur GPAO
-*  -p PROJECT_NAME, --project_name PROJECT_NAME
+*  -p PROJECT_NAME, --project-name PROJECT_NAME
                         Nom de projet pour la GPAO
 *  -w WEIGHTS_FILE, --weights-file WEIGHTS_FILE
                         (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on

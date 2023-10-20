@@ -227,9 +227,9 @@ def test_run_main_test1(ensure_test1_data, use_gpao_server):
         --ref {str(ref)} \
         --out {str(out)} \
         --weights-file {str(weights_file)} \
-        --gpao_hostname {gpao_hostname} \
+        --gpao-hostname {gpao_hostname} \
         --runner-store-path {runner_store_path} \
-        --project_name {project_name} \
+        --project-name {project_name} \
         --local-store-path {local_store_path}"""
     sp.run(cmd, shell=True, check=True)
     tu.execute_gpao_client(tags="docker", num_thread=4)
@@ -254,9 +254,9 @@ def test_run_main_test1_unlock(ensure_test1_data, use_gpao_server):
         --ref {str(ref)} \
         --out {str(out)} \
         --weights-file {str(weights_file)} \
-        --gpao_hostname {gpao_hostname} \
+        --gpao-hostname {gpao_hostname} \
         --runner-store-path {runner_store_path} \
-        --project_name {project_name} \
+        --project-name {project_name} \
         --local-store-path {local_store_path} \
         --unlock"""
     sp.run(cmd, shell=True, check=True)

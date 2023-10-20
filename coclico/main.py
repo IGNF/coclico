@@ -46,8 +46,8 @@ def parse_args():
         help="Chemin vers un store commun sur les clients GPAO (Unix path)",
         required=True,
     )
-    parser.add_argument("-g", "--gpao_hostname", type=str, help="Hostname du serveur GPAO", default="localhost")
-    parser.add_argument("-p", "--project_name", type=str, default="coclico", help="Nom de projet pour la GPAO")
+    parser.add_argument("-g", "--gpao-hostname", type=str, help="Hostname du serveur GPAO", default="localhost")
+    parser.add_argument("-p", "--project-name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(
         "-w",
         "--weights-file",
