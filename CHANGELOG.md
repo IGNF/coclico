@@ -1,4 +1,4 @@
-# dev
+# 0.3.1
 - fix missing unix-style arguments
 
 # 0.3.0
