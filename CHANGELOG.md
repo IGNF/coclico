@@ -1,3 +1,6 @@
+# dev
+- fix missing unix-style arguments
+
 # 0.3.0
 - ajout seconde métrique : MPLA0
 - retrait métrique de test MPAP0-test
