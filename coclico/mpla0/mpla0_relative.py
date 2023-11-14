@@ -114,7 +114,7 @@ def parse_args():
         required=True,
         type=Path,
         help="Path to the classification directory, \
-        where there are json files with the result of mpla0 intrinsic metric",
+        where there are tif files with the result of mpla0 intrinsic metric",
     )
     parser.add_argument(
         "-r",
