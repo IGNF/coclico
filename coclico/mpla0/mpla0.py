@@ -39,7 +39,7 @@ docker run -t --rm --userns=host --shm-size=2gb
 ignimagelidar/coclico:{__version__}
 python -m coclico.mpla0.mpla0_intrinsic
 --input-file /input
---output-file /output/{input.stem}.json
+--output-file /output/{input.stem}.tif
 --class-weights '{json.dumps(self.class_weights)}'
 --pixel-size {self.map_pixel_size}
 """
