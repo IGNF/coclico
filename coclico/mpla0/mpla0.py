@@ -18,6 +18,9 @@ class MPLA0(Metric):
         for each class, the corresponding layer contains a kind of 2d occupancy map for the class (ie. if any point
         of this class belongs to the pixel, the pixel has a value of 1, the value is 0 everywhere else)
 
+        The layers are sorted alphabetically using their class name from their class_weights dict in order to have a
+        repeatable order
+
     - metric extrinsic: compute intersection and union of the classification maps
 
     - note:
