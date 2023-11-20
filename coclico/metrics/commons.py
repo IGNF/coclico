@@ -1,4 +1,7 @@
+import logging
 from typing import List, Tuple
+
+import numpy as np
 
 from coclico.config import composed_class_separator
 
@@ -48,3 +51,31 @@ def bounded_affine_function(coordinates_min: Tuple, coordinates_max: Tuple, x_qu
         y_query = a * x_query + b
 
     return y_query
+
+
+def get_raster_geometry_from_las_bounds(las_bounds: Tuple[float], pixel_size: float):
+    """Compute expected raster top left corner (cell center) and number of pixels from las min/max values and pixel
+    size
+
+    Args:
+        las_bounds (Tuple(float)): Las min/max values : (x_min, y_min, x_max, ymax)
+        pixel_size (_type_): Pixel size of the raster
+
+    Returns:
+        _type_: coordinates of the top-left corner, and number of pixels on each axis
+    """
+    x_min_las, y_min_las, x_max_las, y_max_las = las_bounds
+    x_min = np.round(x_min_las / pixel_size) * pixel_size
+    y_min = np.round(y_min_las / pixel_size) * pixel_size
+    x_max = np.round(x_max_las / pixel_size) * pixel_size
+    y_max = np.round(y_max_las / pixel_size) * pixel_size
+    logging.debug(
+        f"Raster min/max cell centers infered from in las file: min: ({x_min}, {y_min}) max:({x_max}, {y_max})"
+    )
+
+    # add 1 to x_pixel and y_pixel because the map should be able to include the extreme points
+    x_pixels = int(np.ceil((x_max - x_min) / pixel_size)) + 1
+    y_pixels = int(np.ceil((y_max - y_min) / pixel_size)) + 1
+    logging.debug(f"Raster number of pixels infered from in las file: ({x_pixels}, {y_pixels})")
+
+    return (x_min, y_max), (x_pixels, y_pixels)
