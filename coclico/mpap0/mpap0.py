@@ -20,7 +20,7 @@ class MPAP0(Metric):
 
     metric_name = "MPAP0"
 
-    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
+    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool = False):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
 
         command = f"""

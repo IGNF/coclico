@@ -32,7 +32,7 @@ class MPLA0(Metric):
     map_pixel_size = 0.5
     metric_name = "MPLA0"
 
-    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
+    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool = False):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
 
         command = f"""
