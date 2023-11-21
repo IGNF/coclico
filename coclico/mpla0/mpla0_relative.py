@@ -13,7 +13,7 @@ from coclico.config import csv_separator
 from coclico.metrics.commons import bounded_affine_function
 
 
-def compute_note(union_count: Dict, intersection_count: Dict, ref_count: Dict, classes: Dict) -> Dict:
+def compute_note(union_count: Dict, intersection_count: Dict, ref_count: Dict, classes: List[str]) -> Dict:
     def compute_one_note(union, intersection, ref_count):
         if ref_count >= 1000:
             iou = intersection / union  # union >= ref_count so it can't be equal to zero

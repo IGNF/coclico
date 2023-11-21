@@ -143,10 +143,18 @@ def test_compute_metric_intrinsic_w_occupancy(ensure_test1_data):
 
 def test_run_main(ensure_test1_data):
     pixel_size = 0.5
-    input_file = Path("./data/test1/ref/tile_splitted_2818_32247.laz")
-    output_tif = TMP_PATH / "mnx" / "unit_test_run_main_malt0_intrinsic.tif"
-    output_occupancy_tif = TMP_PATH / "occupancy" / "unit_test_run_main_malt0_intrinsic.tif"
-    class_weights = dict({"0": 1, "1": 1})
+    input_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
+    output_tif = TMP_PATH / "intrinsic" / "mnx" / "tile_splitted_2818_32247.tif"
+    output_occupancy_tif = TMP_PATH / "intrinsic" / "occupancy" / "tile_splitted_2818_32247.tif"
+    class_weights = dict(
+        {
+            "0": 1,
+            "1": 1,
+            "2": 0,  # simple classes
+            "3_4_5": 1,  # composed class
+            "3 _ 4": 2,  # composed class with spaces
+        }
+    )
     cmd = f"""python -m coclico.malt0.malt0_intrinsic \
     --input-file {input_file} \
     --output-mnx-file {output_tif} \
