@@ -1,5 +1,7 @@
 # dev
 - fix intrinsic metric extension in MPLA0
+- fix default metric weights config
+- document layers order in mpla0 intrinsic metric
 
 # 0.3.1
 - fix missing unix-style arguments
