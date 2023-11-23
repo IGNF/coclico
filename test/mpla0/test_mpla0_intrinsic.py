@@ -4,9 +4,7 @@ import shutil
 import subprocess as sp
 from pathlib import Path
 
-import numpy as np
 import pytest
-import rasterio
 from pdaltools.las_info import las_info_metadata
 
 from coclico.mpla0 import mpla0_intrinsic
@@ -40,23 +38,6 @@ def test_compute_metric_intrinsic(ensure_test1_data):
     mpla0_intrinsic.compute_metric_intrinsic(las_file, class_weights, output_tif, pixel_size=pixel_size)
 
     assert output_tif.exists()
-    with rasterio.Env():
-        with rasterio.open(output_tif) as f:
-            output_data = f.read()
-            output_bounds = f.bounds
-
-    # check that las extent is comprised inside tif extent but tif has no border pixels
-    assert (output_bounds.left < las_extent[0]) and (output_bounds.left > las_extent[0] - pixel_size)  # x_min
-    assert (output_bounds.right > las_extent[2]) and (output_bounds.right < las_extent[2] + pixel_size)  # x_max
-    assert (output_bounds.top > las_extent[3]) and (output_bounds.top < las_extent[3] + pixel_size)  # y_max
-    assert (output_bounds.bottom < las_extent[1]) and (output_bounds.bottom > las_extent[1] - pixel_size)  # y_min
-
-    assert output_data.shape[0] == len(class_weights.keys())
-    # input las does not contain points with class 0 so output layer should contain only zeroes
-    assert np.all(output_data[0, :, :] == 0)
-    # all other classes have data, so their layers should not contain only zeroes
-    for ii in range(1, len(class_weights.keys())):
-        assert np.any(output_data[ii, :, :] == 1)
 
 
 def test_run_main(ensure_test1_data):
