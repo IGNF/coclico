@@ -70,7 +70,7 @@ def test_create_compare_project(ensure_test1_data):
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / "create_compare_project"
     project_name = "coclico_test_create_compare_projects"
-    metrics_weights = {"mpap0": {"0": 1, "1_2": 2}, "mpla0": {"0": 1, "3_4": 2}}
+    metrics_weights = {"mpap0": {"0": 1, "1_2": 2}, "mpla0": {"0": 1, "3_4": 2}, "malt0": {"6": 2, "0": 1}}
 
     project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
 
@@ -157,17 +157,21 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
 
-    c1_to_ref_tile = out / "niv1" / "mpap0" / "to_ref" / "result_tile.csv"
-    assert tu.csv_num_rows(c1_to_ref_tile) == 4 * 7  # 4 files * 7 classes_weights
+    expected_classes_weights = {"mpap0": 7, "mpla0": 5, "malt0": 3}
 
-    c1_to_ref = out / "niv1" / "mpap0" / "to_ref" / "result.csv"
-    assert tu.csv_num_rows(c1_to_ref) == 7  # 7 classes_weights
+    for metric, nb_classes_weights in expected_classes_weights.items():
+        c1_to_ref_tile = out / "niv1" / metric / "to_ref" / "result_tile.csv"
+        assert tu.csv_num_rows(c1_to_ref_tile) == 4 * nb_classes_weights  # 4 files * classes_weights
 
-    c1_to_ref_tile = out / "niv1" / "mpla0" / "to_ref" / "result_tile.csv"
-    assert tu.csv_num_rows(c1_to_ref_tile) == 4 * 5  # 4 files * 5 classes_weights
+        c1_to_ref = out / "niv1" / metric / "to_ref" / "result.csv"
+        assert tu.csv_num_rows(c1_to_ref) == nb_classes_weights
 
-    c1_to_ref = out / "niv1" / "mpla0" / "to_ref" / "result.csv"
-    assert tu.csv_num_rows(c1_to_ref) == 5  # 5 classes_weights
+    c1_all_metrics = out / "niv1" / "niv1_result.csv"
+    assert tu.csv_num_rows(c1_all_metrics) == 8  # 8 classes in total (1, 2, "3_4_5", "4_5", 6, 9, 17, 64)
+    assert tu.csv_num_col(c1_all_metrics) == 4  # class, mpap0, mpla0, malt0
+
+    all_scores = out / "result.csv"
+    assert tu.csv_num_rows(all_scores) == 2  # niv1, niv4
 
     tu.delete_projects_starting_with(project_name)  # runs only if asserts are all true
 
@@ -202,8 +206,8 @@ def test_compare_test1_weights(ensure_test1_data, use_gpao_server):
     assert tu.csv_num_rows(c2_to_ref) == 3  # 3 classes_weights
 
     c1_all_metrics = out / "niv1" / "niv1_result.csv"
-    assert tu.csv_num_rows(c1_all_metrics) == 4  # 4 classes_weights (one differs between mpap0 and mpla0)
-    assert tu.csv_num_col(c1_all_metrics) == 3  # class, mpap0, mpla0
+    assert tu.csv_num_rows(c1_all_metrics) == 4  # 4 classes_weights (one differs between mpap0, mpla0 and malt0)
+    assert tu.csv_num_col(c1_all_metrics) == 4  # class, mpap0, mpla0, malt0
 
     all_scores = out / "result.csv"
     assert tu.csv_num_rows(all_scores) == 3  # 3 classif (niv1 niv2 niv4)

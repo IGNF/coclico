@@ -11,11 +11,12 @@ from gpao_utils.store import Store
 
 from coclico.csv_manipulation import merge_results, results_by_tile
 from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
+from coclico.malt0.malt0 import MALT0
 from coclico.mpap0.mpap0 import MPAP0
 from coclico.mpla0.mpla0 import MPLA0
 from coclico.unlock import create_unlock_job
 
-METRICS = {"mpap0": MPAP0, "mpla0": MPLA0}
+METRICS = {"mpap0": MPAP0, "mpla0": MPLA0, "malt0": MALT0}
 
 
 def parse_args():

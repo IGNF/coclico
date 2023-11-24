@@ -68,14 +68,21 @@ def compute_metric_intrinsic(
     pixel_size: float = 0.5,
     no_data_value=-9999,
 ):
-    """Create 2d occupancy map for each classe that is in class_weights keys, and save result in a single output_tif
-    file with one layer per class (the classes are sorted).
+    """
+    Create for each class that is in class_weights keys:
+    - a height raster (kind of digital surface model for a single class, called mnx here)
+    - if "occupancy_tif" has a value, a 2d occupancy map
+
+    both are saved single output_tif files with one layer per class (the classes are sorted alphabetically).
 
     Args:
-        las_file (Path): path to the las file on which to generate mpla0 intrinsic metric
-        class_weights (Dict): class weights dict (to know for which classes to generate the binary map)
-        output_tif (Path): path to output
-        pixel_size (float): size of the output raster pixels
+        las_file (Path): path to the las file on which to generate malt0 intrinsic metric
+        class_weights (Dict): class weights dict (to know for which classes to generate the rasters)
+        output_tif (Path): path to output height raster
+        occupancy_tif (Path, optional): path to the optional occupancy map tif (Leave it to None except for the
+        reference folder). Defaults to None.
+        pixel_size (float, optional): size of the output rasters pixels. Defaults to 0.5.
+        no_data_value (int, optional): no_data value for the output raster. Defaults to -9999.
     """
     if occupancy_tif:
         occupancy_tif.parent.mkdir(parents=True, exist_ok=True)

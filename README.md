@@ -10,14 +10,17 @@ L'objectif de ce code est de pouvoir comparer les résultats de deux processus d
 par rapport à une classification de référence.
 
 Les résultats sont comparés par le calcul de plusieurs métriques, dont sont ensuite tirés des scores compris entre
-0 et 1.
+0 et 1. Ces métriques sont calculées de façon indépendante pour chaque classe mentionnée dans un fichier de
+configuration.
 
 Pour l'instant les métriques implémentées sont :
 * MPAP0 (Métrique point à point 0) : calcul d'une note à partir de la comparaison du nombre de points pour chaque classe
 entre le résultat et la référence
 * MPLA0 (Métrique planimétrique 0) : calcul d'une note à partir de l'intersection et l'union de cartes de classes 2D
 entre le résultat et la référence
-
+* MALT0 (Métrique altimétrique 0) : calcul d'une note à partir de la différence en Z entre le résultat et la référence
+sur un raster de type "modèle numérique de surface" à partir des points de la classe donnée, calculée uniquement pour
+les pixels qui contiennent des des points pour cette classe dans la dalle de référence.
 
 Les différentes métriques associées aux différentes classes sont ensuite aggrégées à l'aide d'une somme pondérée par
 l'importance de chaque métrique pour chaque classe
