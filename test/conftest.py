@@ -12,7 +12,7 @@ remote_url = "https://raw.githubusercontent.com/IGNF/coclico-data/main/"
 local_path = Path("./data/")
 
 
-files = [
+test1_files = [
     "test1/niv1/tile_splitted_2818_32247.laz",
     "test1/niv1/tile_splitted_2818_32248.laz",
     "test1/niv1/tile_splitted_2819_32247.laz",
@@ -36,6 +36,16 @@ files = [
 ]
 
 
+malt0_files = [
+    "malt0/c1/mnx/tile_splitted_2818_32247.laz",
+    "malt0/c1/mnx/tile_splitted_2818_32248.laz",
+    "malt0/ref/mnx/tile_splitted_2818_32247.laz",
+    "malt0/ref/mnx/tile_splitted_2818_32248.laz",
+    "malt0/ref/occupancy/tile_splitted_2818_32247.laz",
+    "malt0/ref/occupancy/tile_splitted_2818_32248.laz",
+]
+
+
 def download_file(remote_file: Path, local_file: Path):
     response = requests.get(str(remote_file), verify=True, allow_redirects=True)
     with open(local_file, "wb") as fout:
@@ -46,7 +56,17 @@ def download_test1_data():
     test1 = Path("./data/test1")
     [(test1 / sub_dir).mkdir(parents=True, exist_ok=True) for sub_dir in ["ref", "niv1", "niv2", "niv3", "niv4"]]
 
-    for file in files:
+    for file in test1_files:
+        local_file = local_path / file
+        if not local_file.exists():
+            download_file(remote_url + file, local_file)
+
+
+def download_malt0_data():
+    test1 = Path("./data/malt0")
+    [(test1 / sub_dir).mkdir(parents=True, exist_ok=True) for sub_dir in ["ref/mnx", "ref/occupancy", "c1/mnx"]]
+
+    for file in malt0_files:
         local_file = local_path / file
         if not local_file.exists():
             download_file(remote_url + file, local_file)
@@ -57,6 +77,15 @@ def ensure_test1_data():
     logging.info("Check that test1 data exist and download them if needed")
     if not (Path("./data/test1").is_dir()):
         download_test1_data()
+
+    yield
+
+
+@pytest.fixture(scope="session")
+def ensure_malt0_data():
+    logging.info("Check that malt0 test data exist and download them if needed")
+    if not (Path("./data/malt0").is_dir()):
+        download_malt0_data()
 
     yield
 

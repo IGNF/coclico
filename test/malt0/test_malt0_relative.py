@@ -126,7 +126,7 @@ def test_compute_note(mean_diff, std_diff, max_diff, expected):
         assert (ret[k] == expected[k]) or (np.isnan(ret[k]) and np.isnan(expected[k]))
 
 
-def test_compute_metric_relative():
+def test_compute_metric_relative(ensure_malt0_data):
     c1_dir = Path("./data/malt0/c1/intrinsic/mnx")
     ref_dir = Path("./data/malt0/ref/intrinsic/mnx")
     occupancy_dir = Path("./data/malt0/ref/intrinsic/occupancy")
@@ -154,7 +154,7 @@ def test_compute_metric_relative():
     logging.debug(df.to_markdown())
 
 
-def test_run_main():
+def test_run_main(ensure_malt0_data):
     c1_dir = Path("./data/malt0/c1/intrinsic/mnx")
     ref_dir = Path("./data/malt0/ref/intrinsic/mnx")
     occ_dir = Path("./data/malt0/ref/intrinsic/occupancy")
