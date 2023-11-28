@@ -23,8 +23,8 @@ def setup_module():
         shutil.rmtree(TMP_PATH)
 
 
-def read_metrics_weights_ok():
-    weights_file = Path("./test/configs/metrics_weights.yaml")
+def test_read_metrics_weights_ok():
+    weights_file = Path("./test/configs/metrics_weights_test.yaml")
     weights = main.read_metrics_weights(weights_file)
     assert all([k in main.METRICS.keys() for k in weights.keys()])
     for _, val in weights.items():
@@ -32,16 +32,15 @@ def read_metrics_weights_ok():
         assert all([isinstance(cl, str) for cl in val.keys()])
 
 
-def read_metrics_weights_fail():
+def test_read_metrics_weights_fail():
     weights_file = Path("./test/configs/metrics_weights_fail.yaml")
     with pytest.raises(ValueError):
         main.read_metrics_weights(weights_file)
 
 
-def read_metrics_weights_different_spacing():
-    weights_file = Path("./test/configs/metrics_weights_fail.yaml")
-    with pytest.raises(ValueError):
-        weights = main.read_metrics_weights(weights_file)
+def test_read_metrics_weights_different_spacing():
+    weights_file = Path("./test/configs/metrics_weights_different_spacing.yaml")
+    weights = main.read_metrics_weights(weights_file)
     assert all([k in main.METRICS.keys() for k in weights.keys()])
     expected_classes = {"1", "2", "3_4"}
     for _, val in weights.items():
