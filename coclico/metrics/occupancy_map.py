@@ -11,7 +11,7 @@ from coclico.metrics.commons import (
 )
 
 
-def create_2d_binary_map(
+def _create_2d_occupancy_array(
     xs: np.array,
     ys: np.array,
     pixel_size: float,
@@ -44,7 +44,7 @@ def create_2d_binary_map(
     return grid
 
 
-def create_multilayer_2d_occupancy_map(las_file, class_weights, output_tif, pixel_size):
+def create_occupancy_map(las_file, class_weights, output_tif, pixel_size):
     """Create 2d occupancy map for each class that is in class_weights keys, and save result in a single output_tif
     file with one layer per class (the classes are sorted alphabetically).
 
@@ -69,7 +69,7 @@ def create_multilayer_2d_occupancy_map(las_file, class_weights, output_tif, pixe
         splitted_class_key = split_composed_class(class_key)
         splitted_class_key_int = [int(ii) for ii in splitted_class_key]
 
-        map = create_2d_binary_map(
+        map = _create_2d_occupancy_array(
             xs[np.isin(classifs, splitted_class_key_int)],
             ys[np.isin(classifs, splitted_class_key_int)],
             pixel_size,

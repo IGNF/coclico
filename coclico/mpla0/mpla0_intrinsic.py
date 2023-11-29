@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from typing import Dict
 
-from coclico.metrics.occupancy_map import create_multilayer_2d_occupancy_map
+import coclico.metrics.occupancy_map as occupancy_map
 
 
 def compute_metric_intrinsic(las_file: Path, class_weights: Dict, output_tif: Path, pixel_size: float = 0.5):
@@ -17,7 +17,7 @@ def compute_metric_intrinsic(las_file: Path, class_weights: Dict, output_tif: Pa
         output_tif (Path): path to output
         pixel_size (float): size of the output raster pixels
     """
-    create_multilayer_2d_occupancy_map(las_file, class_weights, output_tif, pixel_size)
+    occupancy_map.create_occupancy_map(las_file, class_weights, output_tif, pixel_size)
 
 
 def parse_args():

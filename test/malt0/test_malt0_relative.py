@@ -71,7 +71,7 @@ def test_update_overall_stats():
 
     overall_std = np.sqrt(overall_m2 / overall_count)
 
-    # Generate result with the expected ewuivalent behaviour : concatenate rasters
+    # Generate result with the expected equivalent behaviour : concatenate rasters
     # and get stats on the concatenated raster
 
     raster = np.concatenate(rasters, axis=1)

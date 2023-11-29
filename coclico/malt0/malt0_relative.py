@@ -15,34 +15,32 @@ from coclico.metrics.commons import bounded_affine_function
 
 def compute_note(mean_diff: np.array, std_diff: np.array, max_diff: np.array, classes: List[int]) -> Dict:
     def compute_one_note(mean_diff, std_diff, max_diff):
-        max_note = bounded_affine_function((0.1, 1), (4, 0), max_diff)
-        mean_note = bounded_affine_function((0.01, 2), (0.5, 0), mean_diff)
-        std_note = bounded_affine_function((0.01, 2), (0.5, 0), std_diff)
+        max_note = bounded_affine_function((0.1, 1), (4, 0), max_diff)  # 0 <= max_note <= 1
+        mean_note = bounded_affine_function((0.01, 2), (0.5, 0), mean_diff)  # 0 <= mean_note <= 2
+        std_note = bounded_affine_function((0.01, 2), (0.5, 0), std_diff)  # 0 <= std_note <= 2
 
+        # divide by 5 because weights are : max_note(1), mean_note(2), std_note(2)
         note = (max_note + mean_note + std_note) / 5
 
         return note
 
-    logging.debug(f"Classes:: {classes}")
-    logging.debug(f"mean_diff:: {mean_diff}")
-    logging.debug(f"std_diff:: {std_diff}")
-    logging.debug(f"max_diff:: {max_diff}")
-
     notes = {k: compute_one_note(mean_diff[ii], std_diff[ii], max_diff[ii]) for ii, k in enumerate(classes)}
 
-    logging.debug("PASSED")
     return notes
 
 
 def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
     """Compute stats for a single raster, masked by an occupancy raster.
-    Returns np.arrays with 1 value for each layer (first dimension):
+
+    Returns a np.array for each statistic:
     - maximum value
     - active pixels count
     - mean
     - standard deviation
     - m2 (square distance to the mean), used to calculate the variance
     (as in https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Parallel_algorithm)
+
+    Each array contains one value for each layer of the raster.
 
     Args:
         raster (np.array): raster for which to compute
@@ -75,7 +73,7 @@ def update_overall_stats(max_val, max_previous, count, count_previous, mean_val,
         m2_previous (_type_): m2 value of the bunch of rasters before updating
 
     Returns:
-        _type_: _description_
+        _type_: updated statistics
     """
     # Update total values
     max_updated = np.maximum(max_previous, max_val)

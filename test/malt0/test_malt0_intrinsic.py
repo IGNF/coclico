@@ -48,9 +48,7 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
     )  # fetched via metadata from a pdal pipeline with classification filter and stats
     output_tif = TMP_PATH / "unit_create_multilayer_2d_mnx_map.tif"
     output_tif.parent.mkdir(parents=True, exist_ok=True)
-    malt0_intrinsic.create_multilayer_2d_mnx_map(
-        las_file, class_weights, output_tif, pixel_size, no_data_value=no_data_value
-    )
+    malt0_intrinsic.create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value=no_data_value)
 
     assert output_tif.exists()
     with rasterio.Env():

@@ -6,14 +6,14 @@ from typing import Dict
 
 import pdal
 
+import coclico.metrics.occupancy_map as occupancy_map
 from coclico.metrics.commons import (
     get_raster_geometry_from_las_bounds,
     split_composed_class,
 )
-from coclico.metrics.occupancy_map import create_multilayer_2d_occupancy_map
 
 
-def create_multilayer_2d_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value=-9999):
+def create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value=-9999):
     reader = pdal.Reader.las(filename=str(las_file), tag="IN")
     pipeline = reader.pipeline()
     info = pipeline.quickinfo
@@ -86,10 +86,10 @@ def compute_metric_intrinsic(
     """
     if occupancy_tif:
         occupancy_tif.parent.mkdir(parents=True, exist_ok=True)
-        create_multilayer_2d_occupancy_map(las_file, class_weights, occupancy_tif, pixel_size)
+        occupancy_map.create_occupancy_map(las_file, class_weights, occupancy_tif, pixel_size)
 
     output_tif.parent.mkdir(parents=True, exist_ok=True)
-    create_multilayer_2d_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value)
+    create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value)
 
 
 def parse_args():
