@@ -44,8 +44,13 @@ class MALT0(Metric):
 
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
-
-        occupancy_map_arg = f"--output-occupancy-file /output/occupancy/{input.stem}.tif" if is_ref else ""
+        occupancy_map_arg = ""
+        mnx_out = output / "mnx"
+        mnx_out.mkdir(exist_ok=True, parents=True)
+        if is_ref:
+            occ_out = output / "occupancy"
+            occ_out.mkdir(exist_ok=True, parents=True)
+            occupancy_map_arg = f"--output-occupancy-file /output/occupancy/{input.stem}.tif"
 
         command = f"""
 docker run -t --rm --userns=host --shm-size=2gb
