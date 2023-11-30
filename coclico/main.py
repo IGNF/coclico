@@ -11,11 +11,12 @@ from gpao_utils.store import Store
 
 from coclico.csv_manipulation import merge_results, results_by_tile
 from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
+from coclico.malt0.malt0 import MALT0
 from coclico.mpap0.mpap0 import MPAP0
 from coclico.mpla0.mpla0 import MPLA0
 from coclico.unlock import create_unlock_job
 
-METRICS = {"mpap0": MPAP0, "mpla0": MPLA0}
+METRICS = {"mpap0": MPAP0, "mpla0": MPLA0, "malt0": MALT0}
 
 
 def parse_args():
@@ -173,7 +174,7 @@ def create_compare_project(
 
                 out_ref_metric = out_ref / metric_name / "intrinsic"
                 out_ref_metric.mkdir(parents=True, exist_ok=True)
-                metric_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
+                metric_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric, is_ref=True)
                 add_dependency_to_jobs(metric_jobs, unlock_job)
 
                 ref_jobs[metric_name] = metric_jobs
@@ -202,7 +203,9 @@ def create_compare_project(
                     out_ci_metric = out_ci / metric_name / "intrinsic"
 
                     out_ci_metric.mkdir(parents=True, exist_ok=True)
-                    ci_intrinsic_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_ci_metric)
+                    ci_intrinsic_jobs = metric.create_metric_intrinsic_jobs(
+                        ci.name, tile_names, ci, out_ci_metric, is_ref=False
+                    )
                     add_dependency_to_jobs(ci_intrinsic_jobs, unlock_job)
 
                     out_ci_to_ref_metric = out_ci / metric_name / "to_ref"

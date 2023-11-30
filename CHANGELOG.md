@@ -1,7 +1,10 @@
 # dev
-- fix intrinsic metric extension in MPLA0
-- fix default metric weights config
-- document layers order in mpla0 intrinsic metric
+- fonctionnalités:
+  - ajout d'une 3e métrique : MALT0
+- correctifs :
+  - correction de l'extension du fichier de sortir de la métrique intrinsèque de MPLA0
+  - correction des poids par défaut dans configs/metrics_weights.yaml
+  - documentation de l'ordre des couches dans la métrique intrinsèque de mpla0 intrinsic
 
 # 0.3.1
 - fix missing unix-style arguments

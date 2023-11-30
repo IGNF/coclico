@@ -20,7 +20,7 @@ class MPAP0(Metric):
 
     metric_name = "MPAP0"
 
-    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
+    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool = False):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
 
         command = f"""
@@ -58,7 +58,10 @@ python -m coclico.mpap0.mpap0_relative
 
         job = Job(job_name, command, tags=["docker"])
 
-        [job.add_dependency(c1_job) for c1_job in c1_jobs]
-        [job.add_dependency(ref_job) for ref_job in ref_jobs]
+        job = Job(job_name, command, tags=["docker"])
+        for c1_job in c1_jobs:
+            job.add_dependency(c1_job)
+        for ref_job in ref_jobs:
+            job.add_dependency(ref_job)
 
         return [job]

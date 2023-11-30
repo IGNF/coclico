@@ -6,7 +6,7 @@ import pytest
 import rasterio
 from pdaltools.las_info import las_info_metadata
 
-from coclico.metrics.occupancy_map import create_multilayer_2d_occupancy_map
+from coclico.metrics.occupancy_map import create_occupancy_map
 
 pytestmark = pytest.mark.docker
 
@@ -29,7 +29,7 @@ def test_create_multilayer_2d_occupancy_map(ensure_test1_data):
         }
     )
     output_tif = TMP_PATH / "unit_test_occupancy_map.tif"
-    create_multilayer_2d_occupancy_map(las_file, class_weights, output_tif, pixel_size=pixel_size)
+    create_occupancy_map(las_file, class_weights, output_tif, pixel_size=pixel_size)
 
     assert output_tif.exists()
     with rasterio.Env():
