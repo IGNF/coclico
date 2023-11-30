@@ -37,12 +37,12 @@ test1_files = [
 
 
 malt0_files = [
-    "malt0/c1/mnx/tile_splitted_2818_32247.laz",
-    "malt0/c1/mnx/tile_splitted_2818_32248.laz",
-    "malt0/ref/mnx/tile_splitted_2818_32247.laz",
-    "malt0/ref/mnx/tile_splitted_2818_32248.laz",
-    "malt0/ref/occupancy/tile_splitted_2818_32247.laz",
-    "malt0/ref/occupancy/tile_splitted_2818_32248.laz",
+    "malt0/c1/intrinsic/mnx/tile_splitted_2818_32247.tif",
+    "malt0/c1/intrinsic/mnx/tile_splitted_2818_32248.tif",
+    "malt0/ref/intrinsic/mnx/tile_splitted_2818_32247.tif",
+    "malt0/ref/intrinsic/mnx/tile_splitted_2818_32248.tif",
+    "malt0/ref/intrinsic/occupancy/tile_splitted_2818_32247.tif",
+    "malt0/ref/intrinsic/occupancy/tile_splitted_2818_32248.tif",
 ]
 
 
@@ -64,7 +64,10 @@ def download_test1_data():
 
 def download_malt0_data():
     test1 = Path("./data/malt0")
-    [(test1 / sub_dir).mkdir(parents=True, exist_ok=True) for sub_dir in ["ref/mnx", "ref/occupancy", "c1/mnx"]]
+    [
+        (test1 / sub_dir).mkdir(parents=True, exist_ok=True)
+        for sub_dir in ["ref/intrinsic/mnx", "ref/intrinsic/occupancy", "c1/intrinsic/mnx"]
+    ]
 
     for file in malt0_files:
         local_file = local_path / file
