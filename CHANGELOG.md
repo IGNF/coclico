@@ -1,4 +1,4 @@
-# dev
+# 0.4.0
 - fonctionnalités:
   - ajout d'une 3e métrique : MALT0
 - correctifs :
