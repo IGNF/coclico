@@ -2,8 +2,11 @@ import json
 from pathlib import Path
 from typing import List
 
+import numpy as np
+import pandas as pd
 from gpao.job import Job
 
+from coclico.metrics.commons import bounded_affine_function
 from coclico.metrics.metric import Metric
 from coclico.version import __version__
 
@@ -18,7 +21,7 @@ class MPAP0(Metric):
         * otherwise: affine function on the absolute difference in number of points
     """
 
-    metric_name = "MPAP0"
+    metric_name = "mpap0"
 
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool = False):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
@@ -65,3 +68,21 @@ python -m coclico.mpap0.mpap0_relative
             job.add_dependency(ref_job)
 
         return [job]
+
+    @staticmethod
+    def compute_note(metric_df: pd.DataFrame):
+        """_summary_
+
+        Args:
+            relative_metric_df (pd.DataFrame): _description_
+        """
+
+        metric_df[MPAP0.metric_name] = np.where(
+            metric_df["ref_count"] >= 1000,
+            bounded_affine_function((0, 1), (0.1, 0), metric_df["absolute_diff"] / metric_df["ref_count"]),
+            bounded_affine_function((20, 1), (100, 0), metric_df["absolute_diff"]),
+        )
+
+        metric_df.drop(columns=["absolute_diff", "ref_count"], inplace=True)
+
+        return metric_df

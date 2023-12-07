@@ -1,17 +1,19 @@
 import argparse
+import json
 import logging
 from pathlib import Path, PurePosixPath
-from typing import List
+from typing import Dict, List
 
 import pandas as pd
 from gpao.job import Job
 from gpao_utils.store import Store
 
 from coclico.config import csv_separator
+from coclico.metrics.listing import METRICS
 from coclico.version import __version__
 
 
-def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path):
+def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path, metrics_weights: Dict):
     """Merge all individual csv results for the comparison of one classification to the reference
 
     From a root folder containing:
@@ -22,23 +24,33 @@ def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path):
         metrics_root_folder (Path): root folder
         output_path (Path): Path to the output csv file
     """
-    metric_folders = [f for f in metrics_root_folder.iterdir() if f.is_dir()]
     merged_df = pd.DataFrame(columns=["class"])
     merged_df_tile = pd.DataFrame(columns=["tile", "class"])
-    for folder in metric_folders:
-        metric_df_tile = pd.read_csv(folder / "to_ref" / "result_tile.csv", dtype={"class": str}, sep=csv_separator)
-        merged_df_tile = merged_df_tile.merge(metric_df_tile, on=["tile", "class"], how="outer")
-        print(merged_df_tile)
 
-        metric_df = pd.read_csv(folder / "to_ref" / "result.csv", dtype={"class": str}, sep=csv_separator)
-        merged_df = merged_df.merge(metric_df, on=["class"], how="outer")
+    for metric_name, metric_class in METRICS.items():
+        if metric_name in metrics_weights.keys():
+            metric_folder = metrics_root_folder / metric_name
+            metric_df_tile = pd.read_csv(
+                metric_folder / "to_ref" / "result_tile.csv", dtype={"class": str}, sep=csv_separator
+            )
+            metric_df_tile = metric_class.compute_note(metric_df_tile)
 
-    merged_df_tile.to_csv(output_path.parent / (output_path.stem + "_tile.csv"), index=False, sep=csv_separator)
-    merged_df.to_csv(output_path, index=False, sep=csv_separator)
-    logging.debug(merged_df.to_markdown())
+            merged_df_tile = merged_df_tile.merge(metric_df_tile, on=["tile", "class"], how="outer")
+            print(merged_df_tile)
+
+            metric_df = pd.read_csv(metric_folder / "to_ref" / "result.csv", dtype={"class": str}, sep=csv_separator)
+            metric_df = metric_class.compute_note(metric_df)
+            merged_df = merged_df.merge(metric_df, on=["class"], how="outer")
+
+        output_path.parent.mkdir(exist_ok=True, parents=True)
+        merged_df_tile.to_csv(output_path.parent / (output_path.stem + "_tile.csv"), index=False, sep=csv_separator)
+        merged_df.to_csv(output_path, index=False, sep=csv_separator)
+        logging.debug(merged_df.to_markdown())
 
 
-def create_job_merge_results(metrics_root_folder: Path, out: Path, store: Store, deps: List[Job] = None) -> Job:
+def create_job_merge_results(
+    metrics_root_folder: Path, out: Path, store: Store, metrics_weights: Dict, deps: List[Job] = None
+) -> Job:
     """Create gpao job to merge tile results for one classification
 
     Args:
@@ -56,8 +68,9 @@ def create_job_merge_results(metrics_root_folder: Path, out: Path, store: Store,
     -v {store.to_unix(out.parent)}:/out
     ignimagelidar/coclico:{__version__}
     python -m coclico.csv_manipulation.results_by_tile
-    ----metrics-root-folder /input
+    --metrics-root-folder /input
     --output-path {PurePosixPath("/out") / out.name}
+    --metrics-weights '{json.dumps(metrics_weights)}'
     """
     job = Job(f"merge_tiles_{out.name.split('.')[0]}", command, tags=["docker"], deps=deps)
 
@@ -67,13 +80,14 @@ def create_job_merge_results(metrics_root_folder: Path, out: Path, store: Store,
 def parse_args():
     parser = argparse.ArgumentParser("Merge CSV result")
     parser.add_argument(
-        "----metrics-root-folder",
+        "--metrics-root-folder",
         "-m",
         type=Path,
         required=True,
         help="Path to the root folder of the csv files generated for each metric + tile",
     )
-    parser.add_argument("-o", "--output-path", type=Path, required=True, help="Path to output csv file")
+    parser.add_argument("--output-path", "-o", type=Path, required=True, help="Path to output csv file")
+    parser.add_argument("--metrics-weights", "-w", type=json.loads, help="Dictionary of the metrics weights")
 
     return parser.parse_args()
 
@@ -81,4 +95,4 @@ def parse_args():
 if __name__ == "__main__":
     logging.basicConfig(format="%(message)s", level=logging.DEBUG)
     args = parse_args()
-    merge_results_for_one_classif(args.metrics_root_folder, args.output_path)
+    merge_results_for_one_classif(args.metrics_root_folder, args.output_path, args.metrics_weights)

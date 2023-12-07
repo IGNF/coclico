@@ -13,7 +13,7 @@ from coclico.mpap0 import mpap0_relative
 
 pytestmark = pytest.mark.docker
 
-TMP_PATH = Path("./tmp/mpap0")
+TMP_PATH = Path("./tmp/mpap0_relative")
 
 
 def setup_module(module):
@@ -29,44 +29,38 @@ def test_compute_absolute_diff():
     assert score == dict({"1": 2, "3_4": 2})
 
 
-note_mpap0_data = [
-    ({}, {}, {}),  # limit case
-    (
-        {"0": 0, "1": 50, "2_3": 300},  # diff c1 to ref
-        {"0": 1000, "1": 1000, "2_3": 2000},  # count_ref (point per class)
-        {"0": 1, "1": 0.5, "2_3": 0},  # expected score
-    ),  # cases over 1000 ref points
-    (
-        {"0": 10, "1": 60, "2": 100, "3_4_5": 500},  # diff c1 to ref
-        {"1": 100, "2": 200, "3_4_5": 100},  # count_ref (point per class)
-        {"0": 1, "1": 0.5, "2": 0, "3_4_5": 0},  # expected score
-    ),  # cases under 1000 ref points
-]
-
-
-@pytest.mark.parametrize("diff,counts_ref,expected", note_mpap0_data)
-def test_compute_note(diff, counts_ref, expected):
-    assert mpap0_relative.compute_note(diff, counts_ref) == expected
-
-
 def test_compute_metric_relative():
     c1_dir = Path("./data/mpap0/c1/intrinsic")
     ref_dir = Path("./data/mpap0/ref/intrinsic")
-    class_weights = dict({"1": 1, "2": 0, "3_4_5": 1, "9": 1})  # simple classes  # composed class
+    class_weights = dict({"1": 1, "2": 0, "3_4_5": 1, "9": 1})
     output_csv = TMP_PATH / "relative" / "result.csv"
     output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
+    expected_cols = {"class", "ref_count", "absolute_diff"}
 
     mpap0_relative.compute_metric_relative(c1_dir, ref_dir, class_weights, output_csv, output_csv_tile)
 
     expected_rows = 4 * 4  # 4 files * 4 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
+    df = pd.read_csv(output_csv_tile, sep=csv_separator)
+    assert set(df.columns) == expected_cols | {"tile"}
 
     expected_rows = 4  # 4 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
 
     df = pd.read_csv(output_csv, sep=csv_separator)
-    mpap0_score_class_9 = df["mpap0"][df.index[df["class"] == "9"][0]]
-    assert mpap0_score_class_9 == 1  # score for class 9 is 1. Case: 0 point for classe 9 in c1 and ref.
+    assert set(df.columns) == expected_cols
+
+    # Check result for class 9 (0 points in c1 and ref)
+    ref_count_9 = df["ref_count"][df.index[df["class"] == "9"][0]]
+    abs_diff_9 = df["absolute_diff"][df.index[df["class"] == "9"][0]]
+    assert ref_count_9 == 0
+    assert abs_diff_9 == 0
+
+    # Check result for class 1 (several points in c1 and ref that are different)
+    ref_count_1 = df["ref_count"][df.index[df["class"] == "1"][0]]
+    abs_diff_1 = df["absolute_diff"][df.index[df["class"] == "1"][0]]
+    assert ref_count_1 > 0
+    assert abs_diff_1 > 0
 
 
 def test_run_main():

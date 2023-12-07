@@ -10,7 +10,7 @@ from coclico.mpap0 import mpap0_intrinsic
 
 pytestmark = pytest.mark.docker
 
-TMP_PATH = Path("./tmp/mpap0")
+TMP_PATH = Path("./tmp/mpap0_intrinsic")
 
 
 def setup_module(module):

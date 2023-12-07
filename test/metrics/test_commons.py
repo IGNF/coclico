@@ -1,14 +1,14 @@
+import numpy as np
 import pytest
 
 import coclico.metrics.commons
 
 affine_func_data = [
-    ((1, 3), (2, 1), [(0, 3), (1, 3), (1.5, 2), (1.75, 1.5), (2, 1), (3, 1)]),
-    ((1, 0), (5, 2), [(-1, 0), (1, 0), (2, 0.5), (4, 1.5), (5, 2), (12, 2)]),
+    ((1, 3), (2, 1), np.array([0, 1, 1.5, 1.75, 2, 3]), np.array([3, 3, 2, 1.5, 1, 1])),
+    ((1, 0), (5, 2), np.array([-1, 1, 2, 4, 5, 12]), np.array([0, 0, 0.5, 1.5, 2, 2])),
 ]
 
 
-@pytest.mark.parametrize("coord_min,coord_max,queries", affine_func_data)
-def test_bounded_affine_function(coord_min, coord_max, queries):
-    for x_query, y_query in queries:
-        assert coclico.metrics.commons.bounded_affine_function(coord_min, coord_max, x_query) == y_query
+@pytest.mark.parametrize("coord_min,coord_max,x_query,y_query", affine_func_data)
+def test_bounded_affine_function(coord_min, coord_max, x_query, y_query):
+    assert np.all(coclico.metrics.commons.bounded_affine_function(coord_min, coord_max, x_query) == y_query)
