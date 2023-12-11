@@ -2,7 +2,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 import numpy as np
 import numpy.ma as ma
@@ -10,23 +10,6 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
-from coclico.metrics.commons import bounded_affine_function
-
-
-def compute_note(mean_diff: np.array, std_diff: np.array, max_diff: np.array, classes: List[int]) -> Dict:
-    def compute_one_note(mean_diff, std_diff, max_diff):
-        max_note = bounded_affine_function((0.1, 1), (4, 0), max_diff)  # 0 <= max_note <= 1
-        mean_note = bounded_affine_function((0.01, 2), (0.5, 0), mean_diff)  # 0 <= mean_note <= 2
-        std_note = bounded_affine_function((0.01, 2), (0.5, 0), std_diff)  # 0 <= std_note <= 2
-
-        # divide by 5 because weights are : max_note(1), mean_note(2), std_note(2)
-        note = (max_note + mean_note + std_note) / 5
-
-        return note
-
-    notes = {k: compute_one_note(mean_diff[ii], std_diff[ii], max_diff[ii]) for ii, k in enumerate(classes)}
-
-    return notes
 
 
 def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
@@ -89,7 +72,6 @@ def compute_metric_relative(
     c1_dir: Path, ref_dir: Path, occupancy_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path
 ):
     """TODO"""
-    metric = "malt0"
     classes = sorted(class_weights.keys())
     csv_data = []
 
@@ -124,9 +106,17 @@ def compute_metric_relative(
         max_diff, count, mean_diff, std_diff, m2_diff = compute_stats_single_raster(
             np.abs(c1_raster - ref_raster), occupancy_raster
         )
-        note = compute_note(mean_diff, std_diff, max_diff, classes)
 
-        new_line = [{"tile": ref_file.stem, "class": cl, metric: note[cl]} for cl in classes]
+        new_line = [
+            {
+                "tile": ref_file.stem,
+                "class": cl,
+                "max_diff": max_diff[ii],
+                "mean_diff": mean_diff[ii],
+                "std_diff": std_diff[ii],
+            }
+            for ii, cl in enumerate(classes)
+        ]
         csv_data.extend(new_line)
 
         total_max_diff, total_count, total_mean_diff, total_m2 = update_overall_stats(
@@ -140,9 +130,16 @@ def compute_metric_relative(
     df.to_csv(output_csv_tile, index=False, sep=csv_separator)
     logging.debug(df.to_markdown())
 
-    total_notes = compute_note(total_mean_diff, total_std_diff, total_max_diff, classes)
+    data = [
+        {
+            "class": cl,
+            "max_diff": total_max_diff[ii],
+            "mean_diff": total_mean_diff[ii],
+            "std_diff": total_std_diff[ii],
+        }
+        for ii, cl in enumerate(classes)
+    ]
 
-    data = [{"class": cl, metric: total_notes.get(cl, 0)} for cl in classes]
     df = pd.DataFrame(data)
     df.to_csv(output_csv, index=False, sep=csv_separator)
 

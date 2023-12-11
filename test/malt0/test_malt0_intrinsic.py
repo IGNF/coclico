@@ -13,7 +13,7 @@ from coclico.malt0 import malt0_intrinsic
 
 pytestmark = pytest.mark.docker
 
-TMP_PATH = Path("./tmp/malt0")
+TMP_PATH = Path("./tmp/malt0_intrinsic")
 
 
 def setup_module(module):
