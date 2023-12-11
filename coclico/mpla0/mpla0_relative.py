@@ -10,25 +10,6 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
-from coclico.metrics.commons import bounded_affine_function
-
-
-def compute_note(union_count: Dict, intersection_count: Dict, ref_count: Dict, classes: List[str]) -> Dict:
-    def compute_one_note(union, intersection, ref_count):
-        if ref_count >= 1000:
-            iou = intersection / union  # union >= ref_count so it can't be equal to zero
-            note = bounded_affine_function((0.9, 0), (1, 1), iou)
-        else:
-            diff = union - intersection
-            note = bounded_affine_function((20, 1), (100, 0), diff)
-
-        return note
-
-    notes = {
-        k: compute_one_note(union_count.get(k, 0), intersection_count.get(k, 0), ref_count.get(k, 0)) for k in classes
-    }
-
-    return notes
 
 
 def generate_sum_by_layer(raster: np.array, layers: List[str]) -> Dict:
@@ -64,8 +45,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
-    metric = "mpla0"
-    total_ref_count = Counter()
+    total_ref_pixel_count = Counter()
     total_union = Counter()
     total_intersection = Counter()
     data = []
@@ -81,15 +61,22 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
 
         union = generate_sum_by_layer(np.logical_or(c1_raster, ref_raster), classes)
         intersection = generate_sum_by_layer(np.logical_and(c1_raster, ref_raster), classes)
-        ref = generate_sum_by_layer(ref_raster, classes)
+        ref_pixel_count = generate_sum_by_layer(ref_raster, classes)
 
-        note = compute_note(union, intersection, ref, classes)
-
-        total_ref_count += Counter(ref)
+        total_ref_pixel_count += Counter(ref_pixel_count)
         total_union += Counter(union)
         total_intersection += Counter(intersection)
 
-        new_line = [{"tile": ref_file.stem, "class": cl, metric: note[cl]} for cl in classes]
+        new_line = [
+            {
+                "tile": ref_file.stem,
+                "class": cl,
+                "ref_pixel_count": ref_pixel_count[cl],
+                "intersection": intersection[cl],
+                "union": union[cl],
+            }
+            for cl in classes
+        ]
         data.extend(new_line)
 
     output_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -97,9 +84,15 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
     df.to_csv(output_csv_tile, index=False, sep=csv_separator)
     logging.debug(df.to_markdown())
 
-    total_notes = compute_note(total_union, total_intersection, total_ref_count, classes)
-
-    data = [{"class": cl, metric: total_notes.get(cl, 0)} for cl in classes]
+    data = [
+        {
+            "class": cl,
+            "ref_pixel_count": total_ref_pixel_count[cl],
+            "intersection": total_intersection[cl],
+            "union": total_union[cl],
+        }
+        for cl in classes
+    ]
     df = pd.DataFrame(data)
     df.to_csv(output_csv, index=False, sep=csv_separator)
 

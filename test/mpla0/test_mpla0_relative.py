@@ -14,7 +14,7 @@ from coclico.mpla0 import mpla0_relative
 
 pytestmark = pytest.mark.docker
 
-TMP_PATH = Path("./tmp/mpla0")
+TMP_PATH = Path("./tmp/mpla0_relative")
 
 
 def setup_module(module):
@@ -49,28 +49,6 @@ def test_generate_sum_by_layer():
     }
 
 
-note_mpla0_data = [
-    ({}, {}, {}, {}),  # limit case
-    (
-        {"6": 100, "0": 100, "1": 100, "2_3": 100},  # union c1 to ref per class
-        {"6": 100, "0": 95, "1": 90, "2_3": 85},  # intersection c1 to ref per class
-        {"6": 1000, "0": 1000, "1": 1000, "2_3": 1000},  # count_ref (points per class)
-        {"6": 1, "0": 0.5, "1": 0, "2_3": 0},  # expected score
-    ),  # cases over 1000 ref points
-    (
-        {"6": 100, "0": 100, "1": 100, "2_3": 200, "7": 200},  # union c1 to ref per class
-        {"6": 95, "0": 80, "1": 40, "2_3": 100, "7": 50},  # intersection c1 to ref per class
-        {"6": 500, "0": 500, "1": 500, "2_3": 500, "7": 500},  # count_ref (points per class)
-        {"6": 1, "0": 1, "1": 0.5, "2_3": 0, "7": 0},  # expected score
-    ),  # cases under 1000 ref points
-]
-
-
-@pytest.mark.parametrize("union,intersection,counts_ref,expected", note_mpla0_data)
-def test_compute_note(union, intersection, counts_ref, expected):
-    assert mpla0_relative.compute_note(union, intersection, counts_ref, list(counts_ref.keys())) == expected
-
-
 def test_compute_metric_relative():
     c1_dir = Path("./data/mpla0/c1/intrinsic")
     ref_dir = Path("./data/mpla0/ref/intrinsic")
@@ -85,17 +63,21 @@ def test_compute_metric_relative():
     )
     output_csv = TMP_PATH / "relative" / "result.csv"
     output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
+    expected_cols = {"class", "ref_pixel_count", "intersection", "union"}
 
     mpla0_relative.compute_metric_relative(c1_dir, ref_dir, class_weights, output_csv, output_csv_tile)
 
     expected_rows = 2 * 5  # 2 files * 5 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
 
+    df = pd.read_csv(output_csv_tile, sep=csv_separator)
+    assert set(df.columns) == expected_cols | {"tile"}
+
     expected_rows = 5  # 5 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
 
     df = pd.read_csv(output_csv, sep=csv_separator)
-    logging.debug(df.to_markdown())
+    assert set(df.columns) == expected_cols
 
 
 def test_run_main():

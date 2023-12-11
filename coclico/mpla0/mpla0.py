@@ -2,8 +2,11 @@ import json
 from pathlib import Path
 from typing import List
 
+import numpy as np
+import pandas as pd
 from gpao.job import Job
 
+from coclico.metrics.commons import bounded_affine_function
 from coclico.metrics.metric import Metric
 from coclico.version import __version__
 
@@ -30,7 +33,7 @@ class MPLA0(Metric):
 
     # Pixel size for the intermediate result: 2d binary maps for each class
     map_pixel_size = 0.5
-    metric_name = "MPLA0"
+    metric_name = "mpla0"
 
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool = False):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
@@ -75,3 +78,21 @@ python -m coclico.mpla0.mpla0_relative
             job.add_dependency(ref_job)
 
         return [job]
+
+    @staticmethod
+    def compute_note(metric_df: pd.DataFrame):
+        """_summary_
+        Args:
+            relative_metric_df (pd.DataFrame): _description_
+            ref_pixel_count, intersection, union
+        """
+
+        metric_df[MPLA0.metric_name] = np.where(
+            metric_df["ref_pixel_count"] >= 1000,
+            bounded_affine_function((0.9, 0), (1, 1), metric_df["intersection"] / metric_df["union"]),
+            bounded_affine_function((20, 1), (100, 0), metric_df["union"] - metric_df["intersection"]),
+        )
+
+        metric_df.drop(columns=["ref_pixel_count", "intersection", "union"], inplace=True)
+
+        return metric_df
