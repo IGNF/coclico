@@ -11,9 +11,6 @@ from gpao_utils.store import Store
 import coclico.csv_manipulation.results_by_tile
 from coclico.config import csv_separator
 
-# from typing import Callable, List
-
-
 pytestmark = pytest.mark.docker
 
 
