@@ -11,12 +11,8 @@ from gpao_utils.store import Store
 
 from coclico.csv_manipulation import merge_results, results_by_tile
 from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
-from coclico.malt0.malt0 import MALT0
-from coclico.mpap0.mpap0 import MPAP0
-from coclico.mpla0.mpla0 import MPLA0
+from coclico.metrics.listing import METRICS
 from coclico.unlock import create_unlock_job
-
-METRICS = {"mpap0": MPAP0, "mpla0": MPLA0, "malt0": MALT0}
 
 
 def parse_args():
@@ -227,7 +223,9 @@ def create_compare_project(
                     ci_jobs.extend(ci_to_ref_jobs)
 
         resulti = out_ci / (str(ci.name) + "_result.csv")
-        merge_ci_metrics = results_by_tile.create_job_merge_results(out_ci, resulti, store, deps=ci_merge_deps)
+        merge_ci_metrics = results_by_tile.create_job_merge_results(
+            out_ci, resulti, store, metrics_weights, deps=ci_merge_deps
+        )
 
         score_deps.append(merge_ci_metrics)
         score_results.append(resulti)

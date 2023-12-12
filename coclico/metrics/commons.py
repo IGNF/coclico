@@ -18,7 +18,7 @@ def split_composed_class(class_key: str) -> List[str]:
     return class_key.split(composed_class_separator)
 
 
-def bounded_affine_function(coordinates_min: Tuple, coordinates_max: Tuple, x_query: float) -> float:
+def bounded_affine_function(coordinates_min: Tuple, coordinates_max: Tuple, x_query: np.array) -> np.array:
     """Compute clamped affine function
                max ________ or ______min
               /                         \\
@@ -37,18 +37,13 @@ def bounded_affine_function(coordinates_min: Tuple, coordinates_max: Tuple, x_qu
     x_min, y_min = coordinates_min
     x_max, y_max = coordinates_max
 
-    if x_query < x_min:
-        y_query = y_min
+    # affine function y = a*x + b
+    a = (y_max - y_min) / (x_max - x_min)
+    b = y_min - a * x_min
+    y_query = a * x_query + b
 
-    elif x_query > x_max:
-        y_query = y_max
-
-    else:
-        # affine function y = a*x + b
-        a = (y_max - y_min) / (x_max - x_min)
-        b = y_min - a * x_min
-
-        y_query = a * x_query + b
+    y_query[x_query < x_min] = y_min
+    y_query[x_query > x_max] = y_max
 
     return y_query
 

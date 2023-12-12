@@ -2,8 +2,10 @@ import json
 from pathlib import Path
 from typing import List
 
+import pandas as pd
 from gpao.job import Job
 
+from coclico.metrics.commons import bounded_affine_function
 from coclico.metrics.metric import Metric
 from coclico.version import __version__
 
@@ -40,7 +42,7 @@ class MALT0(Metric):
 
     # Pixel size for MNx
     pixel_size = 0.5
-    metric_name = "MALT0"
+    metric_name = "malt0"
 
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
@@ -95,3 +97,21 @@ python -m coclico.malt0.malt0_relative
             job.add_dependency(ref_job)
 
         return [job]
+
+    @staticmethod
+    def compute_note(metric_df: pd.DataFrame):
+        """_summary_
+
+        Args:
+            relative_metric_df (pd.DataFrame): _description_
+            max_diff, mean_diff, std_diff
+        """
+        max_note = bounded_affine_function((0.1, 1), (4, 0), metric_df["max_diff"])  # 0 <= max_note <= 1
+        mean_note = bounded_affine_function((0.01, 2), (0.5, 0), metric_df["mean_diff"])  # 0 <= mean_note <= 2
+        std_note = bounded_affine_function((0.01, 2), (0.5, 0), metric_df["std_diff"])  # 0 <= std_note <= 2
+
+        metric_df[MALT0.metric_name] = (max_note + mean_note + std_note) / 5
+
+        metric_df.drop(columns=["max_diff", "mean_diff", "std_diff"], inplace=True)
+
+        return metric_df

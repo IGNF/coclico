@@ -9,26 +9,14 @@ import numpy as np
 import pandas as pd
 
 from coclico.config import csv_separator
-from coclico.metrics.commons import bounded_affine_function
 
 
 def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dict:
     return {k: np.abs(c1_count.get(k, 0) - ref_count.get(k, 0)) for k in classes}
 
 
-def compute_note(abs_diff: Dict, ref_count: Dict) -> Dict:
-    def compute_one_note(abs_diff, count):
-        if count >= 1000:
-            relative_diff = abs_diff / count
-            note = bounded_affine_function((0, 1), (0.1, 0), relative_diff)
-        else:
-            note = bounded_affine_function((20, 1), (100, 0), abs_diff)
-
-        return note
-
-    notes = {k: compute_one_note(abs_diff[k], ref_count.get(k, 0)) for k in abs_diff.keys()}
-
-    return notes
+def compute_relative_diff(abs_diff: Dict, ref_count: Dict, classes: List) -> Dict:
+    return {k: abs_diff.get(k, 0) / ref_count[k] if (ref_count[k] != 0) else 0 for k in classes}
 
 
 def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path):
@@ -46,7 +34,6 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
-    metric = "mpap0"
     total_ref_count = Counter()
     total_c1_count = Counter()
     data = []
@@ -61,12 +48,14 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
             ref_count = json.load(f)
 
         abs_diff = compute_absolute_diff(c1_count, ref_count, classes)
-        note = compute_note(abs_diff, ref_count)
 
         total_ref_count += Counter(ref_count)
         total_c1_count += Counter(c1_count)
 
-        new_line = [{"tile": ref_file.stem, "class": cl, metric: note[cl]} for cl in classes]
+        new_line = [
+            {"tile": ref_file.stem, "class": cl, "absolute_diff": abs_diff[cl], "ref_count": ref_count[cl]}
+            for cl in classes
+        ]
         data.extend(new_line)
 
     output_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -75,9 +64,8 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
     logging.debug(df.to_markdown())
 
     total_abs_diff = compute_absolute_diff(total_c1_count, total_ref_count, classes)
-    total_notes = compute_note(total_abs_diff, total_ref_count)
 
-    data = [{"class": cl, metric: total_notes.get(cl, 0)} for cl in classes]
+    data = [{"class": cl, "absolute_diff": total_abs_diff[cl], "ref_count": total_ref_count[cl]} for cl in classes]
     df = pd.DataFrame(data)
     df.to_csv(output_csv, index=False, sep=csv_separator)
 

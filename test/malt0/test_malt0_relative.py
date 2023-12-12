@@ -14,7 +14,7 @@ from coclico.malt0 import malt0_relative
 
 pytestmark = pytest.mark.docker
 
-TMP_PATH = Path("./tmp/malt0")
+TMP_PATH = Path("./tmp/malt0_relative")
 
 
 def setup_module(module):
@@ -88,44 +88,6 @@ def test_update_overall_stats():
     # is ok as long as std is the same between the 2 methods
 
 
-note_mpla0_data = [
-    ({}, {}, {}, {}),  # limit case
-    (
-        [0.01, 0.5, 0.01 + (0.5 - 0.01) / 2],  # mean difference between MNXs
-        [0, 0, 0],  # standard deviation difference between MNXs
-        [0, 0, 0],  # maximum difference between MNXs
-        {"6": 1, "0": 3 / 5, "2_3": 4 / 5},  # expected score
-    ),  # Test with mean deviation condition only
-    (
-        [0, 0, 0, 0],  # mean difference between MNXs
-        [0.01, 0.5, 0.01 + (0.5 - 0.01) / 2, np.nan],  # standard deviation difference between MNXs
-        [0, 0, 0, 0],  # maximum difference between MNXs
-        {"6": 1, "0": 3 / 5, "2_3": 4 / 5, "4": np.nan},  # expected score
-    ),  # Test with standard deviation condition only
-    (
-        [0, 0, 0],  # mean difference between MNXs
-        [0, 0, 0],  # standard deviation difference between MNXs
-        [0.1, 4, 0.1 + (4 - 0.1) / 2],  # maximum difference between MNXs
-        {"6": 1, "0": 4 / 5, "2_3": 4.5 / 5},  # expected score
-    ),  # Test with maximum condition only
-    (
-        [0.01, 0.5, 0.01 + (0.5 - 0.01) / 2],  # mean difference between MNXs
-        [0.01, 0.5, 0.01 + (0.5 - 0.01) / 2],  # standard deviation difference between MNXs
-        [0.09, 4.0001, 0.1 + (4 - 0.1) / 2],  # maximum difference between MNXs
-        {"6": 1, "0": 0, "2_3": 0.5},  # expected score
-    ),  # Test all conditions together
-]
-
-
-@pytest.mark.parametrize("mean_diff,std_diff,max_diff,expected", note_mpla0_data)
-def test_compute_note(mean_diff, std_diff, max_diff, expected):
-    ret = malt0_relative.compute_note(mean_diff, std_diff, max_diff, expected.keys())
-    # Check that the dictionaries are equal for nan and non-nan values
-    assert ret.keys() == expected.keys()
-    for k in expected.keys():
-        assert (ret[k] == expected[k]) or (np.isnan(ret[k]) and np.isnan(expected[k]))
-
-
 def test_compute_metric_relative(ensure_malt0_data):
     c1_dir = Path("./data/malt0/c1/intrinsic/mnx")
     ref_dir = Path("./data/malt0/ref/intrinsic/mnx")
@@ -141,11 +103,18 @@ def test_compute_metric_relative(ensure_malt0_data):
     )
     output_csv = TMP_PATH / "relative" / "result.csv"
     output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
+    expected_cols = {"class", "max_diff", "mean_diff", "std_diff"}
 
     malt0_relative.compute_metric_relative(c1_dir, ref_dir, occupancy_dir, class_weights, output_csv, output_csv_tile)
 
+    df = pd.read_csv(output_csv_tile, sep=csv_separator)
+    assert set(df.columns) == expected_cols | {"tile"}
+
     expected_rows = 2 * 5  # 2 files * 5 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
+
+    df = pd.read_csv(output_csv, sep=csv_separator)
+    assert set(df.columns) == expected_cols
 
     expected_rows = 5  # 5 classes
     assert utils.csv_num_rows(output_csv) == expected_rows

@@ -1,3 +1,7 @@
+# dev
+- refactoring :
+  - déplacement du calcul des notes en dehors du calcul des métriques
+
 # 0.4.0
 - fonctionnalités:
   - ajout d'une 3e métrique : MALT0

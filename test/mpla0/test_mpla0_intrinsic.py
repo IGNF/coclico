@@ -11,7 +11,7 @@ from coclico.mpla0 import mpla0_intrinsic
 
 pytestmark = pytest.mark.docker
 
-TMP_PATH = Path("./tmp/mpla0")
+TMP_PATH = Path("./tmp/mpla0_intrinsic")
 
 
 def setup_module(module):

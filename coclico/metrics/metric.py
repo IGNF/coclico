@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, List
 
+import pandas as pd
 from gpao.job import Job
 from gpao_utils.store import Store
 
@@ -76,4 +77,8 @@ class Metric:
         Returns:
             List[Job]: List of GPAO jobs to create
         """
+        raise NotImplementedError
+
+    @staticmethod
+    def compute_note(df: pd.DataFrame) -> pd.DataFrame:
         raise NotImplementedError

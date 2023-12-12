@@ -10,6 +10,7 @@ from gpao_utils.gpao_test import wait_running_job
 from gpao_utils.store import Store
 
 from coclico import main
+from coclico.metrics.listing import METRICS
 
 TMP_PATH = Path("./tmp/main")
 
@@ -26,7 +27,7 @@ def setup_module():
 def test_read_metrics_weights_ok():
     weights_file = Path("./test/configs/metrics_weights_test.yaml")
     weights = main.read_metrics_weights(weights_file)
-    assert all([k in main.METRICS.keys() for k in weights.keys()])
+    assert all([k in METRICS.keys() for k in weights.keys()])
     for _, val in weights.items():
         assert isinstance(val, dict)
         assert all([isinstance(cl, str) for cl in val.keys()])
@@ -41,7 +42,7 @@ def test_read_metrics_weights_fail():
 def test_read_metrics_weights_different_spacing():
     weights_file = Path("./test/configs/metrics_weights_different_spacing.yaml")
     weights = main.read_metrics_weights(weights_file)
-    assert all([k in main.METRICS.keys() for k in weights.keys()])
+    assert all([k in METRICS.keys() for k in weights.keys()])
     expected_classes = {"1", "2", "3_4"}
     for _, val in weights.items():
         assert isinstance(val, dict)
@@ -90,14 +91,14 @@ def test_create_compare_project_existing_ref(ensure_test1_data):
 
     project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
 
-    assert np.sum([job.name.startswith("MPAP0_intrinsic_ref") for job in project.jobs]) == 4
+    assert np.sum([job.name.startswith("mpap0_intrinsic_ref") for job in project.jobs]) == 4
 
     shutil.rmtree(out / "niv1")
     shutil.rmtree(out / "niv4")
 
     project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
 
-    assert np.sum([job.name.startswith("MPAP0_intrinsic_ref") for job in project.jobs]) == 0
+    assert np.sum([job.name.startswith("mpap0_intrinsic_ref") for job in project.jobs]) == 0
 
 
 def test_create_compare_project_existing_c2(ensure_test1_data):
@@ -111,16 +112,16 @@ def test_create_compare_project_existing_c2(ensure_test1_data):
 
     project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
 
-    assert np.sum([job.name.startswith("MPAP0_intrinsic_niv4") for job in project.jobs]) == 4
-    assert np.sum([job.name.startswith("MPAP0_niv4_relative_to_ref") for job in project.jobs]) == 1
+    assert np.sum([job.name.startswith("mpap0_intrinsic_niv4") for job in project.jobs]) == 4
+    assert np.sum([job.name.startswith("mpap0_niv4_relative_to_ref") for job in project.jobs]) == 1
 
     shutil.rmtree(out / "niv1")
     shutil.rmtree(out / "ref")
 
     project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
 
-    assert np.sum([job.name.startswith("MPAP0_intrinsic_niv4") for job in project.jobs]) == 0
-    assert np.sum([job.name.startswith("MPAP0_niv4_relative_to_ref") for job in project.jobs]) == 0
+    assert np.sum([job.name.startswith("mpap0_intrinsic_niv4") for job in project.jobs]) == 0
+    assert np.sum([job.name.startswith("mpap0_niv4_relative_to_ref") for job in project.jobs]) == 0
 
 
 def test_create_compare_project_unlock(ensure_test1_data):
