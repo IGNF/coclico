@@ -71,9 +71,9 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
             {
                 "tile": ref_file.stem,
                 "class": cl,
-                "ref_pixel_count": ref_pixel_count[cl],
-                "intersection": intersection[cl],
-                "union": union[cl],
+                "ref_pixel_count": ref_pixel_count.get(cl,0),
+                "intersection": intersection.get(cl,0),
+                "union": union.get(cl,0),
             }
             for cl in classes
         ]
@@ -87,9 +87,9 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
     data = [
         {
             "class": cl,
-            "ref_pixel_count": total_ref_pixel_count[cl],
-            "intersection": total_intersection[cl],
-            "union": total_union[cl],
+            "ref_pixel_count": total_ref_pixel_count.get(cl,0),
+            "intersection": total_intersection.get(cl,0),
+            "union": total_union.get(cl,0),
         }
         for cl in classes
     ]
