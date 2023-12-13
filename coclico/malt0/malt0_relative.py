@@ -10,7 +10,8 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
-
+from coclico.malt0.malt0 import MALT0
+from coclico.io import read_metrics_weights
 
 def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
     """Compute stats for a single raster, masked by an occupancy raster.
@@ -78,7 +79,7 @@ def update_overall_stats(
 
 
 def compute_metric_relative(
-    c1_dir: Path, ref_dir: Path, occupancy_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path
+    c1_dir: Path, ref_dir: Path, occupancy_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path
 ):
     """Compute metrics that describe the difference between c1 and ref height maps.
     The occupancy map is used to mask the pixels for which the difference is computed
@@ -101,6 +102,8 @@ def compute_metric_relative(
         output_csv_tile (Path):  path to output csv file, result by tile
 
     """
+    config_dict = read_metrics_weights(config_file)
+    class_weights = config_dict[MALT0.metric_name]
     classes = sorted(class_weights.keys())
     csv_data = []
 
@@ -194,7 +197,7 @@ def parse_args():
         where there are tif files with the result of malt0 intrinsic metric (MNx for each class)",
     )
     parser.add_argument(
-        "-c",
+        "-oc",
         "--occupancy-dir",
         required=True,
         type=Path,
@@ -206,10 +209,10 @@ def parse_args():
         "-t", "--output-csv-tile", required=True, type=Path, help="Path to the CSV output file, result by tile"
     )
     parser.add_argument(
-        "-w",
-        "--class-weights",
+        "-c",
+        "--config-file",
         required=True,
-        type=json.loads,
+        type=Path,
         help="Dictionary of the classes weights for the metric (as a string)",
     )
 
@@ -223,7 +226,7 @@ if __name__ == "__main__":
         c1_dir=Path(args.input_dir),
         ref_dir=Path(args.ref_dir),
         occupancy_dir=Path(args.occupancy_dir),
-        class_weights=args.class_weights,
+        config_file=args.config_file,
         output_csv=Path(args.output_csv),
         output_csv_tile=Path(args.output_csv_tile),
     )

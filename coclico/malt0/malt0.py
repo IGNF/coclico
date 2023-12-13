@@ -63,7 +63,7 @@ python -m coclico.malt0.malt0_intrinsic
 --input-file /input
 --output-mnx-file /output/mnx/{input.stem}.tif
 {occupancy_map_arg}
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /output/{self.config_file}
 --pixel-size {self.pixel_size}
 """
 
@@ -87,7 +87,7 @@ python -m coclico.malt0.malt0_relative
 --occupancy-dir /occupancy
 --output-csv-tile /output/result_tile.csv
 --output-csv /output/result.csv
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /output/{self.config_file}
 """
 
         job = Job(job_name, command, tags=["docker"])

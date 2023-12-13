@@ -1,6 +1,7 @@
 import json
 import shutil
 import subprocess as sp
+import coclico.io as io
 import test.utils as tu
 from pathlib import Path
 
@@ -26,7 +27,7 @@ def setup_module():
 
 def test_read_metrics_weights_ok():
     weights_file = Path("./test/configs/metrics_weights_test.yaml")
-    weights = main.read_metrics_weights(weights_file)
+    weights = io.read_metrics_weights(weights_file)
     assert all([k in METRICS.keys() for k in weights.keys()])
     for _, val in weights.items():
         assert isinstance(val, dict)
@@ -36,12 +37,12 @@ def test_read_metrics_weights_ok():
 def test_read_metrics_weights_fail():
     weights_file = Path("./test/configs/metrics_weights_fail.yaml")
     with pytest.raises(ValueError):
-        main.read_metrics_weights(weights_file)
+        io.read_metrics_weights(weights_file)
 
 
 def test_read_metrics_weights_different_spacing():
     weights_file = Path("./test/configs/metrics_weights_different_spacing.yaml")
-    weights = main.read_metrics_weights(weights_file)
+    weights = io.read_metrics_weights(weights_file)
     assert all([k in METRICS.keys() for k in weights.keys()])
     expected_classes = {"1", "2", "3_4"}
     for _, val in weights.items():
@@ -70,9 +71,9 @@ def test_create_compare_project(ensure_test1_data):
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / "create_compare_project"
     project_name = "coclico_test_create_compare_projects"
-    metrics_weights = {"mpap0": {"0": 1, "1_2": 2}, "mpla0": {"0": 1, "3_4": 2}, "malt0": {"6": 2, "0": 1}}
+    config_file = Path("./test/configs/metrics_weights_test.yaml")
 
-    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file)
 
     assert project is not None
     project_json = json.loads(project.to_json())
@@ -85,18 +86,18 @@ def test_create_compare_project_existing_ref(ensure_test1_data):
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / "create_compare_project_existing_ref"
+    config_file = Path("./test/configs/config_test_micro.yaml")
 
     project_name = "test_create_compare_projects_existing_ref"
-    metrics_weights = {"mpap0": {"0": 1, "2": 2}}
 
-    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file)
 
     assert np.sum([job.name.startswith("mpap0_intrinsic_ref") for job in project.jobs]) == 4
 
     shutil.rmtree(out / "niv1")
     shutil.rmtree(out / "niv4")
 
-    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file)
 
     assert np.sum([job.name.startswith("mpap0_intrinsic_ref") for job in project.jobs]) == 0
 
@@ -108,9 +109,9 @@ def test_create_compare_project_existing_c2(ensure_test1_data):
     out = TMP_PATH / "create_compare_project_existing_c2"
 
     project_name = "test_create_compare_projects_existing_c2"
-    metrics_weights = {"mpap0": {"0": 1, "2": 2}}
+    config_file = Path("./test/configs/config_test_micro.yaml")
 
-    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file)
 
     assert np.sum([job.name.startswith("mpap0_intrinsic_niv4") for job in project.jobs]) == 4
     assert np.sum([job.name.startswith("mpap0_niv4_relative_to_ref") for job in project.jobs]) == 1
@@ -118,7 +119,7 @@ def test_create_compare_project_existing_c2(ensure_test1_data):
     shutil.rmtree(out / "niv1")
     shutil.rmtree(out / "ref")
 
-    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights)
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file)
 
     assert np.sum([job.name.startswith("mpap0_intrinsic_niv4") for job in project.jobs]) == 0
     assert np.sum([job.name.startswith("mpap0_niv4_relative_to_ref") for job in project.jobs]) == 0
@@ -130,15 +131,15 @@ def test_create_compare_project_unlock(ensure_test1_data):
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / "create_compare_project_unlock"
     project_name = "coclico_test_create_compare_projects_unlock"
-    metrics_weights = {"mpap0": {"0": 1, "1-2": 2}, "mpla0": {"0": 1, "1-2": 2}}
+    config_file = Path("./test/configs/metrics_weights_test.yaml")
 
-    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights, unlock=False)
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file, unlock=False)
 
     assert all(["unlock" not in job.name for job in project.jobs])  # No unlock job
 
     shutil.rmtree(out)
 
-    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, metrics_weights, unlock=True)
+    project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file, unlock=True)
     assert np.sum([job.name.endswith("_unlock") for job in project.jobs]) == 3
 
 

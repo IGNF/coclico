@@ -12,6 +12,7 @@ from coclico.mpla0 import mpla0_intrinsic
 pytestmark = pytest.mark.docker
 
 TMP_PATH = Path("./tmp/mpla0_intrinsic")
+CONFIG_FILE_METRICS = Path("./test/configs/config_test_metrics.yaml")
 
 
 def setup_module(module):
@@ -25,17 +26,9 @@ def test_compute_metric_intrinsic(ensure_test1_data):
     las_mtd = las_info_metadata(las_file)
     las_extent = (las_mtd["minx"], las_mtd["miny"], las_mtd["maxx"], las_mtd["maxy"])
     logging.debug(f"Test compute_metric_intrinsic on las with extent {las_extent}")
-    class_weights = dict(
-        {
-            "0": 1,
-            "1": 1,
-            "2": 0,  # simple classes
-            "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
-        }
-    )
+
     output_tif = TMP_PATH / "unit_test_mpla0_intrinsic.tif"
-    mpla0_intrinsic.compute_metric_intrinsic(las_file, class_weights, output_tif, pixel_size=pixel_size)
+    mpla0_intrinsic.compute_metric_intrinsic(las_file, CONFIG_FILE_METRICS, output_tif, pixel_size=pixel_size)
 
     assert output_tif.exists()
 
@@ -44,11 +37,10 @@ def test_run_main(ensure_test1_data):
     pixel_size = 0.5
     input_file = Path("./data/test1/ref/tile_splitted_2818_32247.laz")
     output_tif = TMP_PATH / "unit_test_run_main_mpla0_intrinsic.tif"
-    class_weights = dict({"0": 1, "1": 1})
     cmd = f"""python -m coclico.mpla0.mpla0_intrinsic \
     --input-file {input_file} \
     --output-file {output_tif} \
-    --class-weights '{json.dumps(class_weights)}' \
+    --config-file {CONFIG_FILE_METRICS} \
     --pixel-size {pixel_size}
     """
     sp.run(cmd, shell=True, check=True)

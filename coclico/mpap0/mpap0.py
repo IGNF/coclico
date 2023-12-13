@@ -34,7 +34,7 @@ ignimagelidar/coclico:{__version__}
 python -m coclico.mpap0.mpap0_intrinsic
 --input-file /input
 --output-file /output/{input.stem}.json
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /output/{self.config_file}
 """
 
         job = Job(job_name, command, tags=["docker"])
@@ -56,7 +56,7 @@ python -m coclico.mpap0.mpap0_relative
 --ref-dir /ref
 --output-csv-tile /output/result_tile.csv
 --output-csv /output/result.csv
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /output/{self.config_file}
 """
 
         job = Job(job_name, command, tags=["docker"])

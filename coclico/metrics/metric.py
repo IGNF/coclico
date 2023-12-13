@@ -9,16 +9,16 @@ from gpao_utils.store import Store
 class Metric:
     """Base class for metrics"""
 
-    def __init__(self, store: Store, class_weights: Dict):
+    def __init__(self, store: Store, config_file: str):
         """Initialize Metric object
 
         Args:
             store (Store): Store object (as defined in gpao_utils) to handle mount points of distant stores on various
             computers
-            class_weights (Dict): Dictionnary of the weights of the metric for each class (cf. config file)
+            config_file (str): File of parameters for the metric for each class (cf. config file)
         """
         self.store = store
-        self.class_weights = class_weights
+        self.config_file = config_file
 
     def create_metric_intrinsic_jobs(
         self, name: str, tile_names: List[str], input_path: Path, out_path: Path, is_ref: bool

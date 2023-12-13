@@ -1,0 +1,9 @@
+# Config used to test the behavior of each of the metrics
+mpap0:
+  "0": 1
+  "2": 2
+  "3_4": 3
+
+mpla0:
+  "2": 2
+  "5": 3

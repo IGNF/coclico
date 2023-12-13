@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import List
 
@@ -46,7 +45,7 @@ ignimagelidar/coclico:{__version__}
 python -m coclico.mpla0.mpla0_intrinsic
 --input-file /input
 --output-file /output/{input.stem}.tif
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /output/{self.config_file}
 --pixel-size {self.map_pixel_size}
 """
 
@@ -68,7 +67,7 @@ python -m coclico.mpla0.mpla0_relative
 --ref-dir /ref
 --output-csv-tile /output/result_tile.csv
 --output-csv /output/result.csv
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /output/{self.config_file}
 """
 
         job = Job(job_name, command, tags=["docker"])

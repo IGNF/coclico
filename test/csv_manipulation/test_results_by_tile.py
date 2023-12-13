@@ -10,6 +10,7 @@ from gpao_utils.store import Store
 
 import coclico.csv_manipulation.results_by_tile
 from coclico.config import csv_separator
+import coclico.io as io
 
 pytestmark = pytest.mark.docker
 
@@ -31,15 +32,16 @@ def setup_module():
 
 
 def test_merge_results_for_one_classif():
-    metrics_weights = {"mpap0": {"1": 0.5, "2": 0, "3_4_5": 4, "9": 1}}
-    metrics = list(metrics_weights.keys())
-    classes = list(metrics_weights["mpap0"].keys())
+    CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_1_metric.yaml")
+    config_dict = io.read_metrics_weights(CONFIG_FILE)
+    metrics = list(config_dict.keys())
+    classes = list(config_dict["mpap0"].keys())
 
     base_path = TMP_PATH / "merge_results_for_one_classif"
     out = base_path / "result.csv"
     out_tile = base_path / "result_tile.csv"
 
-    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, metrics_weights)
+    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, CONFIG_FILE)
 
     df = check_df_exists_with_no_empty_data(out)
     assert set(df.columns) == set(["class"] + metrics)
@@ -56,17 +58,15 @@ def test_merge_results_for_one_classif():
 
 def test_merge_results_for_one_classif_on_different_classes():
     """Check that the result file is created correctly when classes are not the same for all metrics"""
-    metrics_weights = {
-        "mpap0": {"1": 0.5, "2": 0, "3_4_5": 4, "9": 1},
-        "mpla0": {"0": 1, "1": 1, "2": 0, "3_4_5": 1, "3 _ 4": 2},
-    }
-    metrics = list(metrics_weights.keys())
-    classes = set([cl for metric_dict in metrics_weights.values() for cl in metric_dict.keys()])
+    CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_2_metrics.yaml")
+    config_dict = io.read_metrics_weights(CONFIG_FILE)
+    metrics = list(config_dict.keys())
+    classes = set([cl for metric_dict in config_dict.values() for cl in metric_dict.keys()])
     base_path = TMP_PATH / Path("results_by_tile_on_different_classes")
     out = base_path / "result.csv"
     out_tile = base_path / "result_tile.csv"
 
-    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, metrics_weights)
+    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, CONFIG_FILE)
 
     assert out.is_file()
     df = pd.read_csv(out, dtype={"class": str}, sep=csv_separator)
@@ -84,25 +84,26 @@ def test_merge_results_for_one_classif_on_different_classes():
 
 def test_run_main():
     out = TMP_PATH / "run_main" / "result.csv"
-    metrics_weights = {"mpap0": {"0": 1, "2": 2, "3_4": 3}}  # , "mpla0": {"0": 1, "2": 2, "5": 3}}
+    CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_1_metric.yaml")
 
     cmd = f"""python -m coclico.csv_manipulation.results_by_tile \
     --metrics-root-folder {DATA_PATH} \
     --output-path {out} \
-    --metrics-weights '{json.dumps(metrics_weights)}'
+    --config-file {CONFIG_FILE}
     """
 
     sp.run(cmd, shell=True, check=True)
 
 
 def test_create_job_merge_tile_results():
+    CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_2_metrics.yaml")
+
     out = Path("local_store/out")
     metrics_root_folder = Path("local_store/input")
     store = Store("local_store", "win_store", "unix_store")
-    metrics_weights = {"mpap0": {"1": 0.5, "2": 0, "3_4_5": 4, "9": 1}}
 
     job = coclico.csv_manipulation.results_by_tile.create_job_merge_results(
-        metrics_root_folder, out, store, metrics_weights
+        metrics_root_folder, out, store, CONFIG_FILE
     )
     job_json = json.loads(job.to_json())  # return a string
     assert job_json["name"].startswith("merge_tiles")  # check that it is running the right method

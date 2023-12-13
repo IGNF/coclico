@@ -1,0 +1,22 @@
+# Config used to test the behavior of each of the metrics
+mpap0:
+  "0": 1
+  "1": 1
+  "2": 0  # simple classes
+  "3_4_5": 1  # composed class
+  "3 _ 4": 2  # composed class with spaces
+  "9" : 0 # No point in class 9
+
+mpla0:
+  "0": 1
+  "1": 1
+  "2": 0  # simple classes
+  "3_4_5": 1  # composed class
+  "3 _ 4": 2  # composed class with spaces
+
+malt0:
+  "0": 1
+  "1": 1
+  "2": 0  # simple classes
+  "3_4_5": 1  # composed class
+  "3 _ 4": 2  # composed class with spaces

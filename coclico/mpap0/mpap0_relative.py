@@ -9,15 +9,17 @@ import numpy as np
 import pandas as pd
 
 from coclico.config import csv_separator
+from coclico.mpap0.mpap0 import MPAP0
+from coclico.io import read_metrics_weights
 
 
 def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dict:
     return {k: np.abs(c1_count.get(k, 0) - ref_count.get(k, 0)) for k in classes}
 
 
-def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path):
+def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path):
     """Count points on las file from c1 classification, for all classes, relative to reference classification.
-    Compute also a score depending on class_weights keys, and save result in output_csv file.
+    Compute also a score depending on config_file keys, and save result in output_csv file.
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
 
@@ -33,10 +35,13 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
                         where there are json files with the result of mpap0 intrinsic metric
         ref_dir (Path): path to the reference classification directory,
                         where there are json files with the result of mpap0 intrinsic metric
-        class_weights (Dict):   class weights dict
+        config_file (Dict):   class weights dict    
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
+    config_dict = read_metrics_weights(config_file)
+    class_weights = config_dict[MPAP0.metric_name]
+
     total_ref_count = Counter()
     total_c1_count = Counter()
     data = []
@@ -105,10 +110,10 @@ def parse_args():
         "-t", "--output-csv-tile", required=True, type=Path, help="Path to the CSV output file, result by tile"
     )
     parser.add_argument(
-        "-w",
-        "--class-weights",
+        "-c",
+        "--config-file",
         required=True,
-        type=json.loads,
+        type=Path,
         help="Dictionary of the classes weights for the metric (as a string)",
     )
 
@@ -121,7 +126,7 @@ if __name__ == "__main__":
     compute_metric_relative(
         c1_dir=Path(args.input_dir),
         ref_dir=Path(args.ref_dir),
-        class_weights=args.class_weights,
+        config_file=args.config_file,
         output_csv=Path(args.output_csv),
         output_csv_tile=Path(args.output_csv_tile),
     )

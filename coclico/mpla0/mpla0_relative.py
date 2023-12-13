@@ -10,6 +10,8 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
+from coclico.mpla0.mpla0 import MPLA0
+from coclico.io import read_metrics_weights
 
 
 def generate_sum_by_layer(raster: np.array, layers: List[str]) -> Dict:
@@ -30,16 +32,11 @@ def generate_sum_by_layer(raster: np.array, layers: List[str]) -> Dict:
     return sum_dict
 
 
-def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path):
-    """Compute metrics that describe the difference between c1 and ref occupancy maps.
-
-    The metrics are:
-    - union: the number of pixels that contain the requested class in c1 OR in the reference
-    - intersection: the number of pixels that contain the requested class in c1 AND in the reference
-    - ref_pixel_count: the number of pixels that contain the requested class in the reference
-
-    These metrics are stored tile by tile and class by class in the output_csv_tile file
-    These metrics are stored class by class for the whole data in the output_csv file
+def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path):
+    """Count points on las file from c1 classification, for all classes, relative to reference classification.
+    Compute also a score depending on class_weights keys, and save result in output_csv file.
+    In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
+    sum of the points counts of each class from the compose class (count(3) + count(4))
 
     Args:
         c1_dir (Path):  path to the c1 classification directory,
@@ -50,6 +47,9 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
+    config_dict = read_metrics_weights(config_file)
+    class_weights = config_dict[MPLA0.metric_name]
+
     total_ref_pixel_count = Counter()
     total_union = Counter()
     total_intersection = Counter()
@@ -126,10 +126,10 @@ def parse_args():
         "-t", "--output-csv-tile", required=True, type=Path, help="Path to the CSV output file, result by tile"
     )
     parser.add_argument(
-        "-w",
-        "--class-weights",
+        "-c",
+        "--config-file",
         required=True,
-        type=json.loads,
+        type=Path,
         help="Dictionary of the classes weights for the metric (as a string)",
     )
 
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     compute_metric_relative(
         c1_dir=Path(args.input_dir),
         ref_dir=Path(args.ref_dir),
-        class_weights=args.class_weights,
+        config_file=args.config_file,
         output_csv=Path(args.output_csv),
         output_csv_tile=Path(args.output_csv_tile),
     )

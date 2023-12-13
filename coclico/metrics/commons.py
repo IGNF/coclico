@@ -74,3 +74,5 @@ def get_raster_geometry_from_las_bounds(las_bounds: Tuple[float], pixel_size: fl
     logging.debug(f"Raster number of pixels infered from in las file: ({x_pixels}, {y_pixels})")
 
     return (x_min, y_max), (x_pixels, y_pixels)
+
+

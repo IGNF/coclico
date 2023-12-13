@@ -15,6 +15,7 @@ from coclico.malt0 import malt0_relative
 pytestmark = pytest.mark.docker
 
 TMP_PATH = Path("./tmp/malt0_relative")
+CONFIG_FILE_METRICS = Path("./test/configs/config_test_metrics.yaml")
 
 
 def setup_module(module):
@@ -92,20 +93,11 @@ def test_compute_metric_relative(ensure_malt0_data):
     c1_dir = Path("./data/malt0/c1/intrinsic/mnx")
     ref_dir = Path("./data/malt0/ref/intrinsic/mnx")
     occupancy_dir = Path("./data/malt0/ref/intrinsic/occupancy")
-    class_weights = dict(
-        {
-            "0": 1,
-            "1": 1,
-            "2": 0,  # simple classes
-            "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
-        }
-    )
     output_csv = TMP_PATH / "relative" / "result.csv"
     output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
     expected_cols = {"class", "max_diff", "mean_diff", "std_diff"}
 
-    malt0_relative.compute_metric_relative(c1_dir, ref_dir, occupancy_dir, class_weights, output_csv, output_csv_tile)
+    malt0_relative.compute_metric_relative(c1_dir, ref_dir, occupancy_dir, CONFIG_FILE_METRICS, output_csv, output_csv_tile)
 
     df = pd.read_csv(output_csv_tile, sep=csv_separator)
     assert set(df.columns) == expected_cols | {"tile"}
@@ -129,20 +121,12 @@ def test_run_main(ensure_malt0_data):
     occ_dir = Path("./data/malt0/ref/intrinsic/occupancy")
     output_csv = TMP_PATH / "unit_test_run_main_mpla0_relative.csv"
     output_csv_tile = TMP_PATH / "unit_test_run_main_mpla0_relative_tile.csv"
-    class_weights = dict(
-        {
-            "0": 1,
-            "1": 1,
-            "2": 0,  # simple classes
-            "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
-        }
-    )
+
     cmd = f"""python -m coclico.malt0.malt0_relative \
         --input-dir {c1_dir} \
         --ref-dir {ref_dir} \
         --occupancy-dir {occ_dir} \
-        --class-weights '{json.dumps(class_weights)}' \
+        --config-file '{CONFIG_FILE_METRICS}' \
         --output-csv {output_csv} \
         --output-csv-tile {output_csv_tile} \
     """
