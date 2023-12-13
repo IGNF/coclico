@@ -15,10 +15,6 @@ def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dic
     return {k: np.abs(c1_count.get(k, 0) - ref_count.get(k, 0)) for k in classes}
 
 
-def compute_relative_diff(abs_diff: Dict, ref_count: Dict, classes: List) -> Dict:
-    return {k: abs_diff.get(k, 0) / ref_count[k] if (ref_count[k] != 0) else 0 for k in classes}
-
-
 def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path):
     """Count points on las file from c1 classification, for all classes, relative to reference classification.
     Compute also a score depending on class_weights keys, and save result in output_csv file.
@@ -53,7 +49,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
         total_c1_count += Counter(c1_count)
 
         new_line = [
-            {"tile": ref_file.stem, "class": cl, "absolute_diff": abs_diff[cl], "ref_count": ref_count[cl]}
+            {"tile": ref_file.stem, "class": cl, "absolute_diff": abs_diff.get(cl,0), "ref_count": ref_count.get(cl, 0)}
             for cl in classes
         ]
         data.extend(new_line)
@@ -65,7 +61,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
 
     total_abs_diff = compute_absolute_diff(total_c1_count, total_ref_count, classes)
 
-    data = [{"class": cl, "absolute_diff": total_abs_diff[cl], "ref_count": total_ref_count[cl]} for cl in classes]
+    data = [{"class": cl, "absolute_diff": total_abs_diff.get(cl,0), "ref_count": total_ref_count.get(cl, 0)} for cl in classes]
     df = pd.DataFrame(data)
     df.to_csv(output_csv, index=False, sep=csv_separator)
 
