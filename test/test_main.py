@@ -1,7 +1,6 @@
 import json
 import shutil
 import subprocess as sp
-import coclico.io as io
 import test.utils as tu
 from pathlib import Path
 
@@ -10,6 +9,7 @@ import pytest
 from gpao_utils.gpao_test import wait_running_job
 from gpao_utils.store import Store
 
+import coclico.io as io
 from coclico import main
 from coclico.metrics.listing import METRICS
 
@@ -231,7 +231,7 @@ def test_run_main_test1(ensure_test1_data, use_gpao_server):
         -i {str(c1)} {str(c2)} \
         --ref {str(ref)} \
         --out {str(out)} \
-        --weights-file {str(weights_file)} \
+        --config-file {str(weights_file)} \
         --gpao-hostname {gpao_hostname} \
         --runner-store-path {runner_store_path} \
         --project-name {project_name} \
@@ -258,7 +258,7 @@ def test_run_main_test1_unlock(ensure_test1_data, use_gpao_server):
         -i {str(c1)} {str(c2)} \
         --ref {str(ref)} \
         --out {str(out)} \
-        --weights-file {str(weights_file)} \
+        --config-file {str(weights_file)} \
         --gpao-hostname {gpao_hostname} \
         --runner-store-path {runner_store_path} \
         --project-name {project_name} \

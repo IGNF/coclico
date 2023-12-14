@@ -72,7 +72,7 @@ python -m coclico.main -i <C1> <C2> \
                        --local-store-path <LOCAL_STORE_PATH> \
                        --runner-store-path <RUNNER_STORE_PATH> \
                        --project-name <PROJECT_NAME> \
-                       --weights-file <WEIGHTS_FILE> \
+                       --config-file <WEIGHTS_FILE> \
                        --unlock
 ```
 

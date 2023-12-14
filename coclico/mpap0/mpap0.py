@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import List
 
@@ -30,11 +29,12 @@ class MPAP0(Metric):
 docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(input)}:/input
 -v {self.store.to_unix(output)}:/output
+-v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.mpap0.mpap0_intrinsic
 --input-file /input
 --output-file /output/{input.stem}.json
---config-file /output/{self.config_file}
+--config-file /config/{self.config_file.name}
 """
 
         job = Job(job_name, command, tags=["docker"])
@@ -50,13 +50,14 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(out_c1)}:/input
 -v {self.store.to_unix(out_ref)}:/ref
 -v {self.store.to_unix(output)}:/output
+-v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.mpap0.mpap0_relative
 --input-dir /input
 --ref-dir /ref
 --output-csv-tile /output/result_tile.csv
 --output-csv /output/result.csv
---config-file /output/{self.config_file}
+--config-file /config/{self.config_file.name}
 """
 
         job = Job(job_name, command, tags=["docker"])

@@ -1,17 +1,16 @@
 import argparse
-import json
 import logging
 from pathlib import Path, PurePosixPath
-from typing import Dict, List
+from typing import List
 
 import pandas as pd
 from gpao.job import Job
 from gpao_utils.store import Store
 
+import coclico.io as io
 from coclico.config import csv_separator
 from coclico.metrics.listing import METRICS
 from coclico.version import __version__
-import coclico.io as io
 
 
 def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path, config_file: Path):
@@ -69,11 +68,12 @@ def create_job_merge_results(
     docker run -t --rm --userns=host --shm-size=2gb
     -v {store.to_unix(metrics_root_folder)}:/input
     -v {store.to_unix(out.parent)}:/out
+    -v {store.to_unix(config_file.parent)}:/config
     ignimagelidar/coclico:{__version__}
     python -m coclico.csv_manipulation.results_by_tile
     --metrics-root-folder /input
     --output-path {PurePosixPath("/out") / out.name}
-    --config-file {PurePosixPath("/out") /config_file}
+    --config-file {PurePosixPath("/config") / config_file.name}
     """
     job = Job(f"merge_tiles_{out.name.split('.')[0]}", command, tags=["docker"], deps=deps)
 

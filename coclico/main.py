@@ -4,13 +4,13 @@ import shutil
 from pathlib import Path, PurePosixPath
 from typing import List
 
-from coclico.io import read_metrics_weights
 from gpao.builder import Builder
 from gpao.project import Project
 from gpao_utils.store import Store
 
 from coclico.csv_manipulation import merge_results, results_by_tile
 from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
+from coclico.io import read_metrics_weights
 from coclico.metrics.listing import METRICS
 from coclico.unlock import create_unlock_job
 
@@ -47,7 +47,7 @@ def parse_args():
     parser.add_argument("-p", "--project-name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(
         "-w",
-        "--weights-file",
+        "--config-file",
         type=Path,
         default=Path("./configs/metrics_weights.yaml"),
         help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "
@@ -93,7 +93,7 @@ def create_compare_project(
     out: Path,
     store: Store,
     project_name: str,
-    config_file : Path,
+    config_file: Path,
     unlock: bool = False,
 ) -> Project:
     """Main function to generate a GPAO project needed to compare classifications (c1, c2..) with respect to a
@@ -144,7 +144,7 @@ def create_compare_project(
 
         for metric_name, metric_class in METRICS.items():
             if metric_name in config_dict.keys():
-                metric = metric_class(store, config_file.name)
+                metric = metric_class(store, config_file)
 
                 out_ref_metric = out_ref / metric_name / "intrinsic"
                 out_ref_metric.mkdir(parents=True, exist_ok=True)
@@ -171,7 +171,7 @@ def create_compare_project(
 
             for metric_name, metric_class in METRICS.items():
                 if metric_name in config_dict.keys():
-                    metric = metric_class(store, config_file.name)
+                    metric = metric_class(store, config_file)
 
                     out_ci_metric = out_ci / metric_name / "intrinsic"
 
@@ -256,12 +256,12 @@ def compare(
     store = Store(local_store_path, unix_path=runner_store_path)
     logging.debug(f"Local store path ({local_store_path}) converted to client store path ({runner_store_path})")
 
-    #config_file = read_metrics_weights(config_file)
     out.mkdir(parents=True, exist_ok=True)
+    out_config_file = out / config_file.name
 
-    shutil.copyfile(config_file, out / config_file.name)
+    shutil.copyfile(config_file, out_config_file)
 
-    project = create_compare_project(classifications, ref, out, store, project_name, config_file.name, unlock)
+    project = create_compare_project(classifications, ref, out, store, project_name, out_config_file, unlock)
 
     builder = Builder([project])
     logging.info(f"Send projects to gpao server: {gpao_hostname}")

@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 from pathlib import Path
 from typing import Dict, List
@@ -8,13 +7,14 @@ import pandas as pd
 from gpao.job import Job
 from gpao_utils.store import Store
 
+import coclico.io as io
 from coclico.config import csv_separator
 from coclico.version import __version__
-import coclico.io as io
 
 
 def filter_out_rows(df, col, values):
     return df[~df[col].isin(values)]
+
 
 def compute_weighted_result(input: Path, weights: Dict) -> Dict:
     """Compute weighted sum of notes for all metrics using the weights stored in a dictionary like:
@@ -89,11 +89,12 @@ def create_merge_all_results_job(
     docker run -t --rm --userns=host --shm-size=2gb
     {' '.join(volumes)}
     -v {store.to_unix(output.parent)}:/out
+    -v {store.to_unix(config_file.parent)}:/config
     ignimagelidar/coclico:{__version__}
     python -m coclico.csv_manipulation.merge_results
     -i {' '.join(inputs)}
     --output /out/{output.name}
-    --config-file /out/{config_file}'
+    --config-file /config/{config_file.name}
     """
     return Job("merge_all_results", command, tags=["docker"], deps=deps)
 

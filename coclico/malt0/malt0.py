@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import List
 
@@ -58,13 +57,15 @@ class MALT0(Metric):
 docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(input)}:/input
 -v {self.store.to_unix(output)}:/output
+-v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.malt0.malt0_intrinsic
 --input-file /input
 --output-mnx-file /output/mnx/{input.stem}.tif
 {occupancy_map_arg}
---config-file /output/{self.config_file}
+--config-file /config/{self.config_file.name}
 --pixel-size {self.pixel_size}
+
 """
 
         job = Job(job_name, command, tags=["docker"])
@@ -80,6 +81,7 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(out_ref) / "mnx"}:/ref
 -v {self.store.to_unix(out_ref) / "occupancy"}:/occupancy
 -v {self.store.to_unix(output)}:/output
+-v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.malt0.malt0_relative
 --input-dir /input
@@ -87,7 +89,7 @@ python -m coclico.malt0.malt0_relative
 --occupancy-dir /occupancy
 --output-csv-tile /output/result_tile.csv
 --output-csv /output/result.csv
---config-file /output/{self.config_file}
+--config-file /config/{self.config_file.name}
 """
 
         job = Job(job_name, command, tags=["docker"])

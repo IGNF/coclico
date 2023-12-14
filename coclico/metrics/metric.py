@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 import pandas as pd
 from gpao.job import Job
@@ -9,7 +9,7 @@ from gpao_utils.store import Store
 class Metric:
     """Base class for metrics"""
 
-    def __init__(self, store: Store, config_file: str):
+    def __init__(self, store: Store, config_file: Path):
         """Initialize Metric object
 
         Args:
