@@ -81,10 +81,18 @@ python -m coclico.mpla0.mpla0_relative
 
     @staticmethod
     def compute_note(metric_df: pd.DataFrame):
-        """_summary_
+        """Compute mpla0 note from mpla0_relative results.
+        This method expects a pandas dataframe with columns:
+            - intersection
+            - union
+            - ref_pixel_count
+        (these columns are described in the mpla0_relative function docstring)
+
         Args:
-            relative_metric_df (pd.DataFrame): _description_
-            ref_pixel_count, intersection, union
+            metric_df (pd.DataFrame): mpla0 relative results as a pandas dataframe
+
+        Returns:
+            metric_df: the updated metric_df input with notes instead of metrics
         """
 
         metric_df[MPLA0.metric_name] = np.where(

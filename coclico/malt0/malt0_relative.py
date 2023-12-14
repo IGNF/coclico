@@ -42,21 +42,30 @@ def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
     return max_val, count, mean_val, std_val, m2
 
 
-def update_overall_stats(max_val, max_previous, count, count_previous, mean_val, mean_previous, m2, m2_previous):
+def update_overall_stats(
+    max_val: np.array,
+    max_previous: np.array,
+    count: np.array,
+    count_previous: np.array,
+    mean_val: np.array,
+    mean_previous: np.array,
+    m2: np.array,
+    m2_previous: np.array,
+):
     """Update stats of all values in a bunch of rasters based on the stats computed on a single raster
 
     Args:
-        max_val (_type_): max value of the current raster
-        max_previous (_type_): max value of the bunch of rasters before updating
-        count (_type_): pixels count of the current raster
-        count_previous (_type_): pixels count of the bunch of rasters before updating
-        mean_val (_type_): mean value of the current raster
-        mean_previous (_type_): mean of the bunch of rasters before updating
-        m2 (_type_): sum of square distance to the mean of the current raster
-        m2_previous (_type_): m2 value of the bunch of rasters before updating
+        max_val (np.array): max value of the current raster
+        max_previous (np.array): max value of the bunch of rasters before updating
+        count (np.array): pixels count of the current raster
+        count_previous (np.array): pixels count of the bunch of rasters before updating
+        mean_val (np.array): mean value of the current raster
+        mean_previous (np.array): mean of the bunch of rasters before updating
+        m2 (np.array): sum of square distance to the mean of the current raster
+        m2_previous (np.array): m2 value of the bunch of rasters before updating
 
     Returns:
-        _type_: updated statistics
+        np.arrays: updated statistics
     """
     # Update total values
     max_updated = np.maximum(max_previous, max_val)
@@ -71,7 +80,27 @@ def update_overall_stats(max_val, max_previous, count, count_previous, mean_val,
 def compute_metric_relative(
     c1_dir: Path, ref_dir: Path, occupancy_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path
 ):
-    """TODO"""
+    """Compute metrics that describe the difference between c1 and ref height maps.
+    The occupancy map is used to mask the pixels for which the difference is computed
+
+    The metrics are:
+    - mean_diff: the average difference in z between the height maps
+    - max_diff: the maximum difference in z between the height maps
+    - std_diff: the standard deviation of the difference in z betweeen the height maps
+
+    These metrics are stored tile by tile and class by class in the output_csv_tile file
+    These metrics are stored class by class for the whole data in the output_csv file
+
+    Args:
+        c1_dir (Path):  path to the c1 classification directory,
+                        where there are json files with the result of mpap0 intrinsic metric
+        ref_dir (Path): path to the reference classification directory,
+                        where there are json files with the result of mpap0 intrinsic metric
+        class_weights (Dict):   class weights dict
+        output_csv (Path):  path to output csv file
+        output_csv_tile (Path):  path to output csv file, result by tile
+
+    """
     classes = sorted(class_weights.keys())
     csv_data = []
 

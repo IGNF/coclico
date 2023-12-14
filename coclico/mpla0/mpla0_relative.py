@@ -31,10 +31,15 @@ def generate_sum_by_layer(raster: np.array, layers: List[str]) -> Dict:
 
 
 def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path):
-    """Count points on las file from c1 classification, for all classes, relative to reference classification.
-    Compute also a score depending on class_weights keys, and save result in output_csv file.
-    In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
-    sum of the points counts of each class from the compose class (count(3) + count(4))
+    """Compute metrics that describe the difference between c1 and ref occupancy maps.
+
+    The metrics are:
+    - union: the number of pixels that contain the requested class in c1 OR in the reference
+    - intersection: the number of pixels that contain the requested class in c1 AND in the reference
+    - ref_pixel_count: the number of pixels that contain the requested class in the reference
+
+    These metrics are stored tile by tile and class by class in the output_csv_tile file
+    These metrics are stored class by class for the whole data in the output_csv file
 
     Args:
         c1_dir (Path):  path to the c1 classification directory,
@@ -71,9 +76,9 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
             {
                 "tile": ref_file.stem,
                 "class": cl,
-                "ref_pixel_count": ref_pixel_count.get(cl,0),
-                "intersection": intersection.get(cl,0),
-                "union": union.get(cl,0),
+                "ref_pixel_count": ref_pixel_count.get(cl, 0),
+                "intersection": intersection.get(cl, 0),
+                "union": union.get(cl, 0),
             }
             for cl in classes
         ]
@@ -87,9 +92,9 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
     data = [
         {
             "class": cl,
-            "ref_pixel_count": total_ref_pixel_count.get(cl,0),
-            "intersection": total_intersection.get(cl,0),
-            "union": total_union.get(cl,0),
+            "ref_pixel_count": total_ref_pixel_count.get(cl, 0),
+            "intersection": total_intersection.get(cl, 0),
+            "union": total_union.get(cl, 0),
         }
         for cl in classes
     ]

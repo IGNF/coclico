@@ -99,13 +99,21 @@ python -m coclico.malt0.malt0_relative
         return [job]
 
     @staticmethod
-    def compute_note(metric_df: pd.DataFrame):
-        """_summary_
+    def compute_note(metric_df: pd.DataFrame) -> pd.DataFrame:
+        """Compute malt0 note from malt0_relative results.
+        This method expects a pandas dataframe with columns:
+            - max_diff
+            - mean_diff
+            - std_diff
+        (these columns are described in the malt0_relative function docstring)
 
         Args:
-            relative_metric_df (pd.DataFrame): _description_
-            max_diff, mean_diff, std_diff
+            metric_df (pd.DataFrame): malt0 relative results as a pandas dataframe
+
+        Returns:
+            metric_df: the updated metric_df input with notes instead of metrics
         """
+
         max_note = bounded_affine_function((0.1, 1), (4, 0), metric_df["max_diff"])  # 0 <= max_note <= 1
         mean_note = bounded_affine_function((0.01, 2), (0.5, 0), metric_df["mean_diff"])  # 0 <= mean_note <= 2
         std_note = bounded_affine_function((0.01, 2), (0.5, 0), metric_df["std_diff"])  # 0 <= std_note <= 2
