@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 from collections import Counter
 from pathlib import Path
@@ -10,8 +9,8 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
-from coclico.mpla0.mpla0 import MPLA0
 from coclico.io import read_metrics_weights
+from coclico.mpla0.mpla0 import MPLA0
 
 
 def generate_sum_by_layer(raster: np.array, layers: List[str]) -> Dict:
@@ -48,7 +47,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
         output_csv_tile (Path):  path to output csv file, result by tile
     """
     config_dict = read_metrics_weights(config_file)
-    class_weights = config_dict[MPLA0.metric_name]
+    class_weights = config_dict[MPLA0.metric_name]["weights"]
 
     total_ref_pixel_count = Counter()
     total_union = Counter()

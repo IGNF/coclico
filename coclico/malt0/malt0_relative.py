@@ -1,8 +1,6 @@
 import argparse
-import json
 import logging
 from pathlib import Path
-from typing import Dict
 
 import numpy as np
 import numpy.ma as ma
@@ -10,8 +8,9 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
-from coclico.malt0.malt0 import MALT0
 from coclico.io import read_metrics_weights
+from coclico.malt0.malt0 import MALT0
+
 
 def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
     """Compute stats for a single raster, masked by an occupancy raster.
@@ -103,7 +102,7 @@ def compute_metric_relative(
 
     """
     config_dict = read_metrics_weights(config_file)
-    class_weights = config_dict[MALT0.metric_name]
+    class_weights = config_dict[MALT0.metric_name]["weights"]
     classes = sorted(class_weights.keys())
     csv_data = []
 

@@ -1,4 +1,3 @@
-import json
 import logging
 import shutil
 import subprocess as sp
@@ -34,7 +33,7 @@ def test_generate_sum_by_layer():
             "1": 1,
             "2": 0,  # simple classes
             "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
+            "3_4": 2,  # composed class with spaces
         }
     )
     classes = sorted(class_weights.keys())
@@ -45,7 +44,7 @@ def test_generate_sum_by_layer():
         "0": 0,
         "1": 225,
         "2": 36173,
-        "3 _ 4": 2353,
+        "3_4": 2353,
         "3_4_5": 10692,
     }
 
@@ -92,5 +91,5 @@ def test_run_main():
     expected_rows = 2 * 5  # 2 files * 5 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
 
-    expected_rows = 5 # 5 classes
+    expected_rows = 5  # 5 classes
     assert utils.csv_num_rows(output_csv) == expected_rows

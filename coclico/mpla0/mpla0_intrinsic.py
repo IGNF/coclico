@@ -1,11 +1,10 @@
 import argparse
-import json
 import logging
 from pathlib import Path
 
 import coclico.metrics.occupancy_map as occupancy_map
-from coclico.mpla0.mpla0 import MPLA0
 from coclico.io import read_metrics_weights
+from coclico.mpla0.mpla0 import MPLA0
 
 
 def compute_metric_intrinsic(las_file: Path, config_file: str, output_tif: Path, pixel_size: float = 0.5):
@@ -19,8 +18,9 @@ def compute_metric_intrinsic(las_file: Path, config_file: str, output_tif: Path,
         pixel_size (float): size of the output raster pixels
     """
     config_dict = read_metrics_weights(config_file)
-    class_weights = config_dict[MPLA0.metric_name]
+    class_weights = config_dict[MPLA0.metric_name]["weights"]
     occupancy_map.create_occupancy_map(las_file, class_weights, output_tif, pixel_size)
+
 
 def parse_args():
     parser = argparse.ArgumentParser("Run mpla0 intrinsic metric on one tile")

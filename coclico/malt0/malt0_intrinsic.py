@@ -1,15 +1,13 @@
 import argparse
-import json
 import logging
 from pathlib import Path
-from typing import Dict
 
 import pdal
 
-import coclico.metrics.occupancy_map as occupancy_map
-import coclico.metrics.commons as commons
-from coclico.malt0.malt0 import MALT0
 import coclico.io
+import coclico.metrics.commons as commons
+import coclico.metrics.occupancy_map as occupancy_map
+from coclico.malt0.malt0 import MALT0
 
 
 def create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value=-9999):
@@ -84,7 +82,7 @@ def compute_metric_intrinsic(
         no_data_value (int, optional): no_data value for the output raster. Defaults to -9999.
     """
     config_dict = coclico.io.read_metrics_weights(config_file)
-    class_weights = config_dict[MALT0.metric_name]
+    class_weights = config_dict[MALT0.metric_name]["weights"]
 
     if occupancy_tif:
         occupancy_tif.parent.mkdir(parents=True, exist_ok=True)

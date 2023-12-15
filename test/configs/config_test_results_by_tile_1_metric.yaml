@@ -1,6 +1,7 @@
 # Config used to test the behavior of each of the metrics
 mpap0:
-  "1": 0.5
-  "2": 0 
-  "3_4_5": 4
-  "9": 1
+  weights:
+    "1": 0.5
+    "2": 0
+    "3_4_5": 4
+    "9": 1

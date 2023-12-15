@@ -1,13 +1,16 @@
 # Config file to test the global architecture of Coclico
 mpap0:
-  "1": 1
-  "2": 2
-  "3_4": 2
+  weights:
+    "1": 1
+    "2": 2
+    "3_4": 2
 
 mpla0:
-  "1": 1
-  "2": 0
-  "5": 2
+  weights:
+    "1": 1
+    "2": 0
+    "5": 2
 
 malt0:
-  "5": 1
+  weights:
+    "5": 1

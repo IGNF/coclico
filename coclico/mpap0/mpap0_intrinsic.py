@@ -2,14 +2,13 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Dict
 
 import numpy as np
 import pdal
-from coclico.io import read_metrics_weights
 
-from coclico.mpap0.mpap0 import MPAP0
+from coclico.io import read_metrics_weights
 from coclico.metrics.commons import split_composed_class
+from coclico.mpap0.mpap0 import MPAP0
 
 
 def compute_metric_intrinsic(las_file: Path, config_file: str, output_json: Path):
@@ -24,7 +23,7 @@ def compute_metric_intrinsic(las_file: Path, config_file: str, output_json: Path
     """
 
     config_dict = read_metrics_weights(config_file)
-    class_weights = config_dict[MPAP0.metric_name]
+    class_weights = config_dict[MPAP0.metric_name]["weights"]
 
     # TODO: replace with function imported from pdaltools
     # (pdaltools.count_occurences.count_occurences_for_attribute import compute_count_one_file)
@@ -59,12 +58,7 @@ def parse_args():
     parser = argparse.ArgumentParser("Run mpap0 metric on one tile")
     parser.add_argument("-i", "--input-file", type=Path, required=True, help="Path to the LAS file")
     parser.add_argument("-o", "--output-file", type=Path, required=True, help="Path to the JSON output file")
-    parser.add_argument(
-        "--config-file",    
-        type=Path,
-        required=True,
-        help="Coclico configuration file"
-    )
+    parser.add_argument("--config-file", type=Path, required=True, help="Coclico configuration file")
     return parser.parse_args()
 
 

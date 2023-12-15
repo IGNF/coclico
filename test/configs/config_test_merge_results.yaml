@@ -1,9 +1,31 @@
 # Config used to test the behavior of each of the metrics
 mpap0:
-  "0": 1
-  "2": 2
-  "3_4": 3
+  weights:
+    "0": 1
+    "2": 2
+    "3_4": 3
+  notes:
+    ref_count_threshold: 1000
+    under_threshold:
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 20  # absolute diff
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 100  # absolute diff
+        note: 0
+    above_threshold:
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 0  # relative diff
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 0.1  # relative diff
+        note: 0
 
 mpla0:
-  "2": 2
-  "5": 3
+  weights:
+    "2": 2
+    "5": 3

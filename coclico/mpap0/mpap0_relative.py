@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 
 from coclico.config import csv_separator
-from coclico.mpap0.mpap0 import MPAP0
 from coclico.io import read_metrics_weights
+from coclico.mpap0.mpap0 import MPAP0
 
 
 def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dict:
@@ -35,12 +35,12 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
                         where there are json files with the result of mpap0 intrinsic metric
         ref_dir (Path): path to the reference classification directory,
                         where there are json files with the result of mpap0 intrinsic metric
-        config_file (Dict):   class weights dict    
+        config_file (Dict):   class weights dict
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
     config_dict = read_metrics_weights(config_file)
-    class_weights = config_dict[MPAP0.metric_name]
+    class_weights = config_dict[MPAP0.metric_name]["weights"]
 
     total_ref_count = Counter()
     total_c1_count = Counter()

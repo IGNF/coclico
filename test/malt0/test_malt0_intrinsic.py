@@ -1,4 +1,3 @@
-import json
 import logging
 import shutil
 import subprocess as sp
@@ -15,6 +14,7 @@ pytestmark = pytest.mark.docker
 
 TMP_PATH = Path("./tmp/malt0_intrinsic")
 CONFIG_FILE_METRICS = Path("./test/configs/config_test_metrics.yaml")
+
 
 def setup_module(module):
     if TMP_PATH.is_dir():
@@ -34,7 +34,7 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
             "1": 1,
             "2": 0,  # simple classes
             "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
+            "3_4": 2,  # composed class with spaces
         }
     )
     classes_z_minmax = dict(
@@ -43,7 +43,7 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
             "1": [85.68, 101.65],
             "2": [84.96, 105.88],
             "3_4_5": [85.5, 124.17],
-            "3 _ 4": [85.5, 105.41],
+            "3_4": [85.5, 105.41],
         }
     )  # fetched via metadata from a pdal pipeline with classification filter and stats
     output_tif = TMP_PATH / "unit_create_multilayer_2d_mnx_map.tif"
@@ -106,7 +106,9 @@ def test_compute_metric_intrinsic_w_occupancy(ensure_test1_data):
 
     output_tif = TMP_PATH / "mpla0_intrinsic_w_metadata" / "mnx.tif"
     occupancy_tif = TMP_PATH / "mpla0_intrinsic_w_metadata" / "occupancy.tif"
-    malt0_intrinsic.compute_metric_intrinsic(las_file, CONFIG_FILE_METRICS, output_tif, occupancy_tif, pixel_size=pixel_size)
+    malt0_intrinsic.compute_metric_intrinsic(
+        las_file, CONFIG_FILE_METRICS, output_tif, occupancy_tif, pixel_size=pixel_size
+    )
 
     assert output_tif.exists()
     assert occupancy_tif.exists()

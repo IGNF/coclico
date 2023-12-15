@@ -9,8 +9,8 @@ import pytest
 from gpao_utils.store import Store
 
 import coclico.csv_manipulation.results_by_tile
-from coclico.config import csv_separator
 import coclico.io as io
+from coclico.config import csv_separator
 
 pytestmark = pytest.mark.docker
 
@@ -35,7 +35,7 @@ def test_merge_results_for_one_classif():
     CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_1_metric.yaml")
     config_dict = io.read_metrics_weights(CONFIG_FILE)
     metrics = list(config_dict.keys())
-    classes = list(config_dict["mpap0"].keys())
+    classes = list(config_dict["mpap0"]["weights"].keys())
 
     base_path = TMP_PATH / "merge_results_for_one_classif"
     out = base_path / "result.csv"
@@ -61,7 +61,7 @@ def test_merge_results_for_one_classif_on_different_classes():
     CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_2_metrics.yaml")
     config_dict = io.read_metrics_weights(CONFIG_FILE)
     metrics = list(config_dict.keys())
-    classes = set([cl for metric_dict in config_dict.values() for cl in metric_dict.keys()])
+    classes = set([cl for metric_dict in config_dict.values() for cl in metric_dict["weights"].keys()])
     base_path = TMP_PATH / Path("results_by_tile_on_different_classes")
     out = base_path / "result.csv"
     out_tile = base_path / "result_tile.csv"

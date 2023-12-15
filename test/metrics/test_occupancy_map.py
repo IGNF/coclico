@@ -25,7 +25,7 @@ def test_create_multilayer_2d_occupancy_map(ensure_test1_data):
             "1": 1,
             "2": 0,  # simple classes
             "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
+            "3_4": 2,  # composed class with spaces
         }
     )
     output_tif = TMP_PATH / "unit_test_occupancy_map.tif"
