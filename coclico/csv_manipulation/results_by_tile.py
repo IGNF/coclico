@@ -23,6 +23,7 @@ def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path, 
     Args:
         metrics_root_folder (Path): root folder
         output_path (Path): Path to the output csv file
+        config_file (Path): Coclico configuration file
     """
     config_dict = io.read_metrics_weights(config_file)
 
@@ -90,7 +91,7 @@ def parse_args():
         help="Path to the root folder of the csv files generated for each metric + tile",
     )
     parser.add_argument("--output-path", "-o", type=Path, required=True, help="Path to output csv file")
-    parser.add_argument("--config-file", "-w", type=Path, help="Dictionary of the metrics weights")
+    parser.add_argument("--config-file", "-w", type=Path, help="Coclico configuration file")
 
     return parser.parse_args()
 

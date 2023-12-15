@@ -11,14 +11,15 @@ from coclico.metrics.commons import split_composed_class
 from coclico.mpap0.mpap0 import MPAP0
 
 
-def compute_metric_intrinsic(las_file: Path, config_file: str, output_json: Path):
-    """Count points on las file for all classes that are in class_weights keys, and save result in output_json file.
+def compute_metric_intrinsic(las_file: Path, config_file: Path, output_json: Path):
+    """Count points on las file for all classes in class_weights keys in the config file, and save result
+    in output_json file.
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
 
     Args:
         las_file (Path): path to the las file on which to generate mpap0 intrinsic metric
-        class_weights (Dict): class weights dict (to know for which classes to generate the count)
+        config_file (Path): class weights dict (to know for which classes to generate the count)
         output_json (Path): path to output
     """
 

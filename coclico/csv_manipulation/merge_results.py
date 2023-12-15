@@ -77,7 +77,8 @@ def create_merge_all_results_job(
         output (Path): output CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be
         created
         store (Store): store
-        metrics_weights (Dict): weights to apply to the different metrics to generate the aggregated result
+        config_file (Path):configuration file with weights to apply to the different metrics to generate
+        the aggregated result
         deps (List[Job], optional): job dependencies. Defaults to None.
 
     Returns:
@@ -113,7 +114,8 @@ def merge_all_results(
         output (Path): ouput CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be
         created.
 
-        metrics_weights (Dict): weights to apply to the different metrics to generate the aggregated result
+        config_file (Path):configuration file with weights to apply to the different metrics to generate
+        the aggregated result
     """
     config_dict = io.read_metrics_weights(config_file)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -153,7 +155,7 @@ def parse_args():
         help="""Path to the file to save the global weighted result, for all all classifications.
 Another CSV file with the same name and postfix '_by_metric.csv' will be created""",
     )
-    parser.add_argument("--config-file", type=Path, help="Dictionary of the metrics weights")
+    parser.add_argument("--config-file", type=Path, help="Coclico configuration file")
 
     return parser.parse_args()
 

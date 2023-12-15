@@ -212,7 +212,7 @@ def parse_args():
         "--config-file",
         required=True,
         type=Path,
-        help="Dictionary of the classes weights for the metric (as a string)",
+        help="Coclico configuration file",
     )
 
     return parser.parse_args()

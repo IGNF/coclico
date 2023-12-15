@@ -31,7 +31,7 @@ def generate_sum_by_layer(raster: np.array, layers: List[str]) -> Dict:
     return sum_dict
 
 
-def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path):
+def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: Path, output_csv: Path, output_csv_tile: Path):
     """Count points on las file from c1 classification, for all classes, relative to reference classification.
     Compute also a score depending on class_weights keys, and save result in output_csv file.
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
@@ -42,7 +42,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
                         where there are json files with the result of mpla0 intrinsic metric
         ref_dir (Path): path to the reference classification directory,
                         where there are json files with the result of mpla0 intrinsic metric
-        class_weights (Dict):   class weights dict
+        config_file (Path): Coclico configuration file
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
@@ -129,7 +129,7 @@ def parse_args():
         "--config-file",
         required=True,
         type=Path,
-        help="Dictionary of the classes weights for the metric (as a string)",
+        help="Coclico configuration file",
     )
 
     return parser.parse_args()

@@ -106,7 +106,7 @@ def create_compare_project(
         out (Path): output path for the json outputs
         store (Store): store object to convert local paths to runner paths
         project_name (str): base project name for gpao projects
-        metrics_weights (Dict): Dict containing the weight of each metric for each class.
+        config_file (Path): config file containing dict with the weight of each metric for each class.
         unlock (bool, optional): If True, Defaults to False.
 
     Returns:
@@ -243,7 +243,7 @@ def compare(
         local_store_path (Path): path to a distant store on the local machine (the one on which the script is launched)
         runner_store_path (PurePosixPath): path to this distant store on the gpao clients (unix path)
         project_name (str): base project name for gpao projects
-        weights_file (Path, optional): Yaml file containing the weight of each metric for each class.
+        config_file (Path, optional): Yaml file containing the weight of each metric for each class.
         Defaults to Path("./configs/metrics_weights.yaml").
         unlock (bool, optional): If True, Defaults to False.
     """

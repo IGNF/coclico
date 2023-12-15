@@ -7,13 +7,15 @@ from coclico.io import read_metrics_weights
 from coclico.mpla0.mpla0 import MPLA0
 
 
-def compute_metric_intrinsic(las_file: Path, config_file: str, output_tif: Path, pixel_size: float = 0.5):
-    """Create 2d occupancy map for each class that is in config_file keys, and save result in a single output_tif
-    file with one layer per class (the classes are sorted alphabetically).
+def compute_metric_intrinsic(las_file: Path, config_file: Path, output_tif: Path, pixel_size: float = 0.5):
+    """Create 2d occupancy map for each class that is in class_weights keys in the config_file,
+    and save result in a single output_tif file with one layer per class
+    (the classes are sorted alphabetically).
 
     Args:
         las_file (Path): path to the las file on which to generate mpla0 intrinsic metric
-        config_file (Dict): class weights dict (to know for which classes to generate the binary map)
+        config_file (Path): Coclico configuration file (to know for which classes
+        to generate the binary map)
         output_tif (Path): path to output
         pixel_size (float): size of the output raster pixels
     """
@@ -31,7 +33,7 @@ def parse_args():
         "--config-file",
         type=Path,
         required=True,
-        help="Dictionary of the classes weights for the metric (as a string)",
+        help="Coclico configuration file",
     )
     parser.add_argument("-p", "--pixel-size", type=float, required=True, help="Size of the output raster pixels")
     return parser.parse_args()

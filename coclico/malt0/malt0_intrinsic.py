@@ -59,14 +59,14 @@ def create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_valu
 
 def compute_metric_intrinsic(
     las_file: Path,
-    config_file: str,
+    config_file: Path,
     output_tif: Path,
     occupancy_tif: Path = None,
     pixel_size: float = 0.5,
     no_data_value=-9999,
 ):
     """
-    Create for each class that is in class_weights keys:
+    Create for each class that is in config_file keys:
     - a height raster (kind of digital surface model for a single class, called mnx here)
     - if "occupancy_tif" has a value, a 2d occupancy map
 
@@ -74,7 +74,7 @@ def compute_metric_intrinsic(
 
     Args:
         las_file (Path): path to the las file on which to generate malt0 intrinsic metric
-        class_weights (Dict): class weights dict (to know for which classes to generate the rasters)
+        config_file (Path): class weights dict in the config file (to know for which classes to generate the rasters)
         output_tif (Path): path to output height raster
         occupancy_tif (Path, optional): path to the optional occupancy map tif (Leave it to None except for the
         reference folder). Defaults to None.
@@ -108,7 +108,7 @@ def parse_args():
         "--config-file",
         type=Path,
         required=True,
-        help="Dictionary of the classes weights for the metric (as a string)",
+        help="Coclico configuration file",
     )
     parser.add_argument("-p", "--pixel-size", type=float, required=True, help="Size of the output raster pixels")
     return parser.parse_args()

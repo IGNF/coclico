@@ -17,10 +17,10 @@ def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dic
     return {k: np.abs(c1_count.get(k, 0) - ref_count.get(k, 0)) for k in classes}
 
 
-def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path):
+def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: Path, output_csv: Path, output_csv_tile: Path):
     """Count points on las file from c1 classification, for all classes, relative to reference classification.
     Compute also a score depending on config_file keys, and save result in output_csv file.
-    In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
+    In case of "composed classes" in the class_weight dict in the config file (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
 
     The computed metrics are:
@@ -35,7 +35,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
                         where there are json files with the result of mpap0 intrinsic metric
         ref_dir (Path): path to the reference classification directory,
                         where there are json files with the result of mpap0 intrinsic metric
-        config_file (Dict):   class weights dict
+        config_file (Path):  Coclico configuration file
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
@@ -114,7 +114,7 @@ def parse_args():
         "--config-file",
         required=True,
         type=Path,
-        help="Dictionary of the classes weights for the metric (as a string)",
+        help="Coclico configuration file",
     )
 
     return parser.parse_args()
