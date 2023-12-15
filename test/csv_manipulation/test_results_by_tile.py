@@ -33,7 +33,7 @@ def setup_module():
 
 def test_merge_results_for_one_classif():
     CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_1_metric.yaml")
-    config_dict = io.read_metrics_weights(CONFIG_FILE)
+    config_dict = io.read_config_file(CONFIG_FILE)
     metrics = list(config_dict.keys())
     classes = list(config_dict["mpap0"]["weights"].keys())
 
@@ -59,7 +59,7 @@ def test_merge_results_for_one_classif():
 def test_merge_results_for_one_classif_on_different_classes():
     """Check that the result file is created correctly when classes are not the same for all metrics"""
     CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_2_metrics.yaml")
-    config_dict = io.read_metrics_weights(CONFIG_FILE)
+    config_dict = io.read_config_file(CONFIG_FILE)
     metrics = list(config_dict.keys())
     classes = set([cl for metric_dict in config_dict.values() for cl in metric_dict["weights"].keys()])
     base_path = TMP_PATH / Path("results_by_tile_on_different_classes")

@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from coclico.config import csv_separator
-from coclico.io import read_metrics_weights
+from coclico.io import read_config_file
 from coclico.mpap0.mpap0 import MPAP0
 
 
@@ -20,7 +20,7 @@ def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dic
 def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: Path, output_csv: Path, output_csv_tile: Path):
     """Count points on las file from c1 classification, for all classes, relative to reference classification.
     Compute also a score depending on config_file keys, and save result in output_csv file.
-    In case of "composed classes" in the class_weight dict in the config file (eg: "3,4"), the returned value is the
+    In case of "composed classes" in the class_weight dict in the config file (eg: "3_4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
 
     The computed metrics are:
@@ -39,7 +39,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: Path, outp
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
-    config_dict = read_metrics_weights(config_file)
+    config_dict = read_config_file(config_file)
     class_weights = config_dict[MPAP0.metric_name]["weights"]
 
     total_ref_count = Counter()

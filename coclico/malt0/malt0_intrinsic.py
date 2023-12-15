@@ -81,7 +81,7 @@ def compute_metric_intrinsic(
         pixel_size (float, optional): size of the output rasters pixels. Defaults to 0.5.
         no_data_value (int, optional): no_data value for the output raster. Defaults to -9999.
     """
-    config_dict = coclico.io.read_metrics_weights(config_file)
+    config_dict = coclico.io.read_config_file(config_file)
     class_weights = config_dict[MALT0.metric_name]["weights"]
 
     if occupancy_tif:

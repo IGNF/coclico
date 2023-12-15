@@ -10,7 +10,7 @@ from gpao_utils.store import Store
 
 from coclico.csv_manipulation import merge_results, results_by_tile
 from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
-from coclico.io import read_metrics_weights
+from coclico.io import read_config_file
 from coclico.metrics.listing import METRICS
 from coclico.unlock import create_unlock_job
 
@@ -49,7 +49,7 @@ def parse_args():
         "-w",
         "--config-file",
         type=Path,
-        default=Path("./configs/metrics_weights.yaml"),
+        default=Path("./configs/metrics_config.yaml"),
         help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "
         + "si on veut utiliser d'autres valeurs que le défaut",
     )
@@ -125,7 +125,7 @@ def create_compare_project(
 
     # get filenames of tiles from the local machine
     tile_names = get_tile_names(ref)
-    config_dict = read_metrics_weights(config_file)
+    config_dict = read_config_file(config_file)
     jobs = []
     score_deps = []
     score_results = []

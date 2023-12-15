@@ -8,7 +8,7 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
-from coclico.io import read_metrics_weights
+from coclico.io import read_config_file
 from coclico.malt0.malt0 import MALT0
 
 
@@ -101,7 +101,7 @@ def compute_metric_relative(
         output_csv_tile (Path):  path to output csv file, result by tile
 
     """
-    config_dict = read_metrics_weights(config_file)
+    config_dict = read_config_file(config_file)
     class_weights = config_dict[MALT0.metric_name]["weights"]
     classes = sorted(class_weights.keys())
     csv_data = []

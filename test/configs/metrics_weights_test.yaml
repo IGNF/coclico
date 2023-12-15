@@ -4,13 +4,88 @@ mpap0:
     "1": 1
     "2": 2
     "3_4": 2
+  notes:
+    ref_count_threshold: 1000
+    under_threshold:
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 20  # absolute diff
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 100  # absolute diff
+        note: 0
+    above_threshold:
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 0  # relative diff
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 0.1  # relative diff
+        note: 0
+
 
 mpla0:
   weights:
     "1": 1
     "2": 0
     "5": 2
+  notes:
+    ref_pixel_count_threshold: 1000
+    under_threshold:
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 20  # union - intersection
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 100  # union - intersection
+        note: 0
+    above_threshold:
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 0.9  # IoU
+        note: 0
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 1  # IoU
+        note: 1
 
 malt0:
   weights:
     "5": 1
+  notes:
+    # Parameters for the "maximum height diff" component of the note
+    max_diff:
+      coefficient: 1
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 0.1
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 4
+        note: 0
+    # Parameters for the "average height diff" component of the note
+    mean_diff:
+      coefficient: 2
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 0.01
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 0.5
+        note: 0
+    # Parameters for the "standard deviation of the height diff" component of the note
+    std_diff:
+      coefficient: 2
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 0.01
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 0.5
+        note: 0

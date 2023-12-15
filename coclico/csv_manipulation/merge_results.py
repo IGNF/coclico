@@ -16,7 +16,7 @@ def filter_out_rows(df, col, values):
     return df[~df[col].isin(values)]
 
 
-def compute_weighted_result(input: Path, weights: Dict) -> Dict:
+def compute_weighted_result(input: Path, config_dict: Dict) -> Dict:
     """Compute weighted sum of notes for all metrics using the weights stored in a dictionary like:
         weights = {
             "metric1": {
@@ -47,15 +47,15 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
     logging.debug("Score for %s", classif_name)
     total_score = 0
     result = {"classification": input.parent.name, "score": 0}
-    for metric in weights.keys():
+    for metric in config_dict.keys():
         res_metric = 0
         logging.debug("- Metric %s", metric)
         for i, row in df.iterrows():
             i_class = row["class"]
-            weight_metric = weights[metric]
+            weight_metric = config_dict[metric]["weights"]
             if i_class in weight_metric:
                 val = row[metric]
-                weight_metric_class = weights[metric][i_class]
+                weight_metric_class = weight_metric[i_class]
                 res_local = val * weight_metric_class
                 logging.debug("-- Class %s: note %s  * weight %s = %s", i_class, val, weight_metric_class, res_local)
                 res_metric += res_local
@@ -117,7 +117,7 @@ def merge_all_results(
         config_file (Path):configuration file with weights to apply to the different metrics to generate
         the aggregated result
     """
-    config_dict = io.read_metrics_weights(config_file)
+    config_dict = io.read_config_file(config_file)
     output.parent.mkdir(parents=True, exist_ok=True)
     data = [compute_weighted_result(input, config_dict) for input in input_ci]
 

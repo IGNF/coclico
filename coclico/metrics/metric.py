@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import pandas as pd
 from gpao.job import Job
@@ -80,5 +80,5 @@ class Metric:
         raise NotImplementedError
 
     @staticmethod
-    def compute_note(df: pd.DataFrame) -> pd.DataFrame:
+    def compute_note(df: pd.DataFrame, note_config: Dict) -> pd.DataFrame:
         raise NotImplementedError

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import pandas as pd
 from gpao.job import Job
@@ -101,7 +101,7 @@ python -m coclico.malt0.malt0_relative
         return [job]
 
     @staticmethod
-    def compute_note(metric_df: pd.DataFrame) -> pd.DataFrame:
+    def compute_note(metric_df: pd.DataFrame, note_config: Dict):
         """Compute malt0 note from malt0_relative results.
         This method expects a pandas dataframe with columns:
             - max_diff
@@ -109,18 +109,40 @@ python -m coclico.malt0.malt0_relative
             - std_diff
         (these columns are described in the malt0_relative function docstring)
 
+        _summary_
+
         Args:
             metric_df (pd.DataFrame): malt0 relative results as a pandas dataframe
 
         Returns:
             metric_df: the updated metric_df input with notes instead of metrics
         """
+        max_note = bounded_affine_function(
+            (note_config["max_diff"]["min_point"]["metric"], note_config["max_diff"]["min_point"]["note"]),
+            (note_config["max_diff"]["max_point"]["metric"], note_config["max_diff"]["max_point"]["note"]),
+            metric_df["max_diff"],
+        )  # 0 <= max_note <= 1
+        mean_note = bounded_affine_function(
+            (note_config["mean_diff"]["min_point"]["metric"], note_config["mean_diff"]["min_point"]["note"]),
+            (note_config["mean_diff"]["max_point"]["metric"], note_config["mean_diff"]["max_point"]["note"]),
+            metric_df["mean_diff"],
+        )  # 0 <= mean_note <= 1
+        std_note = bounded_affine_function(
+            (note_config["std_diff"]["min_point"]["metric"], note_config["mean_diff"]["min_point"]["note"]),
+            (note_config["std_diff"]["max_point"]["metric"], note_config["mean_diff"]["max_point"]["note"]),
+            metric_df["std_diff"],
+        )  # 0 <= std_note <= 1
 
-        max_note = bounded_affine_function((0.1, 1), (4, 0), metric_df["max_diff"])  # 0 <= max_note <= 1
-        mean_note = bounded_affine_function((0.01, 2), (0.5, 0), metric_df["mean_diff"])  # 0 <= mean_note <= 2
-        std_note = bounded_affine_function((0.01, 2), (0.5, 0), metric_df["std_diff"])  # 0 <= std_note <= 2
-
-        metric_df[MALT0.metric_name] = (max_note + mean_note + std_note) / 5
+        sum_coefs = (
+            note_config["max_diff"]["coefficient"]
+            + note_config["mean_diff"]["coefficient"]
+            + note_config["std_diff"]["coefficient"]
+        )
+        metric_df[MALT0.metric_name] = (
+            note_config["max_diff"]["coefficient"] * max_note
+            + note_config["mean_diff"]["coefficient"] * mean_note
+            + note_config["std_diff"]["coefficient"] * std_note
+        ) / sum_coefs
 
         metric_df.drop(columns=["max_diff", "mean_diff", "std_diff"], inplace=True)
 

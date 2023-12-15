@@ -1,4 +1,3 @@
-import json
 import operator as op
 import shutil
 import subprocess as sp
@@ -8,8 +7,8 @@ from pathlib import Path
 import pytest
 from gpao_utils.store import Store
 
-from coclico.csv_manipulation import merge_results
 import coclico.io as io
+from coclico.csv_manipulation import merge_results
 
 pytestmark = pytest.mark.docker
 
@@ -41,7 +40,7 @@ def test_merge_all_results():
     assert len(df.index) == 2
 
     df = tu.check_df_exists_with_no_empty_data(result_detailed)
-    weights = io.read_metrics_weights(CONFIG_FILE)
+    weights = io.read_config_file(CONFIG_FILE)
     assert len(df.index) == 2
     assert set(df.columns) == set(["classification", "score"] + list(weights.keys()))
 
@@ -79,7 +78,7 @@ def test_merge_result_merge_existing_file():
     assert len(df.index) == 2
     df = tu.check_df_exists_with_no_empty_data(result_detailed)
     assert len(df.index) == 2
-    weights = io.read_metrics_weights(CONFIG_FILE)
+    weights = io.read_config_file(CONFIG_FILE)
     assert set(df.columns) == set(["classification", "score"] + list(weights.keys()))
 
     merge_results.merge_all_results([input_c1], result, CONFIG_FILE)

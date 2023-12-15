@@ -25,7 +25,7 @@ def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path, 
         output_path (Path): Path to the output csv file
         config_file (Path): Coclico configuration file
     """
-    config_dict = io.read_metrics_weights(config_file)
+    config_dict = io.read_config_file(config_file)
 
     merged_df = pd.DataFrame(columns=["class"])
     merged_df_tile = pd.DataFrame(columns=["tile", "class"])
@@ -33,16 +33,17 @@ def merge_results_for_one_classif(metrics_root_folder: Path, output_path: Path, 
     for metric_name, metric_class in METRICS.items():
         if metric_name in config_dict.keys():
             metric_folder = metrics_root_folder / metric_name
+            notes_config = config_dict[metric_name]["notes"]
             metric_df_tile = pd.read_csv(
                 metric_folder / "to_ref" / "result_tile.csv", dtype={"class": str}, sep=csv_separator
             )
-            metric_df_tile = metric_class.compute_note(metric_df_tile)
+            metric_df_tile = metric_class.compute_note(metric_df_tile, notes_config)
 
             merged_df_tile = merged_df_tile.merge(metric_df_tile, on=["tile", "class"], how="outer")
             print(merged_df_tile)
 
             metric_df = pd.read_csv(metric_folder / "to_ref" / "result.csv", dtype={"class": str}, sep=csv_separator)
-            metric_df = metric_class.compute_note(metric_df)
+            metric_df = metric_class.compute_note(metric_df, notes_config)
             merged_df = merged_df.merge(metric_df, on=["class"], how="outer")
 
         output_path.parent.mkdir(exist_ok=True, parents=True)

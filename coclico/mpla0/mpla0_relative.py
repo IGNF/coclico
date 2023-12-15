@@ -9,7 +9,7 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
-from coclico.io import read_metrics_weights
+from coclico.io import read_config_file
 from coclico.mpla0.mpla0 import MPLA0
 
 
@@ -46,7 +46,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: Path, outp
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
     """
-    config_dict = read_metrics_weights(config_file)
+    config_dict = read_config_file(config_file)
     class_weights = config_dict[MPLA0.metric_name]["weights"]
 
     total_ref_pixel_count = Counter()

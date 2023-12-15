@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -71,24 +71,42 @@ python -m coclico.mpap0.mpap0_relative
         return [job]
 
     @staticmethod
-    def compute_note(metric_df: pd.DataFrame) -> pd.DataFrame:
+    def compute_note(metric_df: pd.DataFrame, note_config: Dict):
         """Compute mpap0 note from mpap0_relative results.
         This method expects a pandas dataframe with columns:
             - absolute_diff
             - ref_count
         (these columns are described in the mpap0_relative function docstring)
-
         Args:
             metric_df (pd.DataFrame): mpap0 relative results as a pandas dataframe
 
         Returns:
             metric_df: the updated metric_df input with notes instead of metrics
         """
-
         metric_df[MPAP0.metric_name] = np.where(
-            metric_df["ref_count"] >= 1000,
-            bounded_affine_function((0, 1), (0.1, 0), metric_df["absolute_diff"] / metric_df["ref_count"]),
-            bounded_affine_function((20, 1), (100, 0), metric_df["absolute_diff"]),
+            metric_df["ref_count"] >= note_config["ref_count_threshold"],
+            bounded_affine_function(
+                (
+                    note_config["above_threshold"]["min_point"]["metric"],
+                    note_config["above_threshold"]["min_point"]["note"],
+                ),
+                (
+                    note_config["above_threshold"]["max_point"]["metric"],
+                    note_config["above_threshold"]["max_point"]["note"],
+                ),
+                metric_df["absolute_diff"] / metric_df["ref_count"],
+            ),
+            bounded_affine_function(
+                (
+                    note_config["under_threshold"]["min_point"]["metric"],
+                    note_config["under_threshold"]["min_point"]["note"],
+                ),
+                (
+                    note_config["under_threshold"]["max_point"]["metric"],
+                    note_config["under_threshold"]["max_point"]["note"],
+                ),
+                metric_df["absolute_diff"],
+            ),
         )
 
         metric_df.drop(columns=["absolute_diff", "ref_count"], inplace=True)

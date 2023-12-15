@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pdal
 
-from coclico.io import read_metrics_weights
+from coclico.io import read_config_file
 from coclico.metrics.commons import split_composed_class
 from coclico.mpap0.mpap0 import MPAP0
 
@@ -23,7 +23,7 @@ def compute_metric_intrinsic(las_file: Path, config_file: Path, output_json: Pat
         output_json (Path): path to output
     """
 
-    config_dict = read_metrics_weights(config_file)
+    config_dict = read_config_file(config_file)
     class_weights = config_dict[MPAP0.metric_name]["weights"]
 
     # TODO: replace with function imported from pdaltools

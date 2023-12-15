@@ -5,11 +5,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import coclico.io as io
 from coclico.malt0.malt0 import MALT0
 
 pytestmark = pytest.mark.docker
 
 TMP_PATH = Path("./tmp/malt0")
+CONFIG_FILE_METRICS = Path("./test/configs/config_test_metrics.yaml")
 
 
 def setup_module(module):
@@ -79,5 +81,6 @@ def generate_metric_dataframes():
 
 def test_compute_note():
     input_df, expected_out = generate_metric_dataframes()
-    out_df = MALT0.compute_note(input_df)
+    notes_config = io.read_config_file(CONFIG_FILE_METRICS)["malt0"]["notes"]
+    out_df = MALT0.compute_note(input_df, notes_config)
     assert out_df.equals(expected_out)

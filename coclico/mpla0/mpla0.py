@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -82,14 +82,13 @@ python -m coclico.mpla0.mpla0_relative
         return [job]
 
     @staticmethod
-    def compute_note(metric_df: pd.DataFrame):
+    def compute_note(metric_df: pd.DataFrame, note_config: Dict):
         """Compute mpla0 note from mpla0_relative results.
         This method expects a pandas dataframe with columns:
             - intersection
             - union
             - ref_pixel_count
         (these columns are described in the mpla0_relative function docstring)
-
         Args:
             metric_df (pd.DataFrame): mpla0 relative results as a pandas dataframe
 
@@ -98,9 +97,29 @@ python -m coclico.mpla0.mpla0_relative
         """
 
         metric_df[MPLA0.metric_name] = np.where(
-            metric_df["ref_pixel_count"] >= 1000,
-            bounded_affine_function((0.9, 0), (1, 1), metric_df["intersection"] / metric_df["union"]),
-            bounded_affine_function((20, 1), (100, 0), metric_df["union"] - metric_df["intersection"]),
+            metric_df["ref_pixel_count"] >= note_config["ref_pixel_count_threshold"],
+            bounded_affine_function(
+                (
+                    note_config["above_threshold"]["min_point"]["metric"],
+                    note_config["above_threshold"]["min_point"]["note"],
+                ),
+                (
+                    note_config["above_threshold"]["max_point"]["metric"],
+                    note_config["above_threshold"]["max_point"]["note"],
+                ),
+                metric_df["intersection"] / metric_df["union"],
+            ),
+            bounded_affine_function(
+                (
+                    note_config["under_threshold"]["min_point"]["metric"],
+                    note_config["under_threshold"]["min_point"]["note"],
+                ),
+                (
+                    note_config["under_threshold"]["max_point"]["metric"],
+                    note_config["under_threshold"]["max_point"]["note"],
+                ),
+                metric_df["union"] - metric_df["intersection"],
+            ),
         )
 
         metric_df.drop(columns=["ref_pixel_count", "intersection", "union"], inplace=True)

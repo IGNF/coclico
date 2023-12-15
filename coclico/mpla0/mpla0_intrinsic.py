@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 import coclico.metrics.occupancy_map as occupancy_map
-from coclico.io import read_metrics_weights
+from coclico.io import read_config_file
 from coclico.mpla0.mpla0 import MPLA0
 
 
@@ -19,7 +19,7 @@ def compute_metric_intrinsic(las_file: Path, config_file: Path, output_tif: Path
         output_tif (Path): path to output
         pixel_size (float): size of the output raster pixels
     """
-    config_dict = read_metrics_weights(config_file)
+    config_dict = read_config_file(config_file)
     class_weights = config_dict[MPLA0.metric_name]["weights"]
     occupancy_map.create_occupancy_map(las_file, class_weights, output_tif, pixel_size)
 
