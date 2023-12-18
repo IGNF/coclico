@@ -21,6 +21,13 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
 
+    The computed metrics are:
+    - absolute_diff: the difference of number of points
+    - ref_count: the number of points in the reference
+
+    These metrics are stored tile by tile and class by class in the output_csv_tile file
+    These metrics are stored class by class for the whole data in the output_csv file
+
     Args:
         c1_dir (Path):  path to the c1 classification directory,
                         where there are json files with the result of mpap0 intrinsic metric
@@ -49,7 +56,12 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
         total_c1_count += Counter(c1_count)
 
         new_line = [
-            {"tile": ref_file.stem, "class": cl, "absolute_diff": abs_diff.get(cl,0), "ref_count": ref_count.get(cl, 0)}
+            {
+                "tile": ref_file.stem,
+                "class": cl,
+                "absolute_diff": abs_diff.get(cl, 0),
+                "ref_count": ref_count.get(cl, 0),
+            }
             for cl in classes
         ]
         data.extend(new_line)
@@ -61,7 +73,10 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, class_weights: Dict, ou
 
     total_abs_diff = compute_absolute_diff(total_c1_count, total_ref_count, classes)
 
-    data = [{"class": cl, "absolute_diff": total_abs_diff.get(cl,0), "ref_count": total_ref_count.get(cl, 0)} for cl in classes]
+    data = [
+        {"class": cl, "absolute_diff": total_abs_diff.get(cl, 0), "ref_count": total_ref_count.get(cl, 0)}
+        for cl in classes
+    ]
     df = pd.DataFrame(data)
     df.to_csv(output_csv, index=False, sep=csv_separator)
 

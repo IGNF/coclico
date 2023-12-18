@@ -54,10 +54,10 @@ def get_raster_geometry_from_las_bounds(las_bounds: Tuple[float], pixel_size: fl
 
     Args:
         las_bounds (Tuple(float)): Las min/max values : (x_min, y_min, x_max, ymax)
-        pixel_size (_type_): Pixel size of the raster
+        pixel_size (float): Pixel size of the raster
 
     Returns:
-        _type_: coordinates of the top-left corner, and number of pixels on each axis
+        (Tuple(float, float), Tuple(int, int)) coordinates of the top-left corner, and number of pixels on each axis
     """
     x_min_las, y_min_las, x_max_las, y_max_las = las_bounds
     x_min = np.round(x_min_las / pixel_size) * pixel_size

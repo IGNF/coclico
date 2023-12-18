@@ -70,11 +70,18 @@ python -m coclico.mpap0.mpap0_relative
         return [job]
 
     @staticmethod
-    def compute_note(metric_df: pd.DataFrame):
-        """_summary_
+    def compute_note(metric_df: pd.DataFrame) -> pd.DataFrame:
+        """Compute mpap0 note from mpap0_relative results.
+        This method expects a pandas dataframe with columns:
+            - absolute_diff
+            - ref_count
+        (these columns are described in the mpap0_relative function docstring)
 
         Args:
-            relative_metric_df (pd.DataFrame): _description_
+            metric_df (pd.DataFrame): mpap0 relative results as a pandas dataframe
+
+        Returns:
+            metric_df: the updated metric_df input with notes instead of metrics
         """
 
         metric_df[MPAP0.metric_name] = np.where(
