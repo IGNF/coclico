@@ -8,7 +8,7 @@ from coclico.mpla0.mpla0 import MPLA0
 
 
 def compute_metric_intrinsic(las_file: Path, config_file: Path, output_tif: Path, pixel_size: float = 0.5):
-    """Create 2d occupancy map for each class that is in class_weights keys in the config_file,
+    """Create 2d occupancy map for each class that is in the config_file,
     and save result in a single output_tif file with one layer per class
     (the classes are sorted alphabetically).
 

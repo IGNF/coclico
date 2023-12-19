@@ -12,7 +12,7 @@ from coclico.mpap0.mpap0 import MPAP0
 
 
 def compute_metric_intrinsic(las_file: Path, config_file: Path, output_json: Path):
-    """Count points on las file for all classes in class_weights keys in the config file, and save result
+    """Count points on las file for all classes in the config file, and save result
     in output_json file.
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))

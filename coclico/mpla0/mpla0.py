@@ -16,8 +16,8 @@ class MPLA0(Metric):
     reference
 
     - metric_intrinsic:
-        for each input file, generate a tif file with one layer by class in the class_weight dictionary in
-        the configuration file for each class, the corresponding layer contains a kind of 2d occupancy
+        for each input file, generate a tif file with one layer by class that has a weight in the configuration file
+        for each class, the corresponding layer contains a kind of 2d occupancy
         map for the class (ie. if any point of this class belongs to the pixel, the pixel has a value of 1,
         the value is 0 everywhere else)
 
@@ -89,6 +89,7 @@ python -m coclico.mpla0.mpla0_relative
             - union
             - ref_pixel_count
         (these columns are described in the mpla0_relative function docstring)
+
         Args:
             metric_df (pd.DataFrame): mpla0 relative results as a pandas dataframe
 

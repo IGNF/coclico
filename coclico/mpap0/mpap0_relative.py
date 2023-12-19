@@ -19,7 +19,7 @@ def compute_absolute_diff(c1_count: Dict, ref_count: Dict, classes: List) -> Dic
 
 def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: Path, output_csv: Path, output_csv_tile: Path):
     """Count points on las file from c1 classification, for all classes, relative to reference classification.
-    Compute also a score depending on config_file keys, and save result in output_csv file.
+    Compute also a score depending on weights in the config_file keys, and save result in output_csv file.
     In case of "composed classes" in the class_weight dict in the config file (eg: "3_4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
 

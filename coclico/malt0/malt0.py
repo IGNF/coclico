@@ -16,14 +16,14 @@ class MALT0(Metric):
     points in the reference tile (based on an occupancy map similar to the one used in MPLA0).
 
     - metric_intrinsic:
-        - for each input file, generate a tif file with one layer by class in the class_weight dictionary
+        - for each input file, generate a tif file with one layer by class in the configuration file
     for each class, the corresponding layer contains a height map of the class, created the same way as a digital
     surface model:
             - generate a 2D delaunay triangulation of the points of the given class
             - interpolate the values on a raster with the desired pixel size (pdal faceraster filter)
 
         - for the tiles of the reference folder, generate also an addditional "occupancy map":
-    a tif file with one layer by class in the class_weight dictionary for each class, the corresponding layer contains
+    a tif file with one layer by class in the configuration file for each class, the corresponding layer contains
     a kind of 2d occupancy map for the class (ie. if any point of this class belongs to the pixel, the pixel has a
     value of 1, the value is 0 everywhere else)
 
@@ -108,8 +108,6 @@ python -m coclico.malt0.malt0_relative
             - mean_diff
             - std_diff
         (these columns are described in the malt0_relative function docstring)
-
-        _summary_
 
         Args:
             metric_df (pd.DataFrame): malt0 relative results as a pandas dataframe

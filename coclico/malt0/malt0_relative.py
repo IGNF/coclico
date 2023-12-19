@@ -33,11 +33,11 @@ def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
         np.arrays: max value, pixel count, mean, standard deviation and m2 values
     """
     masked_raster = ma.masked_array(raster, 1 - occupancy_raster)
-    max_val = ma.max(masked_raster, axis=(1, 2))
+    max_val = ma.max(masked_raster, axis=(1, 2)).filled(np.nan)
     count = np.sum(occupancy_raster, axis=(1, 2))
-    mean_val = ma.mean(masked_raster, axis=(1, 2))
-    std_val = ma.std(masked_raster, axis=(1, 2))
-    m2 = ma.sum(np.square(masked_raster - mean_val[:, None, None]), axis=(1, 2))  # distance to the mean
+    mean_val = ma.mean(masked_raster, axis=(1, 2)).filled(np.nan)
+    std_val = ma.std(masked_raster, axis=(1, 2)).filled(np.nan)
+    m2 = ma.sum(np.square(masked_raster - mean_val[:, None, None]), axis=(1, 2)).filled(np.nan)  # distance to the mean
 
     return max_val, count, mean_val, std_val, m2
 
@@ -137,7 +137,6 @@ def compute_metric_relative(
         max_diff, count, mean_diff, std_diff, m2_diff = compute_stats_single_raster(
             np.abs(c1_raster - ref_raster), occupancy_raster
         )
-
         new_line = [
             {
                 "tile": ref_file.stem,

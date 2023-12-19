@@ -33,7 +33,7 @@ def generate_sum_by_layer(raster: np.array, layers: List[str]) -> Dict:
 
 def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: Path, output_csv: Path, output_csv_tile: Path):
     """Count points on las file from c1 classification, for all classes, relative to reference classification.
-    Compute also a score depending on class_weights keys, and save result in output_csv file.
+    Compute also a score depending on weights keys in the config file, and save result in output_csv file.
     In case of "composed classes" in the class_weight dict (eg: "3,4"), the returned value is the
     sum of the points counts of each class from the compose class (count(3) + count(4))
 

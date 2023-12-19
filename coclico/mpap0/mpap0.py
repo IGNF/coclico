@@ -77,6 +77,7 @@ python -m coclico.mpap0.mpap0_relative
             - absolute_diff
             - ref_count
         (these columns are described in the mpap0_relative function docstring)
+
         Args:
             metric_df (pd.DataFrame): mpap0 relative results as a pandas dataframe
 

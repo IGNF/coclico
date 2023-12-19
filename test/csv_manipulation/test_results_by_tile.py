@@ -2,7 +2,7 @@ import json
 import shutil
 import subprocess as sp
 from pathlib import Path
-from test.utils import check_df_exists_with_no_empty_data
+from test.utils import basic_check_on_df
 
 import pandas as pd
 import pytest
@@ -43,11 +43,11 @@ def test_merge_results_for_one_classif():
 
     coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, CONFIG_FILE)
 
-    df = check_df_exists_with_no_empty_data(out)
+    df = basic_check_on_df(out)
     assert set(df.columns) == set(["class"] + metrics)
     assert len(df.index) == len(classes)
 
-    df = check_df_exists_with_no_empty_data(out_tile)
+    df = basic_check_on_df(out_tile)
     assert set(df.columns) == set(["tile", "class"] + metrics)
     assert len(df.index) == len(TILES) * len(classes)
     assert set(df["tile"]) == set(TILES)
@@ -58,7 +58,7 @@ def test_merge_results_for_one_classif():
 
 def test_merge_results_for_one_classif_on_different_classes():
     """Check that the result file is created correctly when classes are not the same for all metrics"""
-    CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_2_metrics.yaml")
+    CONFIG_FILE = Path("./test/configs/config_test_metrics.yaml")
     config_dict = io.read_config_file(CONFIG_FILE)
     metrics = list(config_dict.keys())
     classes = set([cl for metric_dict in config_dict.values() for cl in metric_dict["weights"].keys()])
@@ -95,8 +95,8 @@ def test_run_main():
     sp.run(cmd, shell=True, check=True)
 
 
-def test_create_job_merge_tile_results():
-    CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_2_metrics.yaml")
+def test_create_job_merge_results():
+    CONFIG_FILE = Path("./test/configs/config_test_compute_weighted_result.yaml")
 
     out = Path("local_store/out")
     metrics_root_folder = Path("local_store/input")
@@ -106,4 +106,4 @@ def test_create_job_merge_tile_results():
         metrics_root_folder, out, store, CONFIG_FILE
     )
     job_json = json.loads(job.to_json())  # return a string
-    assert job_json["name"].startswith("merge_tiles")  # check that it is running the right method
+    assert job_json["name"].startswith("merge_notes")  # check that it is running the right method
