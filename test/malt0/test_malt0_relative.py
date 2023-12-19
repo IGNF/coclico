@@ -1,4 +1,3 @@
-import json
 import logging
 import shutil
 import subprocess as sp
@@ -24,11 +23,11 @@ def setup_module(module):
 
 
 def test_compute_stats_single_raster():
-    layer1 = np.array([[0, 0, 2], [1, 1, 2], [2, 2, 10]])
-    layer2 = np.array([[0, 0, 0], [1, 1, 1], [15, 3, 4]])
+    layer1 = np.array([[0, 0, 2], [1, 1, 2], [2, 2, 10]], dtype=np.float32)
+    layer2 = np.array([[0, 0, 0], [1, 1, 1], [15, 3, 4]], dtype=np.float32)
     raster = np.stack([layer1, layer2], axis=0)
-    occupancy1 = np.array(([0, 0, 0], [1, 1, 1], [1, 1, 0]))
-    occupancy2 = np.array(([0, 1, 1], [0, 1, 1], [0, 1, 1]))
+    occupancy1 = np.array(([0, 0, 0], [1, 1, 1], [1, 1, 0]), dtype=np.uint8)
+    occupancy2 = np.array(([0, 1, 1], [0, 1, 1], [0, 1, 1]), dtype=np.uint8)
     occupancy = np.stack([occupancy1, occupancy2], axis=0)
 
     out = malt0_relative.compute_stats_single_raster(raster, occupancy)
@@ -48,7 +47,7 @@ def test_compute_stats_single_raster():
 
 def test_update_overall_stats():
     nb_classes = 3
-    raster1 = np.array(np.arange(nb_classes * 4 * 5)).reshape((nb_classes, 4, 5))
+    raster1 = np.array(np.arange(nb_classes * 4 * 5), dtype=np.float32).reshape((nb_classes, 4, 5))
     raster2 = raster1.copy()
     raster3 = raster1.copy()
     occupancy1 = raster1 % 3 != 0
@@ -97,7 +96,9 @@ def test_compute_metric_relative(ensure_malt0_data):
     output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
     expected_cols = {"class", "max_diff", "mean_diff", "std_diff"}
 
-    malt0_relative.compute_metric_relative(c1_dir, ref_dir, occupancy_dir, CONFIG_FILE_METRICS, output_csv, output_csv_tile)
+    malt0_relative.compute_metric_relative(
+        c1_dir, ref_dir, occupancy_dir, CONFIG_FILE_METRICS, output_csv, output_csv_tile
+    )
 
     df = pd.read_csv(output_csv_tile, sep=csv_separator)
     assert set(df.columns) == expected_cols | {"tile"}

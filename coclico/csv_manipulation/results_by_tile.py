@@ -77,7 +77,7 @@ def create_job_merge_results(
     --output-path {PurePosixPath("/out") / out.name}
     --config-file {PurePosixPath("/config") / config_file.name}
     """
-    job = Job(f"merge_tiles_{out.name.split('.')[0]}", command, tags=["docker"], deps=deps)
+    job = Job(f"merge_notes_{out.name.split('.')[0]}", command, tags=["docker"], deps=deps)
 
     return job
 
