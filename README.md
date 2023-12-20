@@ -112,31 +112,49 @@ options:
 
 
 
-## Fichier des poids pour chaque classes (weights_file)
+## Fichier de configuration des poids et paramètres de calcul des notes pour chaque classes
 
-Le fichier des poids pour chaque classe / métrique est un fichier `yaml` du type :
+Le fichier de configuration pour chaque classe / métrique est un fichier `yaml` du type :
 
 ```yaml
 metric1:
-  "1": 1
-  "2": 2
-  "3_4": 2
-
+  weights:
+    "1": 1
+    "2": 2
+    "3_4": 2
+  notes:
+    threshold_value: 1000
+      under_threshold:
+        min_point:
+        metric: 20
+        note: 1
+    
 metric2:
-  "1": 1
-  "2": 0
-  "3_4": 2
+  weights:
+    "1": 1  
+    "2": 0  
+    "3_4": 2  
+  notes:
+    threshold_value: 1000
+      above_threshold:
+        min_point:
+        metric: 0
+        note: 1
 ```
 
 Au premier niveau : les métriques, qui doivent correspondre aux clés du dictionnaire `METRICS`
-décrit dans `coclico/main.py`
+décrit dans `coclico/metrics/listing.py`
 
-Au 2e niveau : les classes
+Au second niveau, le fichier contient les informations relatives aux poids donnés aux classes et les détails de calcul des notes. 
+
+Au 3e niveau (côté poids) : les classes
 Chaque clé de classe peut contenir (placé entre guillemets):
 * un nom de classe
 * ou un sous-ensemble des classes contenues dans les fichiers LAS séparées par un tiret (`_`).
 Dans ce cas, c'est dans le code de chaque métrique qu'est décidée la façon de regrouper les classes
 (eg. somme du compte des points sur l'ensemble des classes pour MPAP0)
+
+Au 3e niveau (côté notes) : 
 
 # Contribuer
 
