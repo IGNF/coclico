@@ -1,4 +1,6 @@
 # dev
+- correctif : 
+  - MALT0 calcul de la métrique relative dans le cas où il n'y a pas de données dans une classe
 - refactoring :
   - déplacement du calcul des notes en dehors du calcul des métriques
 
