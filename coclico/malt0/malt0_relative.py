@@ -1,8 +1,6 @@
 import argparse
-import json
 import logging
 from pathlib import Path
-from typing import Dict
 
 import numpy as np
 import numpy.ma as ma
@@ -10,6 +8,8 @@ import pandas as pd
 import rasterio
 
 from coclico.config import csv_separator
+from coclico.io import read_config_file
+from coclico.malt0.malt0 import MALT0
 
 
 def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
@@ -33,11 +33,11 @@ def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
         np.arrays: max value, pixel count, mean, standard deviation and m2 values
     """
     masked_raster = ma.masked_array(raster, 1 - occupancy_raster)
-    max_val = ma.max(masked_raster, axis=(1, 2))
+    max_val = ma.max(masked_raster, axis=(1, 2)).filled(np.nan)
     count = np.sum(occupancy_raster, axis=(1, 2))
-    mean_val = ma.mean(masked_raster, axis=(1, 2))
-    std_val = ma.std(masked_raster, axis=(1, 2))
-    m2 = ma.sum(np.square(masked_raster - mean_val[:, None, None]), axis=(1, 2))  # distance to the mean
+    mean_val = ma.mean(masked_raster, axis=(1, 2)).filled(np.nan)
+    std_val = ma.std(masked_raster, axis=(1, 2)).filled(np.nan)
+    m2 = ma.sum(np.square(masked_raster - mean_val[:, None, None]), axis=(1, 2)).filled(np.nan)  # distance to the mean
 
     return max_val, count, mean_val, std_val, m2
 
@@ -78,7 +78,7 @@ def update_overall_stats(
 
 
 def compute_metric_relative(
-    c1_dir: Path, ref_dir: Path, occupancy_dir: Path, class_weights: Dict, output_csv: Path, output_csv_tile: Path
+    c1_dir: Path, ref_dir: Path, occupancy_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path
 ):
     """Compute metrics that describe the difference between c1 and ref height maps.
     The occupancy map is used to mask the pixels for which the difference is computed
@@ -101,6 +101,8 @@ def compute_metric_relative(
         output_csv_tile (Path):  path to output csv file, result by tile
 
     """
+    config_dict = read_config_file(config_file)
+    class_weights = config_dict[MALT0.metric_name]["weights"]
     classes = sorted(class_weights.keys())
     csv_data = []
 
@@ -135,7 +137,6 @@ def compute_metric_relative(
         max_diff, count, mean_diff, std_diff, m2_diff = compute_stats_single_raster(
             np.abs(c1_raster - ref_raster), occupancy_raster
         )
-
         new_line = [
             {
                 "tile": ref_file.stem,
@@ -194,7 +195,7 @@ def parse_args():
         where there are tif files with the result of malt0 intrinsic metric (MNx for each class)",
     )
     parser.add_argument(
-        "-c",
+        "-oc",
         "--occupancy-dir",
         required=True,
         type=Path,
@@ -206,11 +207,11 @@ def parse_args():
         "-t", "--output-csv-tile", required=True, type=Path, help="Path to the CSV output file, result by tile"
     )
     parser.add_argument(
-        "-w",
-        "--class-weights",
+        "-c",
+        "--config-file",
         required=True,
-        type=json.loads,
-        help="Dictionary of the classes weights for the metric (as a string)",
+        type=Path,
+        help="Coclico configuration file",
     )
 
     return parser.parse_args()
@@ -223,7 +224,7 @@ if __name__ == "__main__":
         c1_dir=Path(args.input_dir),
         ref_dir=Path(args.ref_dir),
         occupancy_dir=Path(args.occupancy_dir),
-        class_weights=args.class_weights,
+        config_file=args.config_file,
         output_csv=Path(args.output_csv),
         output_csv_tile=Path(args.output_csv_tile),
     )

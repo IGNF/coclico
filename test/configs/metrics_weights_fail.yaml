@@ -1,7 +1,11 @@
 mpap0:
-  0: 1
-  1: 2
+  weights:
+    0: 1
+    1: 2
+  notes: {}
 
 mpap0_1:
-  0: 1
-  1: 0
+  weights:
+    0: 1
+    1: 0
+  notes: {}

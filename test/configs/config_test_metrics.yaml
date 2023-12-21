@@ -1,9 +1,12 @@
-# Config file to test the global architecture of Coclico
+# Config used to test the behavior of each of the metrics
 mpap0:
   weights:
+    "0": 1
     "1": 1
-    "2": 2
-    "3_4": 2
+    "2": 0  # simple classes
+    "3_4_5": 1  # composed class
+    "3_4": 2  # composed class with spaces
+    "9" : 0 # No point in class 9
   notes:
     ref_count_threshold: 1000
     under_threshold:
@@ -25,12 +28,13 @@ mpap0:
         metric: 0.1  # relative diff
         note: 0
 
-
 mpla0:
   weights:
+    "0": 1
     "1": 1
-    "2": 0
-    "5": 2
+    "2": 0  # simple classes
+    "3_4_5": 1  # composed class
+    "3_4": 2  # composed class with spaces
   notes:
     ref_pixel_count_threshold: 1000
     under_threshold:
@@ -54,7 +58,11 @@ mpla0:
 
 malt0:
   weights:
-    "5": 1
+    "0": 1
+    "1": 1
+    "2": 0  # simple classes
+    "3_4_5": 1  # composed class
+    "3_4": 2  # composed class with spaces
   notes:
     # Parameters for the "maximum height diff" component of the note
     max_diff:

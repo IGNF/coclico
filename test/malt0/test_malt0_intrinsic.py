@@ -1,4 +1,3 @@
-import json
 import logging
 import shutil
 import subprocess as sp
@@ -14,6 +13,7 @@ from coclico.malt0 import malt0_intrinsic
 pytestmark = pytest.mark.docker
 
 TMP_PATH = Path("./tmp/malt0_intrinsic")
+CONFIG_FILE_METRICS = Path("./test/configs/config_test_metrics.yaml")
 
 
 def setup_module(module):
@@ -34,7 +34,7 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
             "1": 1,
             "2": 0,  # simple classes
             "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
+            "3_4": 2,  # composed class with spaces
         }
     )
     classes_z_minmax = dict(
@@ -43,7 +43,7 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
             "1": [85.68, 101.65],
             "2": [84.96, 105.88],
             "3_4_5": [85.5, 124.17],
-            "3 _ 4": [85.5, 105.41],
+            "3_4": [85.5, 105.41],
         }
     )  # fetched via metadata from a pdal pipeline with classification filter and stats
     output_tif = TMP_PATH / "unit_create_multilayer_2d_mnx_map.tif"
@@ -90,17 +90,9 @@ def test_compute_metric_intrinsic(ensure_test1_data):
     las_mtd = las_info_metadata(las_file)
     las_extent = (las_mtd["minx"], las_mtd["miny"], las_mtd["maxx"], las_mtd["maxy"])
     logging.debug(f"Test compute_metric_intrinsic on las with extent {las_extent}")
-    class_weights = dict(
-        {
-            "0": 1,
-            "1": 1,
-            "2": 0,  # simple classes
-            "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
-        }
-    )
+
     output_tif = TMP_PATH / "unit_test_mpla0_intrinsic.tif"
-    malt0_intrinsic.compute_metric_intrinsic(las_file, class_weights, output_tif, pixel_size=pixel_size)
+    malt0_intrinsic.compute_metric_intrinsic(las_file, CONFIG_FILE_METRICS, output_tif, pixel_size=pixel_size)
 
     assert output_tif.exists()
 
@@ -111,18 +103,12 @@ def test_compute_metric_intrinsic_w_occupancy(ensure_test1_data):
     las_mtd = las_info_metadata(las_file)
     las_extent = (las_mtd["minx"], las_mtd["miny"], las_mtd["maxx"], las_mtd["maxy"])
     logging.debug(f"Test compute_metric_intrinsic on las with extent {las_extent}")
-    class_weights = dict(
-        {
-            "0": 1,
-            "1": 1,
-            "2": 0,  # simple classes
-            "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
-        }
-    )
+
     output_tif = TMP_PATH / "mpla0_intrinsic_w_metadata" / "mnx.tif"
     occupancy_tif = TMP_PATH / "mpla0_intrinsic_w_metadata" / "occupancy.tif"
-    malt0_intrinsic.compute_metric_intrinsic(las_file, class_weights, output_tif, occupancy_tif, pixel_size=pixel_size)
+    malt0_intrinsic.compute_metric_intrinsic(
+        las_file, CONFIG_FILE_METRICS, output_tif, occupancy_tif, pixel_size=pixel_size
+    )
 
     assert output_tif.exists()
     assert occupancy_tif.exists()
@@ -144,20 +130,12 @@ def test_run_main(ensure_test1_data):
     input_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
     output_tif = TMP_PATH / "intrinsic" / "mnx" / "tile_splitted_2818_32247.tif"
     output_occupancy_tif = TMP_PATH / "intrinsic" / "occupancy" / "tile_splitted_2818_32247.tif"
-    class_weights = dict(
-        {
-            "0": 1,
-            "1": 1,
-            "2": 0,  # simple classes
-            "3_4_5": 1,  # composed class
-            "3 _ 4": 2,  # composed class with spaces
-        }
-    )
+
     cmd = f"""python -m coclico.malt0.malt0_intrinsic \
     --input-file {input_file} \
     --output-mnx-file {output_tif} \
     --output-occupancy-file {output_occupancy_tif} \
-    --class-weights '{json.dumps(class_weights)}' \
+    --config-file {CONFIG_FILE_METRICS} \
     --pixel-size {pixel_size}
     """
     sp.run(cmd, shell=True, check=True)

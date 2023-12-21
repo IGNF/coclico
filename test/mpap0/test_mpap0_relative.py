@@ -14,6 +14,7 @@ from coclico.mpap0 import mpap0_relative
 pytestmark = pytest.mark.docker
 
 TMP_PATH = Path("./tmp/mpap0_relative")
+CONFIG_FILE_METRICS = Path("./test/configs/config_test_metrics.yaml")
 
 
 def setup_module(module):
@@ -32,19 +33,18 @@ def test_compute_absolute_diff():
 def test_compute_metric_relative():
     c1_dir = Path("./data/mpap0/c1/intrinsic")
     ref_dir = Path("./data/mpap0/ref/intrinsic")
-    class_weights = dict({"1": 1, "2": 0, "3_4_5": 1, "9": 1})
     output_csv = TMP_PATH / "relative" / "result.csv"
     output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
     expected_cols = {"class", "ref_count", "absolute_diff"}
 
-    mpap0_relative.compute_metric_relative(c1_dir, ref_dir, class_weights, output_csv, output_csv_tile)
+    mpap0_relative.compute_metric_relative(c1_dir, ref_dir, CONFIG_FILE_METRICS, output_csv, output_csv_tile)
 
-    expected_rows = 4 * 4  # 4 files * 4 classes
+    expected_rows = 4 * 6  # 4 files * 6 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
     df = pd.read_csv(output_csv_tile, sep=csv_separator)
     assert set(df.columns) == expected_cols | {"tile"}
 
-    expected_rows = 4  # 4 classes
+    expected_rows = 6  # 6 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
 
     df = pd.read_csv(output_csv, sep=csv_separator)
@@ -68,11 +68,10 @@ def test_run_main():
     ref_dir = Path("./data/mpap0/ref/intrinsic")
     output_csv = TMP_PATH / "unit_test_run_main_mpap0_relative.csv"
     output_csv_tile = TMP_PATH / "unit_test_run_main_mpap0_relative_tile.csv"
-    class_weights = dict({"1": 1, "2": 1})
     cmd = f"""python -m coclico.mpap0.mpap0_relative \
         --input-dir {c1_dir} \
         --ref-dir {ref_dir} \
-        --class-weights '{json.dumps(class_weights)}' \
+        --config-file {CONFIG_FILE_METRICS} \
         --output-csv {output_csv} \
         --output-csv-tile {output_csv_tile} \
     """
@@ -80,8 +79,8 @@ def test_run_main():
     sp.run(cmd, shell=True, check=True)
     logging.info(cmd)
 
-    expected_rows = 4 * 2  # 4 files * 2 classes
+    expected_rows = 4 * 6  # 4 files * 6 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
 
-    expected_rows = 2  # 2 classes
+    expected_rows = 6  # 6 classes
     assert utils.csv_num_rows(output_csv) == expected_rows

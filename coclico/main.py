@@ -2,15 +2,15 @@ import argparse
 import logging
 import shutil
 from pathlib import Path, PurePosixPath
-from typing import Dict, List
+from typing import List
 
-import yaml
 from gpao.builder import Builder
 from gpao.project import Project
 from gpao_utils.store import Store
 
 from coclico.csv_manipulation import merge_results, results_by_tile
 from coclico.gpao_utils import add_dependency_to_jobs, save_projects_as_json
+from coclico.io import read_config_file
 from coclico.metrics.listing import METRICS
 from coclico.unlock import create_unlock_job
 
@@ -47,9 +47,9 @@ def parse_args():
     parser.add_argument("-p", "--project-name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(
         "-w",
-        "--weights-file",
+        "--config-file",
         type=Path,
-        default=Path("./configs/metrics_weights.yaml"),
+        default=Path("./configs/metrics_config.yaml"),
         help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "
         + "si on veut utiliser d'autres valeurs que le défaut",
     )
@@ -63,27 +63,6 @@ def parse_args():
     )
 
     return parser.parse_args()
-
-
-def read_metrics_weights(weights_file: str) -> Dict:
-    with open(weights_file, "r") as f:
-        weights = yaml.safe_load(f)
-        logging.info(f"Loaded weights from {weights_file}:")
-
-    # basic check for potential malformations of the weights file
-    if not set(weights.keys()).issubset(set(METRICS.keys())):
-        raise ValueError(
-            f"Metrics in {weights_file}: {list(weights.keys())} do not match expected metrics: {list(METRICS.keys())}"
-        )
-
-    # remove spaces from classes keys
-    weights_clean = dict()
-    for metric, value in weights.items():
-        metric_dict = {k.replace(" ", ""): v for k, v in value.items()}
-        weights_clean[metric] = metric_dict
-    logging.info(weights_clean)
-
-    return weights_clean
 
 
 def get_tile_names(folder: Path) -> List[str]:
@@ -114,7 +93,7 @@ def create_compare_project(
     out: Path,
     store: Store,
     project_name: str,
-    metrics_weights: Dict,
+    config_file: Path,
     unlock: bool = False,
 ) -> Project:
     """Main function to generate a GPAO project needed to compare classifications (c1, c2..) with respect to a
@@ -127,7 +106,7 @@ def create_compare_project(
         out (Path): output path for the json outputs
         store (Store): store object to convert local paths to runner paths
         project_name (str): base project name for gpao projects
-        metrics_weights (Dict): Dict containing the weight of each metric for each class.
+        config_file (Path): config file containing dict with the weight of each metric for each class.
         unlock (bool, optional): If True, Defaults to False.
 
     Returns:
@@ -146,7 +125,7 @@ def create_compare_project(
 
     # get filenames of tiles from the local machine
     tile_names = get_tile_names(ref)
-
+    config_dict = read_config_file(config_file)
     jobs = []
     score_deps = []
     score_results = []
@@ -164,9 +143,8 @@ def create_compare_project(
             jobs.append(unlock_job)
 
         for metric_name, metric_class in METRICS.items():
-            if metric_name in metrics_weights.keys():
-                class_weights = metrics_weights[metric_name]
-                metric = metric_class(store, class_weights)
+            if metric_name in config_dict.keys():
+                metric = metric_class(store, config_file)
 
                 out_ref_metric = out_ref / metric_name / "intrinsic"
                 out_ref_metric.mkdir(parents=True, exist_ok=True)
@@ -192,9 +170,8 @@ def create_compare_project(
                 jobs.append(unlock_job)
 
             for metric_name, metric_class in METRICS.items():
-                if metric_name in metrics_weights.keys():
-                    class_weights = metrics_weights[metric_name]
-                    metric = metric_class(store, class_weights)
+                if metric_name in config_dict.keys():
+                    metric = metric_class(store, config_file)
 
                     out_ci_metric = out_ci / metric_name / "intrinsic"
 
@@ -224,7 +201,7 @@ def create_compare_project(
 
         resulti = out_ci / (str(ci.name) + "_result.csv")
         merge_ci_metrics = results_by_tile.create_job_merge_results(
-            out_ci, resulti, store, metrics_weights, deps=ci_merge_deps
+            out_ci, resulti, store, config_file, deps=ci_merge_deps
         )
 
         score_deps.append(merge_ci_metrics)
@@ -234,7 +211,7 @@ def create_compare_project(
         jobs.extend(ci_jobs)
 
     score_job = merge_results.create_merge_all_results_job(
-        score_results, out / "result.csv", store, metrics_weights, score_deps
+        score_results, out / "result.csv", store, config_file, score_deps
     )
 
     jobs.append(score_job)
@@ -250,7 +227,7 @@ def compare(
     local_store_path: Path,
     runner_store_path: PurePosixPath,
     project_name: str,
-    weights_file: Path = Path("./configs/metrics_weights.yaml"),
+    config_file: Path = Path("./configs/metrics_config.yaml"),
     unlock: bool = False,
 ):
     """Main function to compare one or more classifications (c1, c2..) with respect to a reference
@@ -266,7 +243,7 @@ def compare(
         local_store_path (Path): path to a distant store on the local machine (the one on which the script is launched)
         runner_store_path (PurePosixPath): path to this distant store on the gpao clients (unix path)
         project_name (str): base project name for gpao projects
-        weights_file (Path, optional): Yaml file containing the weight of each metric for each class.
+        config_file (Path, optional): Yaml file containing the weight of each metric for each class.
         Defaults to Path("./configs/metrics_weights.yaml").
         unlock (bool, optional): If True, Defaults to False.
     """
@@ -279,12 +256,12 @@ def compare(
     store = Store(local_store_path, unix_path=runner_store_path)
     logging.debug(f"Local store path ({local_store_path}) converted to client store path ({runner_store_path})")
 
-    metrics_weights = read_metrics_weights(weights_file)
     out.mkdir(parents=True, exist_ok=True)
+    out_config_file = out / config_file.name
 
-    shutil.copyfile(weights_file, out / weights_file.name)
+    shutil.copyfile(config_file, out_config_file)
 
-    project = create_compare_project(classifications, ref, out, store, project_name, metrics_weights, unlock)
+    project = create_compare_project(classifications, ref, out, store, project_name, out_config_file, unlock)
 
     builder = Builder([project])
     logging.info(f"Send projects to gpao server: {gpao_hostname}")
@@ -306,6 +283,6 @@ if __name__ == "__main__":
         args.local_store_path,
         args.runner_store_path,
         args.project_name,
-        args.weights_file,
+        args.config_file,
         args.unlock,
     )

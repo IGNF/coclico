@@ -1,16 +1,13 @@
 import argparse
-import json
 import logging
 from pathlib import Path
-from typing import Dict
 
 import pdal
 
+import coclico.io
+import coclico.metrics.commons as commons
 import coclico.metrics.occupancy_map as occupancy_map
-from coclico.metrics.commons import (
-    get_raster_geometry_from_las_bounds,
-    split_composed_class,
-)
+from coclico.malt0.malt0 import MALT0
 
 
 def create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value=-9999):
@@ -18,7 +15,7 @@ def create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_valu
     pipeline = reader.pipeline()
     info = pipeline.quickinfo
     bounds = info["readers.las"]["bounds"]
-    top_left, nb_pixels = get_raster_geometry_from_las_bounds(
+    top_left, nb_pixels = commons.get_raster_geometry_from_las_bounds(
         (
             bounds["minx"],
             bounds["miny"],
@@ -31,7 +28,7 @@ def create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_valu
 
     raster_tags = []
     for k in sorted(class_weights.keys()):
-        individual_classes = split_composed_class(k)
+        individual_classes = commons.split_composed_class(k)
         raster_tag = f"RASTER_{k.replace(' ', '')}"
         raster_tags.append(raster_tag)
         pipeline |= pdal.Filter.range(
@@ -62,14 +59,14 @@ def create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_valu
 
 def compute_metric_intrinsic(
     las_file: Path,
-    class_weights: Dict,
+    config_file: Path,
     output_tif: Path,
     occupancy_tif: Path = None,
     pixel_size: float = 0.5,
     no_data_value=-9999,
 ):
     """
-    Create for each class that is in class_weights keys:
+    Create for each class that is in config_file keys:
     - a height raster (kind of digital surface model for a single class, called mnx here)
     - if "occupancy_tif" has a value, a 2d occupancy map
 
@@ -77,13 +74,16 @@ def compute_metric_intrinsic(
 
     Args:
         las_file (Path): path to the las file on which to generate malt0 intrinsic metric
-        class_weights (Dict): class weights dict (to know for which classes to generate the rasters)
+        config_file (Path): class weights dict in the config file (to know for which classes to generate the rasters)
         output_tif (Path): path to output height raster
         occupancy_tif (Path, optional): path to the optional occupancy map tif (Leave it to None except for the
         reference folder). Defaults to None.
         pixel_size (float, optional): size of the output rasters pixels. Defaults to 0.5.
         no_data_value (int, optional): no_data value for the output raster. Defaults to -9999.
     """
+    config_dict = coclico.io.read_config_file(config_file)
+    class_weights = config_dict[MALT0.metric_name]["weights"]
+
     if occupancy_tif:
         occupancy_tif.parent.mkdir(parents=True, exist_ok=True)
         occupancy_map.create_occupancy_map(las_file, class_weights, occupancy_tif, pixel_size)
@@ -97,18 +97,18 @@ def parse_args():
     parser.add_argument("-i", "--input-file", type=Path, required=True, help="Path to the LAS file")
     parser.add_argument("-o", "--output-mnx-file", type=Path, required=True, help="Path to the TIF output file")
     parser.add_argument(
-        "-c",
+        "-oc",
         "--output-occupancy-file",
         type=Path,
         default=None,
         help="Path to the optional occupancy map TIF output file",
     )
     parser.add_argument(
-        "-w",
-        "--class-weights",
-        type=json.loads,
+        "-c",
+        "--config-file",
+        type=Path,
         required=True,
-        help="Dictionary of the classes weights for the metric (as a string)",
+        help="Coclico configuration file",
     )
     parser.add_argument("-p", "--pixel-size", type=float, required=True, help="Size of the output raster pixels")
     return parser.parse_args()
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     logging.basicConfig(format="%(message)s", level=logging.DEBUG)
     compute_metric_intrinsic(
         las_file=Path(args.input_file),
-        class_weights=args.class_weights,
+        config_file=args.config_file,
         output_tif=Path(args.output_mnx_file),
         occupancy_tif=Path(args.output_occupancy_file) if args.output_occupancy_file else None,
     )

@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 from pathlib import Path
 from typing import Dict, List
@@ -8,11 +7,16 @@ import pandas as pd
 from gpao.job import Job
 from gpao_utils.store import Store
 
+import coclico.io as io
 from coclico.config import csv_separator
 from coclico.version import __version__
 
 
-def compute_weighted_result(input: Path, weights: Dict) -> Dict:
+def filter_out_rows(df, col, values):
+    return df[~df[col].isin(values)]
+
+
+def compute_weighted_result(input: Path, config_dict: Dict) -> Dict:
     """Compute weighted sum of notes for all metrics using the weights stored in a dictionary like:
         weights = {
             "metric1": {
@@ -43,15 +47,15 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
     logging.debug("Score for %s", classif_name)
     total_score = 0
     result = {"classification": input.parent.name, "score": 0}
-    for metric in weights.keys():
+    for metric in config_dict.keys():
         res_metric = 0
         logging.debug("- Metric %s", metric)
         for i, row in df.iterrows():
             i_class = row["class"]
-            weight_metric = weights[metric]
+            weight_metric = config_dict[metric]["weights"]
             if i_class in weight_metric:
                 val = row[metric]
-                weight_metric_class = weights[metric][i_class]
+                weight_metric_class = weight_metric[i_class]
                 res_local = val * weight_metric_class
                 logging.debug("-- Class %s: note %s  * weight %s = %s", i_class, val, weight_metric_class, res_local)
                 res_metric += res_local
@@ -64,7 +68,7 @@ def compute_weighted_result(input: Path, weights: Dict) -> Dict:
 
 
 def create_merge_all_results_job(
-    result_ci: List[Path], output: Path, store: Store, metrics_weights: Dict, deps: List[Job] = None
+    result_ci: List[Path], output: Path, store: Store, config_file: Path, deps: List[Job] = None
 ) -> Job:
     """Create GPAO job, that compute the score and merge all results in CSV files.
 
@@ -73,7 +77,8 @@ def create_merge_all_results_job(
         output (Path): output CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be
         created
         store (Store): store
-        metrics_weights (Dict): weights to apply to the different metrics to generate the aggregated result
+        config_file (Path):configuration file with weights to apply to the different metrics to generate
+        the aggregated result
         deps (List[Job], optional): job dependencies. Defaults to None.
 
     Returns:
@@ -85,23 +90,20 @@ def create_merge_all_results_job(
     docker run -t --rm --userns=host --shm-size=2gb
     {' '.join(volumes)}
     -v {store.to_unix(output.parent)}:/out
+    -v {store.to_unix(config_file.parent)}:/config
     ignimagelidar/coclico:{__version__}
     python -m coclico.csv_manipulation.merge_results
     -i {' '.join(inputs)}
     --output /out/{output.name}
-    --metric-weights '{json.dumps(metrics_weights)}'
+    --config-file /config/{config_file.name}
     """
     return Job("merge_all_results", command, tags=["docker"], deps=deps)
-
-
-def filter_out_rows(df, col, values):
-    return df[~df[col].isin(values)]
 
 
 def merge_all_results(
     input_ci: List[Path],
     output: Path,
-    metrics_weights: Dict,
+    config_file: Path,
 ):
     """Merge the result of all classifications. Create two CSV files
      - one with the score for all classification
@@ -112,10 +114,12 @@ def merge_all_results(
         output (Path): ouput CSV file to create (ex: result.csv). Another file with postfix '_by_metric.csv' will be
         created.
 
-        metrics_weights (Dict): weights to apply to the different metrics to generate the aggregated result
+        config_file (Path):configuration file with weights to apply to the different metrics to generate
+        the aggregated result
     """
+    config_dict = io.read_config_file(config_file)
     output.parent.mkdir(parents=True, exist_ok=True)
-    data = [compute_weighted_result(input, metrics_weights) for input in input_ci]
+    data = [compute_weighted_result(input, config_dict) for input in input_ci]
 
     df = pd.DataFrame(data)
     output_by_metric = output.parent / (output.stem + "_by_metric.csv")
@@ -151,7 +155,7 @@ def parse_args():
         help="""Path to the file to save the global weighted result, for all all classifications.
 Another CSV file with the same name and postfix '_by_metric.csv' will be created""",
     )
-    parser.add_argument("--metric-weights", type=json.loads, help="Dictionary of the metrics weights")
+    parser.add_argument("--config-file", type=Path, help="Coclico configuration file")
 
     return parser.parse_args()
 
@@ -163,5 +167,5 @@ if __name__ == "__main__":
     merge_all_results(
         args.input,
         args.output,
-        args.metric_weights,
+        args.config_file,
     )

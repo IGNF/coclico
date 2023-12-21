@@ -1,0 +1,6 @@
+# Config used to test the behavior of each of the metrics
+mpap0:
+  weights:
+    "0": 1
+    "2": 2
+  notes: {}

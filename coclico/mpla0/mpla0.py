@@ -1,6 +1,5 @@
-import json
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -17,9 +16,10 @@ class MPLA0(Metric):
     reference
 
     - metric_intrinsic:
-        for each input file, generate a tif file with one layer by class in the class_weight dictionary
-        for each class, the corresponding layer contains a kind of 2d occupancy map for the class (ie. if any point
-        of this class belongs to the pixel, the pixel has a value of 1, the value is 0 everywhere else)
+        for each input file, generate a tif file with one layer by class that has a weight in the configuration file
+        for each class, the corresponding layer contains a kind of 2d occupancy
+        map for the class (ie. if any point of this class belongs to the pixel, the pixel has a value of 1,
+        the value is 0 everywhere else)
 
         The layers are sorted alphabetically using their class name from their class_weights dict in order to have a
         repeatable order
@@ -42,11 +42,12 @@ class MPLA0(Metric):
 docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(input)}:/input
 -v {self.store.to_unix(output)}:/output
+-v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.mpla0.mpla0_intrinsic
 --input-file /input
 --output-file /output/{input.stem}.tif
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /config/{self.config_file.name}
 --pixel-size {self.map_pixel_size}
 """
 
@@ -62,13 +63,14 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(out_c1)}:/input
 -v {self.store.to_unix(out_ref)}:/ref
 -v {self.store.to_unix(output)}:/output
+-v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.mpla0.mpla0_relative
 --input-dir /input
 --ref-dir /ref
 --output-csv-tile /output/result_tile.csv
 --output-csv /output/result.csv
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /config/{self.config_file.name}
 """
 
         job = Job(job_name, command, tags=["docker"])
@@ -80,7 +82,7 @@ python -m coclico.mpla0.mpla0_relative
         return [job]
 
     @staticmethod
-    def compute_note(metric_df: pd.DataFrame):
+    def compute_note(metric_df: pd.DataFrame, note_config: Dict):
         """Compute mpla0 note from mpla0_relative results.
         This method expects a pandas dataframe with columns:
             - intersection
@@ -96,9 +98,29 @@ python -m coclico.mpla0.mpla0_relative
         """
 
         metric_df[MPLA0.metric_name] = np.where(
-            metric_df["ref_pixel_count"] >= 1000,
-            bounded_affine_function((0.9, 0), (1, 1), metric_df["intersection"] / metric_df["union"]),
-            bounded_affine_function((20, 1), (100, 0), metric_df["union"] - metric_df["intersection"]),
+            metric_df["ref_pixel_count"] >= note_config["ref_pixel_count_threshold"],
+            bounded_affine_function(
+                (
+                    note_config["above_threshold"]["min_point"]["metric"],
+                    note_config["above_threshold"]["min_point"]["note"],
+                ),
+                (
+                    note_config["above_threshold"]["max_point"]["metric"],
+                    note_config["above_threshold"]["max_point"]["note"],
+                ),
+                metric_df["intersection"] / metric_df["union"],
+            ),
+            bounded_affine_function(
+                (
+                    note_config["under_threshold"]["min_point"]["metric"],
+                    note_config["under_threshold"]["min_point"]["note"],
+                ),
+                (
+                    note_config["under_threshold"]["max_point"]["metric"],
+                    note_config["under_threshold"]["max_point"]["note"],
+                ),
+                metric_df["union"] - metric_df["intersection"],
+            ),
         )
 
         metric_df.drop(columns=["ref_pixel_count", "intersection", "union"], inplace=True)

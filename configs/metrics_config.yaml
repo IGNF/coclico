@@ -1,9 +1,12 @@
-# Config file to test the global architecture of Coclico
 mpap0:
   weights:
-    "1": 1
-    "2": 2
-    "3_4": 2
+    "1": 0.5
+    "2": 7
+    "3_4_5": 4
+    "6": 4
+    "9": 1
+    "17": 3
+    "64": 2
   notes:
     ref_count_threshold: 1000
     under_threshold:
@@ -28,9 +31,11 @@ mpap0:
 
 mpla0:
   weights:
-    "1": 1
-    "2": 0
-    "5": 2
+    "2": 28
+    "4_5": 16
+    "6": 16
+    "9": 4
+    "17": 12
   notes:
     ref_pixel_count_threshold: 1000
     under_threshold:
@@ -49,12 +54,14 @@ mpla0:
         note: 0
       # tuple for the first point with the highest metric value
       max_point:
-        metric: 1  # IoU
+        metric: 11  # IoU
         note: 1
 
 malt0:
   weights:
-    "5": 1
+    "2": 56
+    "3_4_5": 16
+    "6": 16
   notes:
     # Parameters for the "maximum height diff" component of the note
     max_diff:
@@ -89,3 +96,8 @@ malt0:
       max_point:
         metric: 0.5
         note: 0
+
+
+
+
+

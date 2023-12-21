@@ -28,7 +28,7 @@ l'importance de chaque métrique pour chaque classe
 Plus de détails sur les métriques dans le fichier de définition de la classe représentant chaque métrique
 (eg. `coclico/mpap0/mpap0.py` pour MPAP0)
 
-Ce projet utilise une infracture de gestion de production par ordinateur [IGN GPAO](https://github.com/ign-gpao)
+Ce projet utilise une infrastructure de gestion de production par ordinateur [IGN GPAO](https://github.com/ign-gpao)
 développée au sein de l'IGNF pour la parallélisation des calculs.
 
 
@@ -72,7 +72,7 @@ python -m coclico.main -i <C1> <C2> \
                        --local-store-path <LOCAL_STORE_PATH> \
                        --runner-store-path <RUNNER_STORE_PATH> \
                        --project-name <PROJECT_NAME> \
-                       --weights-file <WEIGHTS_FILE> \
+                       --config-file <WEIGHTS_FILE> \
                        --unlock
 ```
 

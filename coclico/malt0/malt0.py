@@ -1,6 +1,5 @@
-import json
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 import pandas as pd
 from gpao.job import Job
@@ -17,14 +16,14 @@ class MALT0(Metric):
     points in the reference tile (based on an occupancy map similar to the one used in MPLA0).
 
     - metric_intrinsic:
-        - for each input file, generate a tif file with one layer by class in the class_weight dictionary
+        - for each input file, generate a tif file with one layer by class in the configuration file
     for each class, the corresponding layer contains a height map of the class, created the same way as a digital
     surface model:
             - generate a 2D delaunay triangulation of the points of the given class
             - interpolate the values on a raster with the desired pixel size (pdal faceraster filter)
 
         - for the tiles of the reference folder, generate also an addditional "occupancy map":
-    a tif file with one layer by class in the class_weight dictionary for each class, the corresponding layer contains
+    a tif file with one layer by class in the configuration file for each class, the corresponding layer contains
     a kind of 2d occupancy map for the class (ie. if any point of this class belongs to the pixel, the pixel has a
     value of 1, the value is 0 everywhere else)
 
@@ -58,13 +57,15 @@ class MALT0(Metric):
 docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(input)}:/input
 -v {self.store.to_unix(output)}:/output
+-v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.malt0.malt0_intrinsic
 --input-file /input
 --output-mnx-file /output/mnx/{input.stem}.tif
 {occupancy_map_arg}
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /config/{self.config_file.name}
 --pixel-size {self.pixel_size}
+
 """
 
         job = Job(job_name, command, tags=["docker"])
@@ -80,6 +81,7 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(out_ref) / "mnx"}:/ref
 -v {self.store.to_unix(out_ref) / "occupancy"}:/occupancy
 -v {self.store.to_unix(output)}:/output
+-v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.malt0.malt0_relative
 --input-dir /input
@@ -87,7 +89,7 @@ python -m coclico.malt0.malt0_relative
 --occupancy-dir /occupancy
 --output-csv-tile /output/result_tile.csv
 --output-csv /output/result.csv
---class-weights '{json.dumps(self.class_weights)}'
+--config-file /config/{self.config_file.name}
 """
 
         job = Job(job_name, command, tags=["docker"])
@@ -99,7 +101,7 @@ python -m coclico.malt0.malt0_relative
         return [job]
 
     @staticmethod
-    def compute_note(metric_df: pd.DataFrame) -> pd.DataFrame:
+    def compute_note(metric_df: pd.DataFrame, note_config: Dict):
         """Compute malt0 note from malt0_relative results.
         This method expects a pandas dataframe with columns:
             - max_diff
@@ -113,12 +115,32 @@ python -m coclico.malt0.malt0_relative
         Returns:
             metric_df: the updated metric_df input with notes instead of metrics
         """
+        max_note = bounded_affine_function(
+            (note_config["max_diff"]["min_point"]["metric"], note_config["max_diff"]["min_point"]["note"]),
+            (note_config["max_diff"]["max_point"]["metric"], note_config["max_diff"]["max_point"]["note"]),
+            metric_df["max_diff"],
+        )  # 0 <= max_note <= 1
+        mean_note = bounded_affine_function(
+            (note_config["mean_diff"]["min_point"]["metric"], note_config["mean_diff"]["min_point"]["note"]),
+            (note_config["mean_diff"]["max_point"]["metric"], note_config["mean_diff"]["max_point"]["note"]),
+            metric_df["mean_diff"],
+        )  # 0 <= mean_note <= 1
+        std_note = bounded_affine_function(
+            (note_config["std_diff"]["min_point"]["metric"], note_config["mean_diff"]["min_point"]["note"]),
+            (note_config["std_diff"]["max_point"]["metric"], note_config["mean_diff"]["max_point"]["note"]),
+            metric_df["std_diff"],
+        )  # 0 <= std_note <= 1
 
-        max_note = bounded_affine_function((0.1, 1), (4, 0), metric_df["max_diff"])  # 0 <= max_note <= 1
-        mean_note = bounded_affine_function((0.01, 2), (0.5, 0), metric_df["mean_diff"])  # 0 <= mean_note <= 2
-        std_note = bounded_affine_function((0.01, 2), (0.5, 0), metric_df["std_diff"])  # 0 <= std_note <= 2
-
-        metric_df[MALT0.metric_name] = (max_note + mean_note + std_note) / 5
+        sum_coefs = (
+            note_config["max_diff"]["coefficient"]
+            + note_config["mean_diff"]["coefficient"]
+            + note_config["std_diff"]["coefficient"]
+        )
+        metric_df[MALT0.metric_name] = (
+            note_config["max_diff"]["coefficient"] * max_note
+            + note_config["mean_diff"]["coefficient"] * mean_note
+            + note_config["std_diff"]["coefficient"] * std_note
+        ) / sum_coefs
 
         metric_df.drop(columns=["max_diff", "mean_diff", "std_diff"], inplace=True)
 

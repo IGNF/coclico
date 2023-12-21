@@ -1,6 +1,7 @@
 import socket
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import requests
 from client import worker
@@ -20,8 +21,10 @@ def csv_num_col(f: Path):
     return df.shape[1]
 
 
-def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:
-    """Check if a file exists, open it as a pandas dataframe to check that it has no empty data
+def basic_check_on_df(f: Path) -> pd.DataFrame:
+    """Check if a file exists, open it as a pandas dataframe to check that it has meaningful data :
+        - no null value
+        - not only zeros
     Returns the dataframe for potential further investigation
 
     Args:
@@ -33,6 +36,7 @@ def check_df_exists_with_no_empty_data(f: Path) -> pd.DataFrame:
     assert (f).is_file()
     df = pd.read_csv(f, dtype={"class": str}, sep=csv_separator)
     assert not df.isnull().values.any()
+    assert np.count_nonzero(df)  # To check that not all values == 0
     return df
 
 
