@@ -12,23 +12,11 @@ from coclico.version import __version__
 
 class MPLA0(Metric):
     """Metric MPLA0 (for "Métrique planimetric 0")
+
     Comparison of 2d classification maps (occupancy maps) for each class between the classification and the
     reference
 
-    - metric_intrinsic:
-        for each input file, generate a tif file with one layer by class that has a weight in the configuration file
-        for each class, the corresponding layer contains a kind of 2d occupancy
-        map for the class (ie. if any point of this class belongs to the pixel, the pixel has a value of 1,
-        the value is 0 everywhere else)
-
-        The layers are sorted alphabetically using their class name from their class_weights dict in order to have a
-        repeatable order
-
-    - metric extrinsic: compute intersection and union of the classification maps
-
-    - note:
-        * if reference data has more than 1000 points: affine function on the intersection over union for each class
-        * otherwise: affine function on {union - intersection}
+    See doc/mpla0.md
     """
 
     # Pixel size for the intermediate result: 2d binary maps for each class

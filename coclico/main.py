@@ -50,7 +50,7 @@ def parse_args():
         "--config-file",
         type=Path,
         default=Path("./configs/metrics_config.yaml"),
-        help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "
+        help="(Optionnel) Fichier yaml contenant les paramètres utilisés pour chaque classe/métrique "
         + "si on veut utiliser d'autres valeurs que le défaut",
     )
     parser.add_argument(
