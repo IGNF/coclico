@@ -14,19 +14,19 @@ Les résultats sont comparés par le calcul de plusieurs métriques, dont sont e
 configuration.
 
 Pour l'instant les métriques implémentées sont :
-* MPAP0 (Métrique point à point 0) : calcul d'une note à partir de la comparaison du nombre de points pour chaque classe
+* [MPAP0 (Métrique point à point 0)](doc/mpap0.md) : calcul d'une note à partir de la comparaison du nombre de points pour chaque classe
 entre le résultat et la référence
-* MPLA0 (Métrique planimétrique 0) : calcul d'une note à partir de l'intersection et l'union de cartes de classes 2D
+* [MPLA0 (Métrique planimétrique 0)](doc/mpla0.md) : calcul d'une note à partir de l'intersection et l'union de cartes de classes 2D
 entre le résultat et la référence
-* MALT0 (Métrique altimétrique 0) : calcul d'une note à partir de la différence en Z entre le résultat et la référence
+* [MALT0 (Métrique altimétrique 0)](doc/malt0.md) : calcul d'une note à partir de la différence en Z entre le résultat et la référence
 sur un raster de type "modèle numérique de surface" à partir des points de la classe donnée, calculée uniquement pour
 les pixels qui contiennent des points pour cette classe dans la dalle de référence.
 
 Les différentes métriques associées aux différentes classes sont ensuite aggrégées à l'aide d'une somme pondérée par
 l'importance de chaque métrique pour chaque classe
 
-Plus de détails sur les métriques dans le fichier de définition de la classe représentant chaque métrique
-(eg. `coclico/mpap0/mpap0.py` pour MPAP0)
+Plus de détails sur les métriques dans la page de documentation associée à chaque métrique (dossier [doc](doc)) ainsi
+que dans les docstrings des fonctions associées à chaque métrique.
 
 Ce projet utilise une infrastructure de gestion de production par ordinateur [IGN GPAO](https://github.com/ign-gpao)
 développée au sein de l'IGNF pour la parallélisation des calculs.
@@ -72,7 +72,7 @@ python -m coclico.main -i <C1> <C2> \
                        --local-store-path <LOCAL_STORE_PATH> \
                        --runner-store-path <RUNNER_STORE_PATH> \
                        --project-name <PROJECT_NAME> \
-                       --config-file <WEIGHTS_FILE> \
+                       --config-file <CONFIG_FILE> \
                        --unlock
 ```
 
@@ -86,7 +86,7 @@ python -m coclico.main -i <C1> <C2> \
                        -l <LOCAL_STORE_PATH> \
                        -s <RUNNER_STORE_PATH> \
                        -p <PROJECT_NAME> \
-                       -w <WEIGHTS_FILE> \
+                       -c <CONFIG_FILE> \
                        -u
 ```
 
@@ -104,15 +104,15 @@ options:
                         Hostname du serveur GPAO
 *  -p PROJECT_NAME, --project-name PROJECT_NAME
                         Nom de projet pour la GPAO
-*  -w WEIGHTS_FILE, --weights-file WEIGHTS_FILE
-                        (Optionel) Fichier yaml contenant les poids pour chaque classe/métrique si on
-                        veut utiliser d'autres valeurs que le défaut
+*  -c CONFIG_FILE, --config-file CONFIG_FILE
+                        (Optionel) Fichier yaml contenant les paramètres utilisés pour chaque classe/
+                        métrique si on veut utiliser d'autres valeurs que le défaut
 *  -u, --unlock         Ajouter une étape de pré-processing pour corriger l'encodage des fichiers issus de TerraScan (unlock)
                         Attention: l'entête des fichiers d'entrée sera modifiée !
 
 
 
-## Fichier de configuration des poids et paramètres de calcul des notes pour chaque classes
+## Fichier de configuration des paramètres de calcul des notes pour chaque métrique, et des poids pour chaque classe
 
 Le fichier de configuration pour chaque classe / métrique est un fichier `yaml` du type :
 
@@ -124,19 +124,23 @@ metric1:
     "3_4": 2
   notes:
     threshold_value: 1000
-      under_threshold:
-        min_point:
-        metric: 20
-        note: 1
-    
+    under_threshold:
+      min_point:
+      metric: 20
+      note: 1
+    above_threshold:
+      min_point:
+      metric: 0
+      note: 1
+
 metric2:
   weights:
-    "1": 1  
-    "2": 0  
-    "3_4": 2  
+    "1": 1
+    "2": 0
+    "3_4": 2
   notes:
     threshold_value: 1000
-      above_threshold:
+    above_threshold:
         min_point:
         metric: 0
         note: 1
@@ -145,7 +149,7 @@ metric2:
 Au premier niveau : les métriques, qui doivent correspondre aux clés du dictionnaire `METRICS`
 décrit dans `coclico/metrics/listing.py`
 
-Au second niveau, le fichier contient les informations relatives aux poids donnés aux classes et les détails de calcul des notes. 
+Au second niveau, le fichier contient les informations relatives aux poids donnés aux classes et les détails de calcul des notes.
 
 Au 3e niveau (côté poids) : les classes
 Chaque clé de classe peut contenir (placé entre guillemets):
@@ -154,7 +158,10 @@ Chaque clé de classe peut contenir (placé entre guillemets):
 Dans ce cas, c'est dans le code de chaque métrique qu'est décidée la façon de regrouper les classes
 (eg. somme du compte des points sur l'ensemble des classes pour MPAP0)
 
-Au 3e niveau (côté notes) : 
+Au 3e niveau (côté notes) :
+Cette partie dépend de la métrique concernée, elle est décrite dans la page de documentation correspondant à chaque métrique (dans le dossier [doc](doc))
+
+
 
 # Contribuer
 

@@ -46,11 +46,11 @@ def parse_args():
     parser.add_argument("-g", "--gpao-hostname", type=str, help="Hostname du serveur GPAO", default="localhost")
     parser.add_argument("-p", "--project-name", type=str, default="coclico", help="Nom de projet pour la GPAO")
     parser.add_argument(
-        "-w",
+        "-c",
         "--config-file",
         type=Path,
         default=Path("./configs/metrics_config.yaml"),
-        help="(Optionnel) Fichier yaml contenant les poids pour chaque classe/métrique "
+        help="(Optionnel) Fichier yaml contenant les paramètres utilisés pour chaque classe/métrique "
         + "si on veut utiliser d'autres valeurs que le défaut",
     )
     parser.add_argument(

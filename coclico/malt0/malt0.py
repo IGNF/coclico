@@ -15,28 +15,7 @@ class MALT0(Metric):
     classification and the reference. The comparison is done only for the pixels of the map that contain
     points in the reference tile (based on an occupancy map similar to the one used in MPLA0).
 
-    - metric_intrinsic:
-        - for each input file, generate a tif file with one layer by class in the configuration file
-    for each class, the corresponding layer contains a height map of the class, created the same way as a digital
-    surface model:
-            - generate a 2D delaunay triangulation of the points of the given class
-            - interpolate the values on a raster with the desired pixel size (pdal faceraster filter)
-
-        - for the tiles of the reference folder, generate also an addditional "occupancy map":
-    a tif file with one layer by class in the configuration file for each class, the corresponding layer contains
-    a kind of 2d occupancy map for the class (ie. if any point of this class belongs to the pixel, the pixel has a
-    value of 1, the value is 0 everywhere else)
-
-
-    - metric relative:
-        Compare the Z values between the classification and the reference, then compute the mean, max and standard
-        deviation of the difference. (only where the occupancy map of the reference is True)
-
-    - note:
-        Linear combination of notes:
-        - a bounded affine function of the max dfference
-        - a bounded affine function of the mean dfference
-        - a bounded affine function of the standard deviation of the dfference
+    See doc/malt0.md
     """
 
     # Pixel size for MNx

@@ -92,7 +92,7 @@ def parse_args():
         help="Path to the root folder of the csv files generated for each metric + tile",
     )
     parser.add_argument("--output-path", "-o", type=Path, required=True, help="Path to output csv file")
-    parser.add_argument("--config-file", "-w", type=Path, help="Coclico configuration file")
+    parser.add_argument("--config-file", "-c", type=Path, help="Coclico configuration file")
 
     return parser.parse_args()
 
