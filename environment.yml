@@ -9,6 +9,7 @@ dependencies:
   - laspy
   - rasterio
   - pandas
+  - geopandas
   - tabulate
   - requests
   - pytest
