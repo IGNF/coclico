@@ -112,7 +112,7 @@ options:
 
 
 
-## Fichier de configuration des poids et paramètres de calcul des notes pour chaque classe
+## Fichier de configuration des paramètres de calcul des notes pour chaque métrique, et des poids pour chaque classe
 
 Le fichier de configuration pour chaque classe / métrique est un fichier `yaml` du type :
 
