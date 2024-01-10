@@ -97,3 +97,9 @@ malt0:
       max_point:
         metric: 0.5
         note: 0
+
+mobj0:
+  weights:
+    "6": 2 
+    "1": 1  
+  notes: {}
