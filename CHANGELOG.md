@@ -1,8 +1,10 @@
-# dev
-- correctif : 
-  - MALT0 calcul de la métrique relative dans le cas où il n'y a pas de données dans une classe
+# 0.5.0
+- correctif : MALT0 calcul de la métrique relative dans le cas où il n'y a pas de données dans une classe
 - refactoring :
   - déplacement du calcul des notes en dehors du calcul des métriques
+  - ajout des paramètres de calcul des notes dans le fichier de configuration (cf. `./README.md`)
+- documentation : ajout d'une documentation plus complète sur les métriques et le calcul des
+notes dans le dossier `./doc`
 
 # 0.4.0
 - fonctionnalités:
