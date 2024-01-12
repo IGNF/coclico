@@ -44,7 +44,7 @@ def test_create_compare_project(ensure_test1_data):
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / "create_compare_project"
     project_name = "coclico_test_create_compare_projects"
-    config_file = Path("./test/configs/metrics_weights_test.yaml")
+    config_file = Path("./test/configs/config_test_main.yaml")
 
     project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file)
 
@@ -104,7 +104,7 @@ def test_create_compare_project_unlock(ensure_test1_data):
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / "create_compare_project_unlock"
     project_name = "coclico_test_create_compare_projects_unlock"
-    config_file = Path("./test/configs/metrics_weights_test.yaml")
+    config_file = Path("./test/configs/config_test_main.yaml")
 
     project = main.create_compare_project([c1, c2], ref, out, STORE, project_name, config_file, unlock=False)
 
@@ -157,14 +157,14 @@ def test_compare_test1_weights(ensure_test1_data, use_gpao_server):
     niv4 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / Path("compare_test1_weights")
-    weights_file = Path("./test/configs/metrics_weights_test.yaml")
+    config_file = Path("./test/configs/config_test_main.yaml")
     gpao_hostname = "localhost"
     runner_store_path = Path("./data").resolve()
     local_store_path = Path("data").resolve()
     project_name = "coclico_test_compare_test1_w_weights"
 
     main.compare(
-        [niv1, niv2, niv4], ref, out, gpao_hostname, local_store_path, runner_store_path, project_name, weights_file
+        [niv1, niv2, niv4], ref, out, gpao_hostname, local_store_path, runner_store_path, project_name, config_file
     )
     tu.execute_gpao_client(tags="docker", num_thread=4)
     wait_running_job(URL_API, project_name, delay_second=1, delay_log_second=10)
@@ -195,7 +195,7 @@ def test_run_main_test1(ensure_test1_data, use_gpao_server):
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / Path("run_main_test1")
-    weights_file = Path("./test/configs/metrics_weights_test.yaml")
+    config_file = Path("./test/configs/config_test_main.yaml")
     gpao_hostname = "localhost"
     runner_store_path = Path("./data").resolve()
     local_store_path = runner_store_path
@@ -204,7 +204,7 @@ def test_run_main_test1(ensure_test1_data, use_gpao_server):
         -i {str(c1)} {str(c2)} \
         --ref {str(ref)} \
         --out {str(out)} \
-        --config-file {str(weights_file)} \
+        --config-file {str(config_file)} \
         --gpao-hostname {gpao_hostname} \
         --runner-store-path {runner_store_path} \
         --project-name {project_name} \
@@ -222,7 +222,7 @@ def test_run_main_test1_unlock(ensure_test1_data, use_gpao_server):
     c2 = Path("./data/test1/niv4/")
     ref = Path("./data/test1/ref/")
     out = TMP_PATH / Path("run_main_test1_unlock")
-    weights_file = Path("./test/configs/metrics_weights_test.yaml")
+    config_file = Path("./test/configs/config_test_main.yaml")
     gpao_hostname = "localhost"
     runner_store_path = Path("./data").resolve()
     local_store_path = runner_store_path
@@ -231,7 +231,7 @@ def test_run_main_test1_unlock(ensure_test1_data, use_gpao_server):
         -i {str(c1)} {str(c2)} \
         --ref {str(ref)} \
         --out {str(out)} \
-        --config-file {str(weights_file)} \
+        --config-file {str(config_file)} \
         --gpao-hostname {gpao_hostname} \
         --runner-store-path {runner_store_path} \
         --project-name {project_name} \

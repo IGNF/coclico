@@ -54,7 +54,7 @@ mpla0:
         note: 0
       # tuple for the first point with the highest metric value
       max_point:
-        metric: 11  # IoU
+        metric: 1  # IoU
         note: 1
 
 malt0:

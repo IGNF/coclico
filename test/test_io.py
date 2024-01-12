@@ -6,9 +6,9 @@ import coclico.io as io
 from coclico.metrics.listing import METRICS
 
 
-def test_read_metrics_weights_ok():
-    weights_file = Path("./test/configs/metrics_weights_test.yaml")
-    weights = io.read_config_file(weights_file)
+def test_read_config_file_ok():
+    config_file = Path("./test/configs/config_test_main.yaml")
+    weights = io.read_config_file(config_file)
     assert all([k in METRICS.keys() for k in weights.keys()])
     for _, val in weights.items():
         assert isinstance(val, dict)
@@ -16,7 +16,7 @@ def test_read_metrics_weights_ok():
         assert all([isinstance(cl, str) for cl in val["weights"].keys()])
 
 
-def test_read_metrics_weights_fail():
-    weights_file = Path("./test/configs/metrics_weights_fail.yaml")
+def test_read_config_file_fail():
+    config_file = Path("./test/configs/config_test_read_fail.yaml")
     with pytest.raises(ValueError):
-        io.read_config_file(weights_file)
+        io.read_config_file(config_file)
