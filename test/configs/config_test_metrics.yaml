@@ -102,6 +102,7 @@ malt0:
 
 mobj0:
   weights:
-    "6": 2 
-    "1": 1  
+    "6": 2
+    "1": 1
+    "9": 1   # No points for class 0
   notes: {}

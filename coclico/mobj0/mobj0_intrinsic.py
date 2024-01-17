@@ -63,7 +63,7 @@ def compute_metric_intrinsic(las_file: Path, config_file: Path, output_geojson: 
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("Run malt0 intrinsic metric on one tile")
+    parser = argparse.ArgumentParser("Run mobj0 intrinsic metric on one tile")
     parser.add_argument("-i", "--input-file", type=Path, required=True, help="Path to the LAS file")
     parser.add_argument("-o", "--output-geojson", type=Path, required=True, help="Path to the output geojson")
     parser.add_argument(
