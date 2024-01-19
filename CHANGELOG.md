@@ -1,3 +1,6 @@
+# 0.5.1
+- correctif MALT0 quand il n'y a pas de points dans la référence (+ test sur les autres métriques)
+
 # 0.5.0
 - correctif : MALT0 calcul de la métrique relative dans le cas où il n'y a pas de données dans une classe
 - refactoring :
