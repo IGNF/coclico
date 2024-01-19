@@ -33,11 +33,11 @@ def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
         np.arrays: max value, pixel count, mean, standard deviation and m2 values
     """
     masked_raster = ma.masked_array(raster, 1 - occupancy_raster)
-    max_val = ma.max(masked_raster, axis=(1, 2)).filled(np.nan)
+    max_val = ma.max(masked_raster, axis=(1, 2)).filled(0)
     count = np.sum(occupancy_raster, axis=(1, 2))
-    mean_val = ma.mean(masked_raster, axis=(1, 2)).filled(np.nan)
-    std_val = ma.std(masked_raster, axis=(1, 2)).filled(np.nan)
-    m2 = ma.sum(np.square(masked_raster - mean_val[:, None, None]), axis=(1, 2)).filled(np.nan)  # distance to the mean
+    mean_val = ma.mean(masked_raster, axis=(1, 2)).filled(0)
+    std_val = ma.std(masked_raster, axis=(1, 2)).filled(0)
+    m2 = ma.sum(np.square(masked_raster - mean_val[:, None, None]), axis=(1, 2)).filled(0)  # distance to the mean
 
     return max_val, count, mean_val, std_val, m2
 
@@ -71,8 +71,12 @@ def update_overall_stats(
     max_updated = np.maximum(max_previous, max_val)
     count_updated = count_previous + count
     delta = mean_previous - mean_val
-    m2_updated = m2_previous + m2 + delta**2 * count_previous * count / count_updated
-    mean_updated = count_previous / count_updated * mean_previous + count / count_updated * mean_val
+    m2_updated = np.where(
+        count_updated, m2_previous + m2 + delta**2 * count_previous * count / count_updated, 0
+    )  # if count_updated = 0, dividing by 0 then making other operations returns nan values
+    mean_updated = np.where(
+        count_updated, count_previous / count_updated * mean_previous + count / count_updated * mean_val, 0
+    )  # if count_updated = 0, dividing by 0 then making other operations returns nan values
 
     return max_updated, count_updated, mean_updated, m2_updated
 
@@ -87,6 +91,8 @@ def compute_metric_relative(
     - mean_diff: the average difference in z between the height maps
     - max_diff: the maximum difference in z between the height maps
     - std_diff: the standard deviation of the difference in z betweeen the height maps
+
+    If there is no reference point: mean_diff = 0, max_diff = 0, std_diff = 0
 
     These metrics are stored tile by tile and class by class in the output_csv_tile file
     These metrics are stored class by class for the whole data in the output_csv file
@@ -143,7 +149,8 @@ def compute_metric_relative(
                 "class": cl,
                 "max_diff": max_diff[ii],
                 "mean_diff": mean_diff[ii],
-                "std_diff": std_diff[ii],
+                # return 0 if there is not enough points to compute std (numpy std for 0 or 1 point returns np.nan)
+                "std_diff": std_diff[ii] if not np.isnan(std_diff[ii]) else 0,
             }
             for ii, cl in enumerate(classes)
         ]
@@ -165,7 +172,8 @@ def compute_metric_relative(
             "class": cl,
             "max_diff": total_max_diff[ii],
             "mean_diff": total_mean_diff[ii],
-            "std_diff": total_std_diff[ii],
+            # return 0 if there is not enough points to compute std (numpy std for 0 or 1 point returns np.nan)
+            "std_diff": total_std_diff[ii] if not np.isnan(total_std_diff[ii]) else 0,
         }
         for ii, cl in enumerate(classes)
     ]

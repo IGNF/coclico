@@ -59,17 +59,25 @@ def test_compute_metric_relative():
 
     mpla0_relative.compute_metric_relative(c1_dir, ref_dir, CONFIG_FILE_METRICS, output_csv, output_csv_tile)
 
-    expected_rows = 2 * 5  # 2 files * 5 classes
+    expected_rows = 2 * 6  # 2 files * 6 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
 
     df = pd.read_csv(output_csv_tile, sep=csv_separator)
     assert set(df.columns) == expected_cols | {"tile"}
 
-    expected_rows = 5  # 5 classes
+    expected_rows = 6  # 6 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
 
     df = pd.read_csv(output_csv, sep=csv_separator)
     assert set(df.columns) == expected_cols
+
+    # Check result for class 9 (0 points in c1 and ref)
+    ref_pixel_count_9 = df["ref_pixel_count"][df.index[df["class"] == "9"][0]]
+    intersection_9 = df["intersection"][df.index[df["class"] == "9"][0]]
+    union_9 = df["union"][df.index[df["class"] == "9"][0]]
+    assert ref_pixel_count_9 == 0
+    assert intersection_9 == 0
+    assert union_9 == 0
 
 
 def test_run_main():
@@ -88,8 +96,8 @@ def test_run_main():
     sp.run(cmd, shell=True, check=True)
     logging.info(cmd)
 
-    expected_rows = 2 * 5  # 2 files * 5 classes
+    expected_rows = 2 * 6  # 2 files * 6 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
 
-    expected_rows = 5  # 5 classes
+    expected_rows = 6  # 6 classes
     assert utils.csv_num_rows(output_csv) == expected_rows

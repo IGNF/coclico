@@ -35,6 +35,7 @@ mpla0:
     "2": 0  # simple classes
     "3_4_5": 1  # composed class
     "3_4": 2  # composed class with spaces
+    "9": 1 # No point for class 9
   notes:
     ref_pixel_count_threshold: 1000
     under_threshold:
@@ -63,6 +64,7 @@ malt0:
     "2": 0  # simple classes
     "3_4_5": 1  # composed class
     "3_4": 2  # composed class with spaces
+    "9": 1 # No point for class 9
   notes:
     # Parameters for the "maximum height diff" component of the note
     max_diff:

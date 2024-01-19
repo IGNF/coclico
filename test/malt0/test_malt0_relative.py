@@ -103,17 +103,25 @@ def test_compute_metric_relative(ensure_malt0_data):
     df = pd.read_csv(output_csv_tile, sep=csv_separator)
     assert set(df.columns) == expected_cols | {"tile"}
 
-    expected_rows = 2 * 5  # 2 files * 5 classes
+    expected_rows = 2 * 6  # 2 files * 6 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
 
     df = pd.read_csv(output_csv, sep=csv_separator)
     assert set(df.columns) == expected_cols
 
-    expected_rows = 5  # 5 classes
+    expected_rows = 6  # 6 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
 
     df = pd.read_csv(output_csv, sep=csv_separator)
     logging.debug(df.to_markdown())
+
+    # Check result for class 9 (0 points in c1 and ref)
+    max_diff_9 = df["max_diff"][df.index[df["class"] == "9"][0]]
+    mean_diff_9 = df["mean_diff"][df.index[df["class"] == "9"][0]]
+    std_diff_9 = df["std_diff"][df.index[df["class"] == "9"][0]]
+    assert max_diff_9 == 0
+    assert mean_diff_9 == 0
+    assert std_diff_9 == 0
 
 
 def test_run_main(ensure_malt0_data):
@@ -135,8 +143,8 @@ def test_run_main(ensure_malt0_data):
     sp.run(cmd, shell=True, check=True)
     logging.info(cmd)
 
-    expected_rows = 5 * 2  # 2 files * 2 classes
+    expected_rows = 6 * 2  # 2 files * 2 classes
     assert utils.csv_num_rows(output_csv_tile) == expected_rows
 
-    expected_rows = 5  # 2 classes
+    expected_rows = 6  # 2 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
