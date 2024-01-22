@@ -34,9 +34,9 @@ Pour chaque classe, comparer les valeurs des cartes de MNx (`height_maps`) entre
 uniquement sur les pixels où le nuage de référence a des points de cette classe (valeurs positives de la carte d'occupation).
 
 Les valeurs de sortie (dans un fichier csv) sont pour chaque classe :
-- `mean_diff` : différence moyenne en z entre les MNx pour chaque pixel
-- `mean_diff` : différence maximum en z entre les MNx pour chaque pixel
-- `std_diff` : l'écart-type de la différence en z entre les MNx pour chaque pixel
+- `mean_diff` : différence moyenne en z entre les MNx pour chaque pixel (0 si aucun pixel dans la référence)
+- `mean_diff` : différence maximum en z entre les MNx pour chaque pixel (0 si aucun pixel dans la référence)
+- `std_diff` : l'écart-type de la différence en z entre les MNx pour chaque pixel (0 si aucun pixel dans la référence)
 
 ### Note
 
