@@ -32,12 +32,16 @@ def check_paired_objects(
         classes (List): oredered list of clsses (to match "layer" values with classes in the output)
 
     Returns:
-        Tuple[Counter, Counter]: (nb_paired, nb_not paired) Number of paired / not paired geometries
+        Tuple[Counter, Counter, Counter]: (ref_object_count, paired_count, not_paired_count) Numbers of:
+        - geometries in ref
+        - paired geometries
+        - not paired geometries
 
     """
     all_join_gdfs = []
-    nb_paired = Counter()
-    nb_not_paired = Counter()
+    ref_object_count = Counter()
+    paired_count = Counter()
+    not_paired_count = Counter()
     ref_geometries["index_ref"] = ref_geometries.index.copy()
 
     for ii, class_key in enumerate(classes):
@@ -62,10 +66,13 @@ def check_paired_objects(
         class_join_gdf.drop_duplicates(subset=["index_ref"], keep="first", inplace=True)
 
         all_join_gdfs.append(class_join_gdf)
-        nb_paired[class_key] = len(class_join_gdf.index)
-        nb_not_paired[class_key] = len(c1_geom_layer.index) + len(ref_geom_layer.index) - 2 * nb_paired[class_key]
+        ref_object_count[class_key] = len(ref_geom_layer.index)
+        paired_count[class_key] = len(class_join_gdf.index)
+        not_paired_count[class_key] = (
+            len(c1_geom_layer.index) + len(ref_geom_layer.index) - 2 * paired_count[class_key]
+        )
 
-    return nb_paired, nb_not_paired
+    return ref_object_count, paired_count, not_paired_count
 
 
 def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path):
@@ -76,8 +83,9 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
     The pairing method is implemented and explained in the check_paired_objects method.
 
     The computed metrics are:
-    - nb_paired: The number of paired objects (found both in c1 and ref)
-    - nb_not_paired: The number of "not paired" objects (found only in c1 or only in ref)
+    - ref_object_count: The number of objects in ref
+    - paired_count: The number of paired objects (found both in c1 and ref)
+    - not_paired_count: The number of "not paired" objects (found only in c1 or only in ref)
 
     These metrics are stored tile by tile and class by class in the output_csv_tile file
     These metrics are stored class by class for the whole data in the output_csv file
@@ -98,8 +106,9 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     output_csv_tile.parent.mkdir(parents=True, exist_ok=True)
 
-    total_nb_paired = Counter()
-    total_nb_not_paired = Counter()
+    total_ref_object_count = Counter()
+    total_paired_count = Counter()
+    total_not_paired_count = Counter()
 
     data = []
 
@@ -109,17 +118,19 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
         c1_geometries = gpd.read_file(c1_file)
         ref_geometries = gpd.read_file(ref_file)
 
-        nb_paired, nb_not_paired = check_paired_objects(c1_geometries, ref_geometries, classes)
+        ref_object_count, paired_count, not_paired_count = check_paired_objects(c1_geometries, ref_geometries, classes)
 
-        total_nb_paired += Counter(nb_paired)
-        total_nb_not_paired += Counter(nb_not_paired)
+        total_ref_object_count += Counter(ref_object_count)
+        total_paired_count += Counter(paired_count)
+        total_not_paired_count += Counter(not_paired_count)
 
         new_line = [
             {
                 "tile": ref_file.stem,
                 "class": cl,
-                "nb_paired": nb_paired.get(cl, 0),
-                "nb_not_paired": nb_not_paired.get(cl, 0),
+                "ref_object_count": ref_object_count.get(cl, 0),
+                "paired_count": paired_count.get(cl, 0),
+                "not_paired_count": not_paired_count.get(cl, 0),
             }
             for cl in classes
         ]
@@ -133,8 +144,9 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
     data = [
         {
             "class": cl,
-            "nb_paired": total_nb_paired.get(cl, 0),
-            "nb_not_paired": total_nb_not_paired.get(cl, 0),
+            "ref_object_count": total_ref_object_count.get(cl, 0),
+            "paired_count": total_paired_count.get(cl, 0),
+            "not_paired_count": total_not_paired_count.get(cl, 0),
         }
         for cl in classes
     ]

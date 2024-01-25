@@ -97,7 +97,31 @@ malt0:
         metric: 0.5
         note: 0
 
-
+mobj0:
+  weights:
+    "6": 16
+    "17": 12
+    "64": 8
+  notes:
+    ref_object_count_threshold: 20
+    under_threshold:
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 0  # count of "not paired" objects
+        note: 1
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 4  # count of "not paired" objects
+        note: 0
+    above_threshold:
+      # tuple for the first point with the lowest metric value
+      min_point:
+        metric: 0.8  # count of paired objects / counts of caired objects + 'not paired' objects
+        note: 0
+      # tuple for the first point with the highest metric value
+      max_point:
+        metric: 1  # count of paired objects / counts of caired objects + 'not paired' objects
+        note: 1
 
 
 
