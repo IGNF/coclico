@@ -142,7 +142,7 @@ def test_compare_test1_default(ensure_test1_data, use_gpao_server):
 
     c1_all_metrics = out / "niv1" / "niv1_result.csv"
     assert tu.csv_num_rows(c1_all_metrics) == 8  # 8 classes in total (1, 2, "3_4_5", "4_5", 6, 9, 17, 64)
-    assert tu.csv_num_col(c1_all_metrics) == 4  # class, mpap0, mpla0, malt0
+    assert tu.csv_num_col(c1_all_metrics) == 5  # class, mpap0, mpla0, malt0, mobj0
 
     all_scores = out / "result.csv"
     assert tu.csv_num_rows(all_scores) == 2  # niv1, niv4
