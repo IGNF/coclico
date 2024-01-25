@@ -33,7 +33,7 @@ def test_compute_metric_intrinsic(ensure_test1_data):
     gdf = gpd.read_file(output_geojson)
     logging.debug(gdf.to_markdown())
     assert len(gdf.index) > 0
-    assert len(set(gdf["layer"])) == nb_layers
+    assert len(set(gdf["layer"])) == nb_layers - 1  # There should be rows for every class, except one (class 9)
 
 
 def test_run_main(ensure_test1_data):
