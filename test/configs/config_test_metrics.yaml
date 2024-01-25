@@ -119,10 +119,10 @@ mobj0:
     above_threshold:
       # tuple for the first point with the lowest metric value
       min_point:
-        metric: 0.8  # count of paired objects / counts of caired objects + 'not paired' objects
+        metric: 0.8  # count of paired objects / counts of paired objects + 'not paired' objects
         note: 0
       # tuple for the first point with the highest metric value
       max_point:
-        metric: 1  # count of paired objects / counts of caired objects + 'not paired' objects
+        metric: 1  # count of paired objects / counts of paired objects + 'not paired' objects
         note: 1
 

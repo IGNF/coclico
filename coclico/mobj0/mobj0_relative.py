@@ -18,17 +18,18 @@ def check_paired_objects(
     """Pair objects from 2 geodataframes (ie. 2 lists of geometries)
     Pairing is made based on geometries intersections:
     - the first step is to find all geometries in ref that have at least an intersection with a
-    geometry in c1 (using a spatial join). The sjoin will contain several occurences of ref geometries
-    if they one line per
-    - the second one is to remove pairs geometries match with several geometries in the other dataframe:
+    geometry in c1 (using a spatial join). The sjoin output will contain several occurences of ref geometries
+    that intersect several c1 geometries
+    - the second one is to remove duplicates pairs (geometries in one dataframe that match with several geometries
+    in the other dataframe):
         - remove pairs where a geometry in c1 is associated with multiple ref polygons first (making sure that we keep
           the geometries in ref that have a single match in c1)
         - then remove pairs where a geometry in ref is still associated with multiple c1 polygons (making sure that we
-          keep the geometries in ref that have a single match in c1)
+          keep the geometries in c1 that have a single match in ref)
 
     Args:
-        c1_geometries (gpd.GeoDataFrame): geopandas dataframe with geometries from the reference
-        ref_geometries (gpd.GeoDataFrame): geopandas dataframe with geometries from c1
+        c1_geometries (gpd.GeoDataFrame): geopandas dataframe with geometries from c1
+        ref_geometries (gpd.GeoDataFrame): geopandas dataframe with geometries from the reference
         classes (List): oredered list of clsses (to match "layer" values with classes in the output)
 
     Returns:
