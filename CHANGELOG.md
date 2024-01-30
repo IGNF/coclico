@@ -1,3 +1,6 @@
+# Dev
+- ajout d'une 4e métrique : MOBJ0
+
 # 0.5.1
 - correctif MALT0 quand il n'y a pas de points dans la référence (+ test sur les autres métriques)
 

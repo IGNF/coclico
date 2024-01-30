@@ -16,10 +16,9 @@ Cette comparaison est faite à l'aide de cartes de classes / cartes d'occupation
 
 - Calcul de la carte de classe binaire (`occupancy_map`) pour chaque classe dans le nuage (voir métrique MPLA0).
 
-- Opérations topologiques pour simplifier les formes des objets détectés et se débarrasser du bruit au niveau des limites d'objets.
-**A COMPLETER !**
-
-- Vectorisation des contours de la carte débruitée
+- Opérations topologiques pour simplifier les formes des objets détectés et se débarrasser du bruit au niveau des limites d'objets. Une fermeture et une ouverture sont réalisées sur les rasters.
+  
+- Vectorisation des contours de la carte débruitée et une simplification des formes pour éliminer encore du bruit sur les géométries. 
 
 Résultat : pour chaque nuage, un fichier geojson contenant un polygone par objet, qui a un attribut "layer"
 correspondant à l'indice de la classe correspondante dans la liste (ordonnée alphabétiquement) des classes définies

@@ -18,9 +18,10 @@ class MOBJ0(Metric):
     See doc/mobj0.md
     """
 
-    # Pixel size for occupancy map
-    pixel_size = 0.5
     metric_name = "mobj0"
+    pixel_size = 0.5  # Pixel size for occupancy map
+    kernel = 3  # parameter for morphological operations on rasters
+    tolerance_shp = 0.05  # parameter for simplification on geometries of the shapefile
 
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
@@ -34,7 +35,9 @@ python -m coclico.mobj0.mobj0_intrinsic \
 --input-file /input \
 --output-geojson /output/{input.stem}.json \
 --config-file /config/{self.config_file.name} \
---pixel-size {self.pixel_size}
+--pixel-size {self.pixel_size} \
+--kernel {self.kernel} \
+--tolerance-shp {self.tolerance_shp}
 """
         job = Job(job_name, command, tags=["docker"])
         return job
