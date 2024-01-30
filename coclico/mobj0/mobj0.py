@@ -17,6 +17,8 @@ class MOBJ0(Metric):
     pixel_size = 0.5
     metric_name = "mobj0"
 
+    # TODO indiquer kernel ici
+    # TODO indiquer tolerance shape simplify ici
     def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool):
         raise NotImplementedError
 

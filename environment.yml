@@ -9,6 +9,7 @@ dependencies:
   - laspy
   - rasterio
   - pandas
+  - opencv
   - geopandas
   - tabulate
   - requests
