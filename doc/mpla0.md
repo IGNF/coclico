@@ -89,7 +89,7 @@ Dans le fichier de configuration.yaml, il faut indiquer les paramètres de calcu
       # Coordonnées du point correspondant à la borne max (valeur de `metric` au dessus de laquelle `note` vaut toujours la valeur précisée ici)
       # Dans l'exemple, si `unioon - intersection` est supérieur à 100, la note est à 0
       max_point:
-        metric: 100  # union - intersection
+        metric: 100
         note: 0
     # Définition de la fonction affine bornée lorsque le nombre de pixels référence pour la classe donnée est AU DESSUS de`ref_pixel_count_threshold`
     # On utilise alors `IoU` = `intersection / union` comme valeur de `metric`
@@ -100,7 +100,7 @@ Dans le fichier de configuration.yaml, il faut indiquer les paramètres de calcu
         metric: 0.9
         note: 0
       # Coordonnées du point correspondant à la borne max (valeur de `metric` au dessus de laquelle `note` vaut toujours la valeur précisée ici)
-      # Dans l'exemple, si `IoU` est supérieur à 1, la note est à 1
+      # Dans l'exemple, si `IoU` vaut 1, la note est à 1
       max_point:
         metric: 1
         note: 1

@@ -32,8 +32,8 @@ def setup_module():
 
 
 def test_merge_results_for_one_classif():
-    CONFIG_FILE = Path("./test/configs/config_test_results_by_tile_1_metric.yaml")
-    config_dict = io.read_config_file(CONFIG_FILE)
+    config_file = Path("./test/configs/config_test_results_by_tile_1_metric.yaml")
+    config_dict = io.read_config_file(config_file)
     metrics = list(config_dict.keys())
     classes = list(config_dict["mpap0"]["weights"].keys())
 
@@ -41,7 +41,7 @@ def test_merge_results_for_one_classif():
     out = base_path / "result.csv"
     out_tile = base_path / "result_tile.csv"
 
-    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, CONFIG_FILE)
+    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, config_file)
 
     df = basic_check_on_df(out)
     assert set(df.columns) == set(["class"] + metrics)
@@ -58,18 +58,19 @@ def test_merge_results_for_one_classif():
 
 def test_merge_results_for_one_classif_on_different_classes():
     """Check that the result file is created correctly when classes are not the same for all metrics"""
-    CONFIG_FILE = Path("./test/configs/config_test_metrics.yaml")
-    config_dict = io.read_config_file(CONFIG_FILE)
+    config_file = Path("./test/configs/config_test_results_by_tile_several_metrics.yaml")
+    config_dict = io.read_config_file(config_file)
     metrics = list(config_dict.keys())
     classes = set([cl for metric_dict in config_dict.values() for cl in metric_dict["weights"].keys()])
     base_path = TMP_PATH / Path("results_by_tile_on_different_classes")
     out = base_path / "result.csv"
     out_tile = base_path / "result_tile.csv"
 
-    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, CONFIG_FILE)
+    coclico.csv_manipulation.results_by_tile.merge_results_for_one_classif(DATA_PATH, out, config_file)
 
     assert out.is_file()
     df = pd.read_csv(out, dtype={"class": str}, sep=csv_separator)
+    print(df.to_markdown())
     assert set(df.columns) == set(["class"] + metrics)
     assert len(df.index) == len(classes)
     assert all([not df[m].isnull().values.all() for m in metrics])  # check that no metric is completely empty
@@ -96,14 +97,14 @@ def test_run_main():
 
 
 def test_create_job_merge_results():
-    CONFIG_FILE = Path("./test/configs/config_test_compute_weighted_result.yaml")
+    config_file = Path("./test/configs/config_test_compute_weighted_result.yaml")
 
     out = Path("local_store/out")
     metrics_root_folder = Path("local_store/input")
     store = Store("local_store", "win_store", "unix_store")
 
     job = coclico.csv_manipulation.results_by_tile.create_job_merge_results(
-        metrics_root_folder, out, store, CONFIG_FILE
+        metrics_root_folder, out, store, config_file
     )
     job_json = json.loads(job.to_json())  # return a string
     assert job_json["name"].startswith("merge_notes")  # check that it is running the right method

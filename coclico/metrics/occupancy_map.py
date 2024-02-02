@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 from typing import Tuple
 
 import laspy
@@ -44,22 +45,18 @@ def _create_2d_occupancy_array(
     return grid
 
 
-def create_occupancy_map(las_file, class_weights, output_tif, pixel_size):
-    """Create 2d occupancy map for each class that is in class_weights keys, and save result in a single output_tif
-    file with one layer per class (the classes are sorted alphabetically).
-
-    Args:
-        las_file (Path): path to the las file on which to generate occupancy map
-        class_weights (Dict): class weights dict (to know for which classes to generate the binary map)
-        output_tif (Path): path to output
-        pixel_size (float): size of the output raster pixels
-    """
+def read_las(las_file: Path):
     with laspy.open(las_file) as f:
         las = f.read()
-        xs, ys = las.x, las.y
-        classifs = las.classification
-        crs = las.header.parse_crs()
 
+    xs, ys = las.x, las.y
+    classifs = las.classification
+    crs = las.header.parse_crs()
+
+    return xs, ys, classifs, crs
+
+
+def create_occupancy_map_array(xs: np.array, ys: np.array, classifs: np.array, pixel_size: float, class_weights: dict):
     las_bounds = (np.min(xs), np.min(ys), np.max(xs), np.max(ys))
 
     top_left, nb_pixels = get_raster_geometry_from_las_bounds(las_bounds, pixel_size)
@@ -87,6 +84,22 @@ def create_occupancy_map(las_file, class_weights, output_tif, pixel_size):
 
     logging.debug(f"Creating binary maps with shape {binary_maps.shape}")
     logging.debug(f"The binary maps order is {sorted(class_weights.keys())}")
+    return binary_maps, x_min, y_max
+
+
+def create_occupancy_map(las_file, class_weights, output_tif, pixel_size):
+    """Create 2d occupancy map for each class that is in class_weights keys, and save result in a single output_tif
+    file with one layer per class (the classes are sorted alphabetically).
+
+    Args:
+        las_file (Path): path to the las file on which to generate occupancy map
+        class_weights (Dict): class weights dict (to know for which classes to generate the binary map)
+        output_tif (Path): path to output
+        pixel_size (float): size of the output raster pixels
+    """
+    xs, ys, classifs, crs = read_las(las_file)
+
+    binary_maps, x_min, y_max = create_occupancy_map_array(xs, ys, classifs, pixel_size, class_weights)
 
     output_tif.parent.mkdir(parents=True, exist_ok=True)
 
