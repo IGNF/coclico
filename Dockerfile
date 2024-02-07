@@ -25,4 +25,5 @@ COPY configs configs
 # Copy test data that are stored directly in the coclico repository
 COPY data/mpap0 data/mpap0
 COPY data/mpla0 data/mpla0
+COPY data/mobj0 data/mobj0
 COPY data/csv data/csv
