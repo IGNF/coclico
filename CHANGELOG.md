@@ -1,4 +1,4 @@
-# Dev
+# 0.6.0
 - ajout d'une 4e métrique : MOBJ0
 
 # 0.5.1
