@@ -148,7 +148,7 @@ def create_compare_project(
 
                 out_ref_metric = out_ref / metric_name / "intrinsic"
                 out_ref_metric.mkdir(parents=True, exist_ok=True)
-                metric_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric, is_ref=True)
+                metric_jobs = metric.create_metric_intrinsic_jobs("ref", tile_names, ref, out_ref_metric)
                 add_dependency_to_jobs(metric_jobs, unlock_job)
 
                 ref_jobs[metric_name] = metric_jobs
@@ -176,9 +176,7 @@ def create_compare_project(
                     out_ci_metric = out_ci / metric_name / "intrinsic"
 
                     out_ci_metric.mkdir(parents=True, exist_ok=True)
-                    ci_intrinsic_jobs = metric.create_metric_intrinsic_jobs(
-                        ci.name, tile_names, ci, out_ci_metric, is_ref=False
-                    )
+                    ci_intrinsic_jobs = metric.create_metric_intrinsic_jobs(ci.name, tile_names, ci, out_ci_metric)
                     add_dependency_to_jobs(ci_intrinsic_jobs, unlock_job)
 
                     out_ci_to_ref_metric = out_ci / metric_name / "to_ref"

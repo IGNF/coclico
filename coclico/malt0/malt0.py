@@ -22,7 +22,7 @@ class MALT0(Metric):
     pixel_size = 0.5
     metric_name = "malt0"
 
-    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool):
+    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
         command = f"""
 docker run -t --rm --userns=host --shm-size=2gb

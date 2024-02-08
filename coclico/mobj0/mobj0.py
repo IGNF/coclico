@@ -23,7 +23,7 @@ class MOBJ0(Metric):
     kernel = 3  # parameter for morphological operations on rasters
     tolerance_shp = 0.05  # parameter for simplification on geometries of the shapefile
 
-    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool):
+    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
         command = f"""
 docker run -t --rm --userns=host --shm-size=2gb
