@@ -12,7 +12,7 @@ from coclico.io import read_config_file
 from coclico.malt0.malt0 import MALT0
 
 
-def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
+def compute_stats_single_raster(raster: np.array):
     """Compute stats for a single raster, masked by an occupancy raster.
 
     Returns a np.array for each statistic:
@@ -32,12 +32,11 @@ def compute_stats_single_raster(raster: np.array, occupancy_raster: np.array):
     Returns:
         np.arrays: max value, pixel count, mean, standard deviation and m2 values
     """
-    masked_raster = ma.masked_array(raster, 1 - occupancy_raster)
-    max_val = ma.max(masked_raster, axis=(1, 2)).filled(0)
-    count = np.sum(occupancy_raster, axis=(1, 2))
-    mean_val = ma.mean(masked_raster, axis=(1, 2)).filled(0)
-    std_val = ma.std(masked_raster, axis=(1, 2)).filled(0)
-    m2 = ma.sum(np.square(masked_raster - mean_val[:, None, None]), axis=(1, 2)).filled(0)  # distance to the mean
+    max_val = ma.max(raster, axis=(1, 2)).filled(0)
+    count = ma.count(raster, axis=(1, 2))
+    mean_val = ma.mean(raster, axis=(1, 2)).filled(0)
+    std_val = ma.std(raster, axis=(1, 2)).filled(0)
+    m2 = ma.sum(np.square(raster - mean_val[:, None, None]), axis=(1, 2)).filled(0)  # distance to the mean
 
     return max_val, count, mean_val, std_val, m2
 
@@ -82,7 +81,11 @@ def update_overall_stats(
 
 
 def compute_metric_relative(
-    c1_dir: Path, ref_dir: Path, occupancy_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path
+    c1_dir: Path,
+    ref_dir: Path,
+    config_file: str,
+    output_csv: Path,
+    output_csv_tile: Path,
 ):
     """Compute metrics that describe the difference between c1 and ref height maps.
     The occupancy map is used to mask the pixels for which the difference is computed
@@ -102,7 +105,7 @@ def compute_metric_relative(
                         where there are json files with the result of mpap0 intrinsic metric
         ref_dir (Path): path to the reference classification directory,
                         where there are json files with the result of mpap0 intrinsic metric
-        class_weights (Dict):   class weights dict
+        config_file (Path): Coclico configuration file
         output_csv (Path):  path to output csv file
         output_csv_tile (Path):  path to output csv file, result by tile
 
@@ -129,20 +132,14 @@ def compute_metric_relative(
 
     for ref_file in ref_dir.iterdir():
         c1_file = c1_dir / ref_file.name
-        occupancy_file = occupancy_dir / ref_file.name
         with rasterio.Env():
             with rasterio.open(c1_file) as c1:
-                c1_raster = c1.read()
+                c1_raster = c1.read(masked=True)
 
             with rasterio.open(ref_file) as ref:
-                ref_raster = ref.read()
+                ref_raster = ref.read(masked=True)
 
-            with rasterio.open(occupancy_file) as occ:
-                occupancy_raster = occ.read()
-
-        max_diff, count, mean_diff, std_diff, m2_diff = compute_stats_single_raster(
-            np.abs(c1_raster - ref_raster), occupancy_raster
-        )
+        max_diff, count, mean_diff, std_diff, m2_diff = compute_stats_single_raster(np.abs(c1_raster - ref_raster))
         new_line = [
             {
                 "tile": ref_file.stem,
@@ -202,14 +199,6 @@ def parse_args():
         help="Path to the reference directory, \
         where there are tif files with the result of malt0 intrinsic metric (MNx for each class)",
     )
-    parser.add_argument(
-        "-oc",
-        "--occupancy-dir",
-        required=True,
-        type=Path,
-        help="Path to the occupancydirectory, where there are occupancy maps to use to exclude pixels from "
-        "calculation (usually occupancy from the reference classification)",
-    )
     parser.add_argument("-o", "--output-csv", required=True, type=Path, help="Path to the CSV output file")
     parser.add_argument(
         "-t", "--output-csv-tile", required=True, type=Path, help="Path to the CSV output file, result by tile"
@@ -231,7 +220,6 @@ if __name__ == "__main__":
     compute_metric_relative(
         c1_dir=Path(args.input_dir),
         ref_dir=Path(args.ref_dir),
-        occupancy_dir=Path(args.occupancy_dir),
         config_file=args.config_file,
         output_csv=Path(args.output_csv),
         output_csv_tile=Path(args.output_csv_tile),

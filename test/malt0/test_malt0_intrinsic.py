@@ -21,8 +21,8 @@ def setup_module(module):
         shutil.rmtree(TMP_PATH)
 
 
-def test_create_multilayer_2d_mnx_map(ensure_test1_data):
-    las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
+def test_create_multilayer_2d_mnx_map(ensure_test1_data, ensure_malt0_data):
+    las_file = Path("./data/test1/ref/tile_splitted_2818_32247.laz")
     pixel_size = 0.5
     no_data_value = -9999
     las_mtd = las_info_metadata(las_file)
@@ -34,7 +34,8 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
             "1": 1,
             "2": 0,  # simple classes
             "3_4_5": 1,  # composed class
-            "3_4": 2,  # composed class with spaces
+            "3_4": 2,
+            "9": 1,  # No point for class 9
         }
     )
     classes_z_minmax = dict(
@@ -44,8 +45,10 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
             "2": [84.96, 105.88],
             "3_4_5": [85.5, 124.17],
             "3_4": [85.5, 105.41],
+            "9": None,
         }
     )  # fetched via metadata from a pdal pipeline with classification filter and stats
+
     output_tif = TMP_PATH / "unit_create_multilayer_2d_mnx_map.tif"
     output_tif.parent.mkdir(parents=True, exist_ok=True)
     malt0_intrinsic.create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value=no_data_value)
@@ -72,13 +75,13 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
 
     for ii, k in enumerate(sorted(class_weights.keys())):
         layer_data = output_data[ii, :, :]
-        if k == "0":
+        if k in ["0", "9"]:
             # input las does not contain points with class 0 so output layer should contain only no_data
             assert np.all(layer_data == no_data_value)
         else:
             # all other classes have data, so their layers should not contain only no-data
             # Where the layers have data, they should be between z_min and z_max of the class points
-            has_data = layer_data != -9999
+            has_data = layer_data != no_data_value
             assert np.any(has_data)
             assert np.min(layer_data[has_data]) >= classes_z_minmax[k][0]
             assert np.max(layer_data[has_data]) <= classes_z_minmax[k][1]
@@ -87,54 +90,38 @@ def test_create_multilayer_2d_mnx_map(ensure_test1_data):
 def test_compute_metric_intrinsic(ensure_test1_data):
     las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
     pixel_size = 0.5
+    no_data_value = -9999
     las_mtd = las_info_metadata(las_file)
     las_extent = (las_mtd["minx"], las_mtd["miny"], las_mtd["maxx"], las_mtd["maxy"])
     logging.debug(f"Test compute_metric_intrinsic on las with extent {las_extent}")
+
+    # Occupancy map used to check that all pixels without points from a class are marked as nodata in the
+    # output tif
+    occupancy_tif = Path("./data/malt0/ref/intrinsic/occupancy/tile_splitted_2818_32247.tif")
+    with rasterio.Env():
+        with rasterio.open(occupancy_tif) as f:
+            occupancy_data = f.read()
 
     output_tif = TMP_PATH / "unit_test_mpla0_intrinsic.tif"
     malt0_intrinsic.compute_metric_intrinsic(las_file, CONFIG_FILE_METRICS, output_tif, pixel_size=pixel_size)
 
     assert output_tif.exists()
-
-
-def test_compute_metric_intrinsic_w_occupancy(ensure_test1_data):
-    las_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
-    pixel_size = 0.5
-    las_mtd = las_info_metadata(las_file)
-    las_extent = (las_mtd["minx"], las_mtd["miny"], las_mtd["maxx"], las_mtd["maxy"])
-    logging.debug(f"Test compute_metric_intrinsic on las with extent {las_extent}")
-
-    output_tif = TMP_PATH / "mpla0_intrinsic_w_metadata" / "mnx.tif"
-    occupancy_tif = TMP_PATH / "mpla0_intrinsic_w_metadata" / "occupancy.tif"
-    malt0_intrinsic.compute_metric_intrinsic(
-        las_file, CONFIG_FILE_METRICS, output_tif, occupancy_tif, pixel_size=pixel_size
-    )
-
-    assert output_tif.exists()
-    assert occupancy_tif.exists()
-
     with rasterio.Env():
         with rasterio.open(output_tif) as f:
-            mnx_data = f.read()
-            mnx_bounds = f.bounds
-        with rasterio.open(occupancy_tif) as f:
-            occupancy_data = f.read()
-            occupancy_bounds = f.bounds
+            output_data = f.read()
 
-    assert mnx_data.shape == occupancy_data.shape
-    assert mnx_bounds == occupancy_bounds
+    assert np.any(output_data > 0)
+    assert np.all(output_data[occupancy_data == 0] == no_data_value)
 
 
 def test_run_main(ensure_test1_data):
     pixel_size = 0.5
     input_file = Path("./data/test1/niv1/tile_splitted_2818_32247.laz")
     output_tif = TMP_PATH / "intrinsic" / "mnx" / "tile_splitted_2818_32247.tif"
-    output_occupancy_tif = TMP_PATH / "intrinsic" / "occupancy" / "tile_splitted_2818_32247.tif"
 
     cmd = f"""python -m coclico.malt0.malt0_intrinsic \
     --input-file {input_file} \
     --output-mnx-file {output_tif} \
-    --output-occupancy-file {output_occupancy_tif} \
     --config-file {CONFIG_FILE_METRICS} \
     --pixel-size {pixel_size}
     """
@@ -143,4 +130,3 @@ def test_run_main(ensure_test1_data):
     logging.info(cmd)
 
     assert output_tif.exists()
-    assert output_occupancy_tif.exists()
