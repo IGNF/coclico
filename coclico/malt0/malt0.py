@@ -22,16 +22,8 @@ class MALT0(Metric):
     pixel_size = 0.5
     metric_name = "malt0"
 
-    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool):
+    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path):
         job_name = f"{self.metric_name}_intrinsic_{name}_{input.stem}"
-        occupancy_map_arg = ""
-        mnx_out = output / "mnx"
-        mnx_out.mkdir(exist_ok=True, parents=True)
-        if is_ref:
-            occ_out = output / "occupancy"
-            occ_out.mkdir(exist_ok=True, parents=True)
-            occupancy_map_arg = f"--output-occupancy-file /output/occupancy/{input.stem}.tif"
-
         command = f"""
 docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(input)}:/input
@@ -40,8 +32,7 @@ docker run -t --rm --userns=host --shm-size=2gb
 ignimagelidar/coclico:{__version__}
 python -m coclico.malt0.malt0_intrinsic
 --input-file /input
---output-mnx-file /output/mnx/{input.stem}.tif
-{occupancy_map_arg}
+--output-mnx-file /output/{input.stem}.tif
 --config-file /config/{self.config_file.name}
 --pixel-size {self.pixel_size}
 
@@ -56,16 +47,14 @@ python -m coclico.malt0.malt0_intrinsic
         job_name = f"{self.metric_name}_{name}_relative_to_ref"
         command = f"""
 docker run -t --rm --userns=host --shm-size=2gb
--v {self.store.to_unix(out_c1) / "mnx"}:/input
--v {self.store.to_unix(out_ref) / "mnx"}:/ref
--v {self.store.to_unix(out_ref) / "occupancy"}:/occupancy
+-v {self.store.to_unix(out_c1)}:/input
+-v {self.store.to_unix(out_ref)}:/ref
 -v {self.store.to_unix(output)}:/output
 -v {self.store.to_unix(self.config_file.parent)}:/config
 ignimagelidar/coclico:{__version__}
 python -m coclico.malt0.malt0_relative
 --input-dir /input
 --ref-dir /ref
---occupancy-dir /occupancy
 --output-csv-tile /output/result_tile.csv
 --output-csv /output/result.csv
 --config-file /config/{self.config_file.name}

@@ -5,6 +5,7 @@ from pathlib import Path
 from test import utils
 
 import numpy as np
+import numpy.ma as ma
 import pandas as pd
 import pytest
 
@@ -26,11 +27,12 @@ def test_compute_stats_single_raster():
     layer1 = np.array([[0, 0, 2], [1, 1, 2], [2, 2, 10]], dtype=np.float32)
     layer2 = np.array([[0, 0, 0], [1, 1, 1], [15, 3, 4]], dtype=np.float32)
     raster = np.stack([layer1, layer2], axis=0)
-    occupancy1 = np.array(([0, 0, 0], [1, 1, 1], [1, 1, 0]), dtype=np.uint8)
-    occupancy2 = np.array(([0, 1, 1], [0, 1, 1], [0, 1, 1]), dtype=np.uint8)
-    occupancy = np.stack([occupancy1, occupancy2], axis=0)
+    mask1 = np.array(([0, 0, 0], [1, 1, 1], [1, 1, 0]), dtype=np.uint8)
+    mask2 = np.array(([0, 1, 1], [0, 1, 1], [0, 1, 1]), dtype=np.uint8)
+    mask = np.stack([mask1, mask2], axis=0)
+    masked_raster = ma.masked_array(data=raster, mask=1 - mask)
 
-    out = malt0_relative.compute_stats_single_raster(raster, occupancy)
+    out = malt0_relative.compute_stats_single_raster(masked_raster)
     max_val, count, mean_val, std_val, m2 = out
 
     expected_count = [5, 6]
@@ -53,8 +55,11 @@ def test_update_overall_stats():
     occupancy1 = raster1 % 3 != 0
     occupancy2 = raster2 % 2 != 0
     occupancy3 = raster3 > 0
-    rasters = [raster1, raster2, raster3]
-    occupancies = [occupancy1, occupancy2, occupancy3]
+    rasters = [
+        ma.masked_array(raster1, occupancy1),
+        ma.masked_array(raster2, occupancy2),
+        ma.masked_array(raster3, occupancy3),
+    ]
 
     # Generate stats using the composed process: get stats from each raster +
     # update overall stats
@@ -63,8 +68,8 @@ def test_update_overall_stats():
     overall_mean = np.zeros(nb_classes)
     overall_m2 = np.zeros(nb_classes)
 
-    for raster, occupancy in zip(rasters, occupancies):
-        local_max, local_count, local_mean, _, local_m2 = malt0_relative.compute_stats_single_raster(raster, occupancy)
+    for raster in rasters:
+        local_max, local_count, local_mean, _, local_m2 = malt0_relative.compute_stats_single_raster(raster)
         overall_max, overall_count, overall_mean, overall_m2 = malt0_relative.update_overall_stats(
             local_max, overall_max, local_count, overall_count, local_mean, overall_mean, local_m2, overall_m2
         )
@@ -74,11 +79,8 @@ def test_update_overall_stats():
     # Generate result with the expected equivalent behaviour : concatenate rasters
     # and get stats on the concatenated raster
 
-    raster = np.concatenate(rasters, axis=1)
-    occupancy = np.concatenate(occupancies, axis=1)
-    expected_max, expected_count, expected_mean, expected_std, _ = malt0_relative.compute_stats_single_raster(
-        raster, occupancy
-    )
+    raster = ma.concatenate(rasters, axis=1)
+    expected_max, expected_count, expected_mean, expected_std, _ = malt0_relative.compute_stats_single_raster(raster)
 
     assert np.allclose(overall_max, expected_max)
     assert np.allclose(overall_count, expected_count)
@@ -91,14 +93,11 @@ def test_update_overall_stats():
 def test_compute_metric_relative(ensure_malt0_data):
     c1_dir = Path("./data/malt0/c1/intrinsic/mnx")
     ref_dir = Path("./data/malt0/ref/intrinsic/mnx")
-    occupancy_dir = Path("./data/malt0/ref/intrinsic/occupancy")
     output_csv = TMP_PATH / "relative" / "result.csv"
     output_csv_tile = TMP_PATH / "relative" / "result_tile.csv"
     expected_cols = {"class", "max_diff", "mean_diff", "std_diff"}
 
-    malt0_relative.compute_metric_relative(
-        c1_dir, ref_dir, occupancy_dir, CONFIG_FILE_METRICS, output_csv, output_csv_tile
-    )
+    malt0_relative.compute_metric_relative(c1_dir, ref_dir, CONFIG_FILE_METRICS, output_csv, output_csv_tile)
 
     df = pd.read_csv(output_csv_tile, sep=csv_separator)
     assert set(df.columns) == expected_cols | {"tile"}
@@ -108,6 +107,8 @@ def test_compute_metric_relative(ensure_malt0_data):
 
     df = pd.read_csv(output_csv, sep=csv_separator)
     assert set(df.columns) == expected_cols
+    # Check that there is no pixel with -9999 used as a value
+    assert (df["max_diff"].abs() < 1000).all()
 
     expected_rows = 6  # 6 classes
     assert utils.csv_num_rows(output_csv) == expected_rows
@@ -127,14 +128,12 @@ def test_compute_metric_relative(ensure_malt0_data):
 def test_run_main(ensure_malt0_data):
     c1_dir = Path("./data/malt0/c1/intrinsic/mnx")
     ref_dir = Path("./data/malt0/ref/intrinsic/mnx")
-    occ_dir = Path("./data/malt0/ref/intrinsic/occupancy")
     output_csv = TMP_PATH / "unit_test_run_main_mpla0_relative.csv"
     output_csv_tile = TMP_PATH / "unit_test_run_main_mpla0_relative_tile.csv"
 
     cmd = f"""python -m coclico.malt0.malt0_relative \
         --input-dir {c1_dir} \
         --ref-dir {ref_dir} \
-        --occupancy-dir {occ_dir} \
         --config-file '{CONFIG_FILE_METRICS}' \
         --output-csv {output_csv} \
         --output-csv-tile {output_csv_tile} \

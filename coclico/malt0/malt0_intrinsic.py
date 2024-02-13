@@ -1,8 +1,11 @@
 import argparse
 import logging
+import tempfile
 from pathlib import Path
 
+import numpy as np
 import pdal
+import rasterio
 
 import coclico.io
 import coclico.metrics.commons as commons
@@ -57,11 +60,32 @@ def create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_valu
     pipeline.execute()
 
 
+def mask_raster_with_nodata(raster_to_mask: Path, mask: np.array, output_tif: Path):
+    """Replace data in raster_to_mask by "no_data_value" where mask=0
+    (usual masks are occupancy maps for which 1 indicates that there are data)
+
+    Args:
+        raster_to_mask (Path): Path to the raster on which to replace data
+        mask (np.array): Binary Array (with the same shape as raster_to_mask data) with 1 where to keep data,
+        0 where to replace them with the nodata value
+        output_tif (Path): Path to the resulting file
+    """
+    with rasterio.Env():
+        with rasterio.open(str(raster_to_mask)) as src:
+            raster = src.read()
+            out_meta = src.meta
+            nodata = src.nodata
+
+        raster[mask == 0] = nodata
+
+        with rasterio.open(str(output_tif), "w", **out_meta) as dest:
+            dest.write(raster)
+
+
 def compute_metric_intrinsic(
     las_file: Path,
     config_file: Path,
     output_tif: Path,
-    occupancy_tif: Path = None,
     pixel_size: float = 0.5,
     no_data_value=-9999,
 ):
@@ -76,33 +100,26 @@ def compute_metric_intrinsic(
         las_file (Path): path to the las file on which to generate malt0 intrinsic metric
         config_file (Path): class weights dict in the config file (to know for which classes to generate the rasters)
         output_tif (Path): path to output height raster
-        occupancy_tif (Path, optional): path to the optional occupancy map tif (Leave it to None except for the
-        reference folder). Defaults to None.
         pixel_size (float, optional): size of the output rasters pixels. Defaults to 0.5.
         no_data_value (int, optional): no_data value for the output raster. Defaults to -9999.
     """
     config_dict = coclico.io.read_config_file(config_file)
     class_weights = config_dict[MALT0.metric_name]["weights"]
 
-    if occupancy_tif:
-        occupancy_tif.parent.mkdir(parents=True, exist_ok=True)
-        occupancy_map.create_occupancy_map(las_file, class_weights, occupancy_tif, pixel_size)
-
     output_tif.parent.mkdir(parents=True, exist_ok=True)
-    create_mnx_map(las_file, class_weights, output_tif, pixel_size, no_data_value)
+
+    with tempfile.NamedTemporaryFile(suffix=las_file.stem + "_mnx.tif") as tmp_mnx:
+        xs, ys, classifs, _ = occupancy_map.read_las(las_file)
+        binary_maps, _, _ = occupancy_map.create_occupancy_map_array(xs, ys, classifs, pixel_size, class_weights)
+
+        create_mnx_map(las_file, class_weights, tmp_mnx.name, pixel_size, no_data_value)
+        mask_raster_with_nodata(tmp_mnx.name, binary_maps, output_tif)
 
 
 def parse_args():
     parser = argparse.ArgumentParser("Run malt0 intrinsic metric on one tile")
     parser.add_argument("-i", "--input-file", type=Path, required=True, help="Path to the LAS file")
     parser.add_argument("-o", "--output-mnx-file", type=Path, required=True, help="Path to the TIF output file")
-    parser.add_argument(
-        "-oc",
-        "--output-occupancy-file",
-        type=Path,
-        default=None,
-        help="Path to the optional occupancy map TIF output file",
-    )
     parser.add_argument(
         "-c",
         "--config-file",
@@ -121,5 +138,4 @@ if __name__ == "__main__":
         las_file=Path(args.input_file),
         config_file=args.config_file,
         output_tif=Path(args.output_mnx_file),
-        occupancy_tif=Path(args.output_occupancy_file) if args.output_occupancy_file else None,
     )

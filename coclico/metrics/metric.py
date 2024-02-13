@@ -21,7 +21,7 @@ class Metric:
         self.config_file = config_file
 
     def create_metric_intrinsic_jobs(
-        self, name: str, tile_names: List[str], input_path: Path, out_path: Path, is_ref: bool
+        self, name: str, tile_names: List[str], input_path: Path, out_path: Path
     ) -> List[Job]:
         """Create jobs for a single classified point cloud folder (eg. ref, c1 or c2)
         These jobs are aimed to compute intermediate results on the input las that will be used in
@@ -31,21 +31,18 @@ class Metric:
             tile_names (List[str]): list of the filenames of the tiles on which to calculate the result
             input_path (Path): input folder path (path to the results of the classification)
             out_path (Path): path for the intermediate results to be saved
-            is_ref (bool): flag that says if the input classification folder is the reference folder
         Returns:
             List[Job]: List of GPAO jobs to create
         """
-        return [self.create_metric_intrinsic_one_job(name, input_path / f, out_path, is_ref) for f in tile_names]
+        return [self.create_metric_intrinsic_one_job(name, input_path / f, out_path) for f in tile_names]
 
-    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path, is_ref: bool) -> Job:
+    def create_metric_intrinsic_one_job(self, name: str, input: Path, output: Path) -> Job:
         """Create a job to compute the intrinsic metric for a single point cloud file.
 
         Args:
             name (str): classification name (used for job name creation)
             input (Path): full path of the input tile
             output (Path): output folder for the result
-            is_ref (bool):  flag that says if the input classification folder is the reference folder (in case it has
-            to be treated differently)
 
         Raises:
             NotImplementedError: should be implemented in children classes

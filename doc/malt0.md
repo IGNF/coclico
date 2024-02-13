@@ -15,23 +15,25 @@ des nuages filtrés pour ne contenir que la classe demandée.
 
 ### Métrique intrinsèque (calculée indépendemment pour le nuage de référence et le nuage classé à comparer) :
 
-Calcul du MNx (modèle numérique de surface calculé à partir d'une classe donnée) et d'une carte
-d'occupation (carte binaire à la même résolution que le MNx qui indique si le pixel contient au moins
-un point de la classe représentée, cf [MPLA0](./mpla0.md)) pour chaque classe.
+Calcul du MNx (modèle numérique de surface calculé à partir d'une classe donnée) pour chaque classe.
 
 Le MNx est calculé par :
 - génération d'une triangulation de Delaunay 2d des points de la classe
 - interpolation des valeurs sur un raster à la taille de pixel désirée (pdal faceraster filter)
+- masquage à l'aide d'une carte d'occupation (carte binaire à la même résolution que le MNx qui indique si le pixel contient au moins un point de la classe représentée, cf [MPLA0](./mpla0.md)). L'idée est d'avoir un MNx qui n'a de valeurs que là où il est pertinent, et la valeur no-data ailleurs.
 
 Résultat :
 - pour chaque nuage (référence ou à comparer), un fichier tif contenant une couche par
-classe qui représente le MNx de la classe donnée
-- pour chaque nuage de référence, un fichier tif contenant une couche par classe qui représente la carte d'occupation de la classe donnée
+classe qui représente le MNx de la classe donnée là où il est pertinent
 
 ### Métrique relative (calculée à partir des fichiers intermédiaires en sortie de métrique intrinsèque)
 
-Pour chaque classe, comparer les valeurs des cartes de MNx (`height_maps`) entre la référence et le nuage à comparer,
-uniquement sur les pixels où le nuage de référence a des points de cette classe (valeurs positives de la carte d'occupation).
+Pour chaque classe, comparer les valeurs des cartes de MNx (`height_maps`) entre la référence et le
+nuage à comparer,uniquement sur les pixels où les MNx sont définis dans les deux cartes.
+
+ATTENTION : si les zones de définition du MNx sont très différentes, cette métrique peut être biaisée,
+il est donc suggéré d'observer les résultats de [MPLA0](./mpla0.md) avec les résultats de MALT0 pour
+visualiser sur quelle proportion du nuage MALT0 est calculée
 
 Les valeurs de sortie (dans un fichier csv) sont pour chaque classe :
 - `mean_diff` : différence moyenne en z entre les MNx pour chaque pixel (0 si aucun pixel dans la référence)

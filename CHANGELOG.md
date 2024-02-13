@@ -1,3 +1,11 @@
+# dev
+- Changement de la définition de la zone où est calculée MALT0:
+  - masquage du MNx à l'aide de la carte de classe dans MALT0 intrinsic
+  - comparaison des MNx sur l'intersection des zones hors no-data (pour exclure les pixels en bord de maillage :
+  inclus dans la carte de classe mais hors du maillage utilisé pour le MNx)
+- Disparition de la distinction entre calcul de la référence et l'autre nuage de points (était nécessaire uniquement
+pour le calcul de MALT0)
+
 # 0.6.0
 - ajout d'une 4e métrique : MOBJ0
 
