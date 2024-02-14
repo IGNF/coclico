@@ -4,7 +4,6 @@ import subprocess as sp
 from pathlib import Path
 from test import utils
 
-import geopandas as gpd
 import pandas as pd
 import pytest
 
@@ -38,6 +37,13 @@ paired_objects_params = [
         {"1": 45, "6": 7, "9": 0},  # expected_paired_count
         {"1": 7, "6": 6, "9": 0},  # expected_not_paired_count
     ),
+    # One test with empty data file
+    (
+        Path("./data/mobj0/empty.geojson"),  # c1_path
+        {"1": 51, "6": 13, "9": 0},  # expected_ref_count
+        {"1": 0, "6": 0, "9": 0},  # expected_paired_count
+        {"1": 51, "6": 13, "9": 0},  # expected_not_paired_count
+    ),
 ]
 
 
@@ -48,14 +54,21 @@ def test_check_paired_objects(c1_file, expected_ref_count, expected_paired_count
     ref_file = Path("./data/mobj0/ref/intrinsic/tile_splitted_2818_32248.geojson")
     config_dict = read_config_file(CONFIG_FILE_METRICS)
     classes = sorted(config_dict["mobj0"]["weights"].keys())
-    c1_geometries = gpd.read_file(c1_file)
-    ref_geometries = gpd.read_file(ref_file)
-    ref_count, paired_count, not_paired_count = mobj0_relative.check_paired_objects(
-        c1_geometries, ref_geometries, classes
-    )
+    ref_count, paired_count, not_paired_count = mobj0_relative.check_paired_objects(c1_file, ref_file, classes)
     assert ref_count == expected_ref_count
     assert paired_count == expected_paired_count
     assert not_paired_count == expected_not_paired_count
+
+
+def test_check_paired_objects_empty_ref():
+    ref_file = Path("./data/mobj0/empty.geojson")
+    c1_file = Path("./data/mobj0/niv2/intrinsic/tile_splitted_2818_32248.geojson")
+    config_dict = read_config_file(CONFIG_FILE_METRICS)
+    classes = sorted(config_dict["mobj0"]["weights"].keys())
+    ref_count, paired_count, not_paired_count = mobj0_relative.check_paired_objects(c1_file, ref_file, classes)
+    assert ref_count == {"1": 0, "6": 0, "9": 0}
+    assert paired_count == {"1": 0, "6": 0, "9": 0}
+    assert not_paired_count == {"1": 67, "6": 13, "9": 0}
 
 
 def test_compute_metric_relative():

@@ -12,9 +12,7 @@ from coclico.io import read_config_file
 from coclico.mobj0.mobj0 import MOBJ0
 
 
-def check_paired_objects(
-    c1_geometries: gpd.GeoDataFrame, ref_geometries: gpd.GeoDataFrame, classes: List
-) -> Tuple[Counter, Counter]:
+def check_paired_objects(c1_file: Path, ref_file: Path, classes: List) -> Tuple[Counter, Counter]:
     """Pair objects from 2 geodataframes (ie. 2 lists of geometries)
     Pairing is made based on geometries intersections:
     - the first step is to find all geometries in ref that have at least an intersection with a
@@ -28,8 +26,8 @@ def check_paired_objects(
           keep the geometries in c1 that have a single match in ref)
 
     Args:
-        c1_geometries (gpd.GeoDataFrame): geopandas dataframe with geometries from c1
-        ref_geometries (gpd.GeoDataFrame): geopandas dataframe with geometries from the reference
+        c1_file (Path): Path to the geojson file with geometries from c1
+        ref_geometries (Path):  Path to the geojson file with geometries from the reference
         classes (List): oredered list of clsses (to match "layer" values with classes in the output)
 
     Returns:
@@ -43,6 +41,15 @@ def check_paired_objects(
     ref_object_count = Counter()
     paired_count = Counter()
     not_paired_count = Counter()
+
+    c1_geometries = gpd.read_file(c1_file)
+    if not len(c1_geometries.index):
+        c1_geometries = gpd.GeoDataFrame(columns=["layer", "geometry"])
+
+    ref_geometries = gpd.read_file(ref_file)
+    if not len(ref_geometries.index):
+        ref_geometries = gpd.GeoDataFrame(columns=["layer", "geometry"])
+
     ref_geometries["index_ref"] = ref_geometries.index.copy()
 
     for ii, class_key in enumerate(classes):
@@ -115,11 +122,7 @@ def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, outpu
 
     for ref_file in ref_dir.iterdir():
         c1_file = c1_dir / ref_file.name
-
-        c1_geometries = gpd.read_file(c1_file)
-        ref_geometries = gpd.read_file(ref_file)
-
-        ref_object_count, paired_count, not_paired_count = check_paired_objects(c1_geometries, ref_geometries, classes)
+        ref_object_count, paired_count, not_paired_count = check_paired_objects(c1_file, ref_file, classes)
 
         total_ref_object_count += Counter(ref_object_count)
         total_paired_count += Counter(paired_count)
