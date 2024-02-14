@@ -5,6 +5,7 @@
   inclus dans la carte de classe mais hors du maillage utilisé pour le MNx)
 - Disparition de la distinction entre calcul de la référence et l'autre nuage de points (était nécessaire uniquement
 pour le calcul de MALT0)
+- MOBJ0: correction du cas où il n'y a aucune geométrie détectée dans l'ensemble des classes 
 
 # 0.6.0
 - ajout d'une 4e métrique : MOBJ0
