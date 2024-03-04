@@ -21,6 +21,8 @@ entre le résultat et la référence
 * [MALT0 (Métrique altimétrique 0)](doc/malt0.md) : calcul d'une note à partir de la différence en Z entre le résultat et la référence
 sur un raster de type "modèle numérique de surface" à partir des points de la classe donnée, calculée uniquement pour
 les pixels qui contiennent des points pour cette classe dans la dalle de référence.
+* [MOBJ0 (Métrique par objet 0)](doc/mobj0.md) : calcul d'une note à partir des instances d'objets détectées dans le résultat et la référence
+puis associées entre elles pour identifier les sur- et sous-détections au niveau des objets plutôt que des points. 
 
 Les différentes métriques associées aux différentes classes sont ensuite aggrégées à l'aide d'une somme pondérée par
 l'importance de chaque métrique pour chaque classe
