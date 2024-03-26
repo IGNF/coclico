@@ -36,7 +36,7 @@ def vectorize_occupancy_map(binary_maps: np.ndarray, crs: str, x_min: float, y_m
     for ii, map_layer in enumerate(binary_maps):
         shapes_layer = rasterio_shapes(
             map_layer,
-            connectivity=8,
+            connectivity=4,
             transform=rasterio.transform.from_origin(
                 x_min - pixel_size / 2, y_max + pixel_size / 2, pixel_size, pixel_size
             ),

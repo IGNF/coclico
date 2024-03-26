@@ -61,6 +61,16 @@ def test_compute_metric_intrinsic(ensure_test1_data):
     assert len(set(gdf["layer"])) == nb_layers - 1  # There should be rows for every class, except one (class 9)
 
 
+def test_vectorize_occupancy_map():
+    # Create map with 1 layer 3 pixels that have 8-connexity but not 4 connexity to emulate a map that generates
+    # non-valid shape cases
+    occ_map = np.eye(3, dtype=np.uint8)
+    occ_maps = np.expand_dims(occ_map, axis=0)
+
+    gdf = mobj0_intrinsic.vectorize_occupancy_map(occ_maps, crs="EPSG:2154", x_min=10, y_max=10, pixel_size=1)
+    assert gdf.is_valid.all()  # This assertion is false if we use 8-connectivity
+
+
 def test_run_main(ensure_test1_data):
     pixel_size = 0.5
     kernel = 3

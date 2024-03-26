@@ -1,3 +1,8 @@
+# dev
+- MOBJ0 : Utilisation de la 4-connexité au lieu de 8-connexité pour la génération des formes à partir de la carte
+d'occupation (pour éviter la création de formes non-valides, et c'est plus cohérent avec les opérations morphologiques
+utilisées sur la carte de classe).
+
 # 1.0.0
 
 Première version utilisable de Coclico, avec 4 métriques implémentées : MPAP0, MPLA0, MALT0, MOBJ0
