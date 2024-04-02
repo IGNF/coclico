@@ -25,50 +25,49 @@ def setup_module(module):
 paired_objects_params = [
     # One test with niv2 data (same objects but with different geometries)
     (
+        Path("./data/mobj0/ref/intrinsic/tile_splitted_2818_32248.geojson"),  # ref_path
         Path("./data/mobj0/niv2/intrinsic/tile_splitted_2818_32248.geojson"),  # c1_path
-        {"1": 51, "6": 13, "9": 0},  # expected_ref_count
-        {"1": 51, "6": 13, "9": 0},  # expected_paired_count
-        {"1": 16, "6": 0, "9": 0},  # expected_not_paired_count
+        {"1": 16, "6": 13, "9": 0},  # expected_ref_count
+        {"1": 16, "6": 13, "9": 0},  # expected_paired_count
+        {"1": 12, "6": 0, "9": 0},  # expected_not_paired_count
     ),
     # One test with niv4 data (missing buildings)
     (
+        Path("./data/mobj0/ref/intrinsic/tile_splitted_2818_32248.geojson"),  # ref_path
         Path("./data/mobj0/niv4/intrinsic/tile_splitted_2818_32248.geojson"),  # c1_path
-        {"1": 51, "6": 13, "9": 0},  # expected_ref_count
-        {"1": 45, "6": 7, "9": 0},  # expected_paired_count
-        {"1": 7, "6": 6, "9": 0},  # expected_not_paired_count
+        {"1": 16, "6": 13, "9": 0},  # expected_ref_count
+        {"1": 16, "6": 7, "9": 0},  # expected_paired_count
+        {"1": 3, "6": 6, "9": 0},  # expected_not_paired_count
     ),
-    # One test with empty data file
+    # One test with empty c1 file
     (
+        Path("./data/mobj0/ref/intrinsic/tile_splitted_2818_32248.geojson"),  # ref_path
         Path("./data/mobj0/empty.geojson"),  # c1_path
-        {"1": 51, "6": 13, "9": 0},  # expected_ref_count
+        {"1": 16, "6": 13, "9": 0},  # expected_ref_count
         {"1": 0, "6": 0, "9": 0},  # expected_paired_count
-        {"1": 51, "6": 13, "9": 0},  # expected_not_paired_count
+        {"1": 16, "6": 13, "9": 0},  # expected_not_paired_count
+    ),
+    (
+        # One test with empty reference file
+        Path("./data/mobj0/empty.geojson"),  # ref_path
+        Path("./data/mobj0/niv2/intrinsic/tile_splitted_2818_32248.geojson"),  # c1_path
+        {"1": 0, "6": 0, "9": 0},  # expected_ref_count
+        {"1": 0, "6": 0, "9": 0},  # expected_paired_count
+        {"1": 28, "6": 13, "9": 0},  # expected_not_paired_count
     ),
 ]
 
 
 @pytest.mark.parametrize(
-    "c1_file,expected_ref_count,expected_paired_count,expected_not_paired_count", paired_objects_params
+    "ref_file,c1_file,expected_ref_count,expected_paired_count,expected_not_paired_count", paired_objects_params
 )
-def test_check_paired_objects(c1_file, expected_ref_count, expected_paired_count, expected_not_paired_count):
-    ref_file = Path("./data/mobj0/ref/intrinsic/tile_splitted_2818_32248.geojson")
+def test_check_paired_objects(ref_file, c1_file, expected_ref_count, expected_paired_count, expected_not_paired_count):
     config_dict = read_config_file(CONFIG_FILE_METRICS)
     classes = sorted(config_dict["mobj0"]["weights"].keys())
     ref_count, paired_count, not_paired_count = mobj0_relative.check_paired_objects(c1_file, ref_file, classes)
     assert ref_count == expected_ref_count
     assert paired_count == expected_paired_count
     assert not_paired_count == expected_not_paired_count
-
-
-def test_check_paired_objects_empty_ref():
-    ref_file = Path("./data/mobj0/empty.geojson")
-    c1_file = Path("./data/mobj0/niv2/intrinsic/tile_splitted_2818_32248.geojson")
-    config_dict = read_config_file(CONFIG_FILE_METRICS)
-    classes = sorted(config_dict["mobj0"]["weights"].keys())
-    ref_count, paired_count, not_paired_count = mobj0_relative.check_paired_objects(c1_file, ref_file, classes)
-    assert ref_count == {"1": 0, "6": 0, "9": 0}
-    assert paired_count == {"1": 0, "6": 0, "9": 0}
-    assert not_paired_count == {"1": 67, "6": 13, "9": 0}
 
 
 def test_compute_metric_relative():
