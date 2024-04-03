@@ -1,4 +1,4 @@
-# dev
+# 1.1.0
 
 - MOBJ0 : Utilisation de la 4-connexité au lieu de 8-connexité pour la génération des formes à partir de la carte
 d'occupation (pour éviter la création de formes non-valides, et c'est plus cohérent avec les opérations morphologiques
