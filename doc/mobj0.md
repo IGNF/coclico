@@ -1,24 +1,24 @@
 # MOBJ0
 
-## Description :
+## Description
 
-### Nom complet :
+### Nom complet
 
 Métrique sur les objets 0
 
-### But :
+### But
 
 Pour les classes représentant des objets "finis" (bâtiments, ponts, sursol perenne, ...), comparer les objets représentés/détectés pour chaque classe entre une classification de référence et un classification à comparer.
 
 Cette comparaison est faite à l'aide de cartes de classes / cartes d'occupation post-traitée, et de détection de contours sur cette carte.
 
-### Métrique intrinsèque (calculée indépendemment pour le nuage de référence et le nuage classé à comparer):
+### Métrique intrinsèque (calculée indépendemment pour le nuage de référence et le nuage classé à comparer)
 
 - Calcul de la carte de classe binaire (`occupancy_map`) pour chaque classe dans le nuage (voir métrique MPLA0).
 
 - Opérations topologiques pour simplifier les formes des objets détectés et se débarrasser du bruit au niveau des limites d'objets. Une fermeture et une ouverture sont réalisées sur les rasters.
-  
-- Vectorisation des contours de la carte débruitée et une simplification des formes pour éliminer encore du bruit sur les géométries. 
+
+- Vectorisation des contours de la carte débruitée et une simplification des formes pour éliminer encore du bruit sur les géométries.
 
 Résultat : pour chaque nuage, un fichier geojson contenant un polygone par objet, qui a un attribut "layer"
 correspondant à l'indice de la classe correspondante dans la liste (ordonnée alphabétiquement) des classes définies
@@ -30,19 +30,17 @@ Pour chaque classe, appairage des polygones entre le geojson issu de la référe
 à comparer.
 
 L'appairage se fait de la façon suivante :
-- parmi les polygones de la référence, trouver les polygones du nuage à comparer avec lesquels il y a une intersection
-- parmi les paires ainsi trouvées, ne garder qu'une paire par polygone de la référence (en supprimant d'abord les
-paires dont la géométrie dans le nuage à comparer est appairée à plusieurs polygones de la référence)
-- parmi les paires ainsi restantes, ne garder qu'une paire par polygone du nuage à comparer (en supprimant d'abord les
-paires dont la géométrie dans la référence est appairée à plusieurs polygones du nuage à comparer)
-
-Ainsi il ne devrait rester que des paires où un seul polygone de la référence correspond à un polygone du nuage à
-comparer.
+- parmi les polygones de la référence, trouver les polygones qui ont une intersection avec au moins un des polygones du
+nuage à comparer
+- parmi les polygones du nuage à comparer, trouver les polygones qui n'ont aucune intersection avec des polygones de
+la référence.
 
 Les valeurs de sortie (dans un fichier csv) sont pour chaque classe :
 - `ref_object_count`: nombre total d'objets dans le nuage de référence
-- `paired_count`: nombre de paires trouvées
-- `not_paired_count`: nombre d'objets dans la référence et le nuage à comparer qui n'appartiennent pas à une paire
+- `paired_count`: nombre d'objets de la référence qui ont au moins une intersection avec un polygone du nuage à comparer
+- `not_paired_count`: nombre d'objets non appairés, ie. somme de :
+  - nombre d'objets dans la référence qui n'ont pas d'intersection avec les polygones du nuage à comparer
+  - nombre d'objets dans le nuage à comparer qui n'ont pas d'intersection avec les polygones de la référence
 
 ## Note
 
@@ -76,7 +74,7 @@ affine pour calculer la valeur de `note`.
 
 ## Paramétrage
 
-#### Poids des classes dans les métriques :
+#### Poids des classes dans les métriques
 Dans le fichier de configuration.yaml, il faut indiquer les poids de chacune des classes dans le calcul des métriques comme ci dessous :
 ```yaml
 mobj0:  # Nom de la métrique

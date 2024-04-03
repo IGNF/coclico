@@ -1,7 +1,12 @@
 # dev
+
 - MOBJ0 : Utilisation de la 4-connexité au lieu de 8-connexité pour la génération des formes à partir de la carte
 d'occupation (pour éviter la création de formes non-valides, et c'est plus cohérent avec les opérations morphologiques
 utilisées sur la carte de classe).
+- Changement de la méthode d'appariement des objets, dorénavant :
+  - les objets appairés sont les objets de la référence qui ont au moins une intersection avec un objet de c1
+  - les objets non-appairés sont les objets restant de la référence + les objets de c1 n'ayant pas d'intersection avec
+la référence
 
 # 1.0.0
 

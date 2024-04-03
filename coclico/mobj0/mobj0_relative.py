@@ -15,20 +15,15 @@ from coclico.mobj0.mobj0 import MOBJ0
 def check_paired_objects(c1_file: Path, ref_file: Path, classes: List) -> Tuple[Counter, Counter]:
     """Pair objects from 2 geodataframes (ie. 2 lists of geometries)
     Pairing is made based on geometries intersections:
-    - the first step is to find all geometries in ref that have at least an intersection with a
-    geometry in c1 (using a spatial join). The sjoin output will contain several occurences of ref geometries
-    that intersect several c1 geometries
-    - the second one is to remove duplicates pairs (geometries in one dataframe that match with several geometries
-    in the other dataframe):
-        - remove pairs where a geometry in c1 is associated with multiple ref polygons first (making sure that we keep
-          the geometries in ref that have a single match in c1)
-        - then remove pairs where a geometry in ref is still associated with multiple c1 polygons (making sure that we
-          keep the geometries in c1 that have a single match in ref)
+    - paired objects are objects from ref that have an intersection with at least one object from c1
+    - not paired objects are both:
+        - objects from ref that have no intersection with any object in c1
+        - objects from c1 that have no intersection with any object in ref
 
     Args:
         c1_file (Path): Path to the geojson file with geometries from c1
         ref_geometries (Path):  Path to the geojson file with geometries from the reference
-        classes (List): oredered list of clsses (to match "layer" values with classes in the output)
+        classes (List): ordered list of clsses (to match "layer" values with classes in the output)
 
     Returns:
         Tuple[Counter, Counter, Counter]: (ref_object_count, paired_count, not_paired_count) Numbers of:
@@ -37,7 +32,6 @@ def check_paired_objects(c1_file: Path, ref_file: Path, classes: List) -> Tuple[
         - not paired geometries
 
     """
-    all_join_gdfs = []
     ref_object_count = Counter()
     paired_count = Counter()
     not_paired_count = Counter()
@@ -50,42 +44,38 @@ def check_paired_objects(c1_file: Path, ref_file: Path, classes: List) -> Tuple[
     if not len(ref_geometries.index):
         ref_geometries = gpd.GeoDataFrame(columns=["layer", "geometry"])
 
-    ref_geometries["index_ref"] = ref_geometries.index.copy()
-
     for ii, class_key in enumerate(classes):
         c1_geom_layer = c1_geometries[c1_geometries.layer == ii]
+        nb_c1 = len(c1_geom_layer.index)
         ref_geom_layer = ref_geometries[ref_geometries.layer == ii]
-        logging.debug(
-            f"For class {class_key}, found {len(c1_geom_layer.index)} in c1 and {len(ref_geom_layer.index)} in ref "
-        )
-        # Find all geometries in ref that intersect a geometry in c1
-        class_join_gdf = ref_geom_layer.sjoin(c1_geom_layer, how="inner", rsuffix="c1")
+        nb_ref = len(ref_geom_layer.index)
+        logging.debug(f"For class {class_key}, found {nb_c1} in c1 and {nb_ref} in ref ")
+        # Count objects in reference
+        ref_object_count[class_key] = nb_ref
 
-        # Remove duplicates for geometries in c1 that intersect several geometries in ref, keeping the pairs where
-        # the geometry has fewer matches in ref (to keep pairs that have only 1 match in ref)
-        class_join_gdf["index_c1_count"] = class_join_gdf.groupby("index_c1")["index_c1"].transform("count")
-        class_join_gdf.sort_values(by="index_c1_count", ascending=True, inplace=True)
-        class_join_gdf.drop_duplicates(subset=["index_c1"], keep="first", inplace=True)
+        # Find all geometries in ref that have an intersection with a geometry in c1
+        # and store then as paired objects
+        ref_intersection_gdf = ref_geom_layer.sjoin(c1_geom_layer, how="inner", lsuffix="ref", rsuffix="c1")
+        # Count unique indices in ref_intersection_gdf to count each ref geometry only once
+        # even if it is paired with several c1 geometries
+        nb_ref_intersection = len(ref_intersection_gdf[~ref_intersection_gdf.index.duplicated(keep="first")])
+        paired_count[class_key] = nb_ref_intersection
 
-        # Remove duplicates for geometries in ref that intersect several geometries in c1, keeping the pairs where
-        # the geometry has fewer matches in c1 (to keep pairs that have only 1 match in c1)
-        class_join_gdf["index_ref_count"] = class_join_gdf.groupby("index_ref")["index_ref"].transform("count")
-        class_join_gdf.sort_values(by="index_ref_count", ascending=True, inplace=True)
-        class_join_gdf.drop_duplicates(subset=["index_ref"], keep="first", inplace=True)
-
-        all_join_gdfs.append(class_join_gdf)
-        ref_object_count[class_key] = len(ref_geom_layer.index)
-        paired_count[class_key] = len(class_join_gdf.index)
-        not_paired_count[class_key] = (
-            len(c1_geom_layer.index) + len(ref_geom_layer.index) - 2 * paired_count[class_key]
-        )
+        # Find non paired objects as:
+        # Objects from ref that have no intersection with any object in c1
+        # + objects from c1 that have no intersection with any object in ref
+        c1_intersection_gdf = c1_geom_layer.sjoin(ref_geom_layer, how="inner", lsuffix="c1", rsuffix="ref")
+        # Count unique indices in c1_intersection_gdf to count each c1 geometry only once
+        # even if it is paired with several ref geometries
+        nb_c1_intersection = len(c1_intersection_gdf[~c1_intersection_gdf.index.duplicated(keep="first")])
+        not_paired_count[class_key] = nb_c1 - nb_c1_intersection + nb_ref - nb_ref_intersection
 
     return ref_object_count, paired_count, not_paired_count
 
 
 def compute_metric_relative(c1_dir: Path, ref_dir: Path, config_file: str, output_csv: Path, output_csv_tile: Path):
-    """Generate relative metrics for mobj0 from the number of paired objects between the reference c1 (classification
-    to compare) using the polygons generated by the mobj0 intrinsic metric.
+    """Generate relative metrics for mobj0 from the number of paired objects between the reference and c1
+    (classification to compare) using the polygons generated by the mobj0 intrinsic metric.
     Paired objects are objects that are found both in c1 and the reference, "not paired" objects are
     objects that are found either only in the reference or only in c1.
     The pairing method is implemented and explained in the check_paired_objects method.
