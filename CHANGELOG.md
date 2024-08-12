@@ -1,3 +1,7 @@
+# 1.1.1
+
+- L'image docker est maintenant stockée sur ghcr.io
+
 # 1.1.0
 
 - MOBJ0 : Utilisation de la 4-connexité au lieu de 8-connexité pour la génération des formes à partir de la carte
