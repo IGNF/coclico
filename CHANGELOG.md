@@ -1,3 +1,5 @@
+### 1.1.2
+
 - Correction des noms d'image docker dans l'utilisation en gpao
 
 ### 1.1.1
