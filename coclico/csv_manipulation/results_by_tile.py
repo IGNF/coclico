@@ -71,7 +71,7 @@ def create_job_merge_results(
     -v {store.to_unix(metrics_root_folder)}:/input
     -v {store.to_unix(out.parent)}:/out
     -v {store.to_unix(config_file.parent)}:/config
-    ignimagelidar/coclico:{__version__}
+    ghcr.io/ignf/coclico:{__version__}
     python -m coclico.csv_manipulation.results_by_tile
     --metrics-root-folder /input
     --output-path {PurePosixPath("/out") / out.name}
