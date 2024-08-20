@@ -11,7 +11,7 @@ install-precommit:
 # Docker
 ##############################
 
-PROJECT_NAME=ignimagelidar/coclico
+PROJECT_NAME=ghcr.io/ignf/coclico
 VERSION=`python -m coclico.version`
 
 docker-build:

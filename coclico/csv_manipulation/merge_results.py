@@ -91,7 +91,7 @@ def create_merge_all_results_job(
     {' '.join(volumes)}
     -v {store.to_unix(output.parent)}:/out
     -v {store.to_unix(config_file.parent)}:/config
-    ignimagelidar/coclico:{__version__}
+    ghcr.io/ignf/coclico:{__version__}
     python -m coclico.csv_manipulation.merge_results
     -i {' '.join(inputs)}
     --output /out/{output.name}

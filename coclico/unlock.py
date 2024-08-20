@@ -12,7 +12,7 @@ def create_unlock_job(name: str, tile_names: List[str], input_path: Path, store:
     command = f"""
 docker run -t --rm --userns=host --shm-size=2gb
 -v {store.to_unix(input_path)}:/input
-ignimagelidar/coclico:{__version__}
+ghcr.io/ignf/coclico:{__version__}
 python -c "from pdaltools.unlock_file import unlock_file
 for tile in {tile_names}: unlock_file('/input/' + tile)"
 """

@@ -27,7 +27,7 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(input)}:/input
 -v {self.store.to_unix(output)}:/output
 -v {self.store.to_unix(self.config_file.parent)}:/config
-ignimagelidar/coclico:{__version__}
+ghcr.io/ignf/coclico:{__version__}
 python -m coclico.mpap0.mpap0_intrinsic
 --input-file /input
 --output-file /output/{input.stem}.json
@@ -48,7 +48,7 @@ docker run -t --rm --userns=host --shm-size=2gb
 -v {self.store.to_unix(out_ref)}:/ref
 -v {self.store.to_unix(output)}:/output
 -v {self.store.to_unix(self.config_file.parent)}:/config
-ignimagelidar/coclico:{__version__}
+ghcr.io/ignf/coclico:{__version__}
 python -m coclico.mpap0.mpap0_relative
 --input-dir /input
 --ref-dir /ref
