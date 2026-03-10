@@ -2,7 +2,7 @@
 
 COmparaison de CLassIfication par rapport à une référence COmmune
 
-*Ce projet est en cours de développement*
+*Ce projet n'est actuellement plus activement développé. Les developpements ont été interrompus avant l'ajout de l'ensemble des métriques initialement envisagées.*
 
 # Principe
 
